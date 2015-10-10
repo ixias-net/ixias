@@ -5,7 +5,8 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core.domain.model
+package net.ixias.core
+package domain.model
 
 trait Identity[+T] extends Serializable {
 
