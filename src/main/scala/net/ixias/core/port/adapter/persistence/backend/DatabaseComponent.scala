@@ -11,6 +11,7 @@ package port.adapter.persistence
 package backend
 
 import action.IOActionContext
+import util.EnumOf
 
 trait DatabaseComponent { self =>
 
@@ -31,6 +32,14 @@ trait DatabaseComponent { self =>
   // --[ DatabaseSouceConfigDef ] ----------------------------------------------
   /** A database souce config instance to which connections can be created. */
   trait DatabaseSouceConfigDef extends Serializable { this: DatabaseSouceConfig =>
+    /** The protocol types used for running IOAction. */
+    sealed abstract class Protocol
+    object Protocol extends EnumOf[Protocol] {
+      case object TCP     extends Protocol
+      case object UDP     extends Protocol
+      case object Unix    extends Protocol
+      case object Unknown extends Protocol
+    }
   }
 
   // --[ DatabaseSouceConfigFactoryDef ] ---------------------------------------
