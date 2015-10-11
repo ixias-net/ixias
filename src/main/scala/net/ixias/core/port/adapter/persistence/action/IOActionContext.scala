@@ -5,7 +5,8 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core
+package net.ixias
+package core
 package port.adapter.persistence
 package action
 
@@ -13,7 +14,7 @@ package action
  * The base trait for the context object passed topersistent actions
  * by the execution engine.
   */
-private[action] trait IOActionContext {
+trait IOActionContext {
 
   private[this] var stickiness = 0
 

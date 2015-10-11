@@ -5,13 +5,14 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core
+package net.ixias
+package core
 package port.adapter.persistence
 package action
 
 import scalaz._
 import scalaz.Scalaz._
-import net.ixias.core.domain.model.{ Identity, Entity }
+import domain.model.{ Identity, Entity }
 
 /**
  * An Entity Action that can be executed on a persistence database.

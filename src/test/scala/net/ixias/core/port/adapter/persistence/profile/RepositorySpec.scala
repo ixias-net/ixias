@@ -5,7 +5,10 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core.port.adapter.persistence
+package net.ixias
+package core
+package port.adapter.persistence
+package profile
 
 import org.joda.time.DateTime
 import org.specs2.mutable.Specification

@@ -5,13 +5,16 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core
-package port.adapter.persistence.profile
+package net.ixias
+package core
+package port.adapter.persistence
+package profile
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import net.ixias.core.domain.model.{ Identity, Entity }
-import net.ixias.core.port.adapter.persistence.lifted._
-import net.ixias.core.port.adapter.persistence.backend.DatabaseComponent
+
+import lifted._
+import backend.DatabaseComponent
+import domain.model.{ Identity, Entity }
 
 /**
  * The basic functionality that has to be implemented by all repositories.

@@ -5,7 +5,8 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core
+package net.ixias
+package core
 package port.adapter.persistence
 package action
 
