@@ -11,11 +11,11 @@ package port.adapter.persistence.backend
 
 import port.adapter.persistence.io.IOActionContext
 
-trait RepositoryBackend extends DatabaseComponent {
+trait BasicBackend extends DatabaseComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of myself*/
-  type This = RepositoryBackend
+  type This = BasicBackend
   /** The type of database source config used by this backend. */
   type DatabaseSouceConfig = DatabaseSouceConfigDef
   /** The type of the database souce config factory used by this backend. */

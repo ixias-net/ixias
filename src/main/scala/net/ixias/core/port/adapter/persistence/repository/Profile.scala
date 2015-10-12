@@ -7,17 +7,15 @@
 
 package net.ixias
 package core
-package port.adapter.persistence.profile
+package port.adapter.persistence.repository
 
 import com.typesafe.config.{ Config, ConfigFactory }
 import port.adapter.persistence.io.IOAction
 import port.adapter.persistence.backend.DatabaseComponent
 import port.adapter.persistence.lifted.ExtensionMethodConversions
 
-/**
- * The basic functionality that has to be implemented by all repositories.
- */
-trait BasicProfile extends BasicActionComponent {
+/** The basic functionality that has to be implemented by all repositories. */
+trait Profile extends ActionComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The identity type of entity */
@@ -29,7 +27,7 @@ trait BasicProfile extends BasicActionComponent {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The external interface of this repository which defines the API. */
-  val profile: BasicProfile = this
+  val profile: Profile = this
 
   /** The back-end implementation for this profile */
   val backend: Backend
@@ -55,5 +53,5 @@ trait BasicProfile extends BasicActionComponent {
   val api: API
 }
 
-trait BasicActionComponent { profile: BasicProfile =>
+trait ActionComponent { profile: Profile =>
 }

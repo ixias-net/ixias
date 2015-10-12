@@ -7,18 +7,17 @@
 
 package net.ixias
 package core
-package port.adapter.persistence.profile
+package port.adapter.persistence.repository
 
 import com.typesafe.config.{ Config, ConfigFactory }
 import domain.model.{ Identity, Entity }
 import port.adapter.persistence.io.EntityIOAction
-import port.adapter.persistence.backend.RepositoryBackend
+import port.adapter.persistence.backend.BasicBackend
 
-/**
- * The basic functionality that has to be implemented by all repositories.
- */
-trait RepositoryProfile[K <: Identity[_], V <: Entity[K]]
-    extends BasicProfile with RepositoryActionComponent[K, V] {
+/** A profile for persistence that does not assume
+  * the existence driver for database abstract layer. */
+trait BasicProfile[K <: Identity[_], V <: Entity[K]]
+    extends Profile with BasicActionComponent[K, V] {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The identity type of entity */
@@ -26,11 +25,11 @@ trait RepositoryProfile[K <: Identity[_], V <: Entity[K]]
   /** The entity type of managed by this profile */
   type Entity  = V
   /** The back-end type required by this profile */
-  type Backend = RepositoryBackend
+  type Backend = BasicBackend
 
   // --[ Properties ]-----------------------------------------------------------
   /** The back-end implementation for this profile */
-  val backend: Backend = new RepositoryBackend {}
+  val backend: Backend = new BasicBackend {}
 
   // --[ Methods ]--------------------------------------------------------------
   /** The API for using the utility methods with a single import statement.
@@ -41,7 +40,7 @@ trait RepositoryProfile[K <: Identity[_], V <: Entity[K]]
   val api: API = new API {}
 }
 
-trait RepositoryActionComponent[K <: Identity[_], V <: Entity[K]]
-    extends BasicActionComponent with EntityIOAction[K, V] {
-  profile: RepositoryProfile[K, V] =>
+trait BasicActionComponent[K <: Identity[_], V <: Entity[K]]
+    extends ActionComponent with EntityIOAction[K, V] {
+  profile: BasicProfile[K, V] =>
 }
