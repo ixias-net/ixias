@@ -50,6 +50,7 @@ trait BasicProfile extends BasicActionComponent {
   trait API extends ExtensionMethodConversions {
     type Error            = IOAction#Error
     type ValidationNel[A] = IOAction#ValidationNel[A]
+    type Context          = Backend#Context
   }
   val api: API
 }

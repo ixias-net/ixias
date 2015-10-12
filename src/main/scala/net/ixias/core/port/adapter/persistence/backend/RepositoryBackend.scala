@@ -12,6 +12,7 @@ package port.adapter.persistence.backend
 import port.adapter.persistence.io.IOActionContext
 
 trait RepositoryBackend extends DatabaseComponent {
+
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of myself*/
   type This = RepositoryBackend
@@ -79,7 +80,6 @@ trait RepositoryBackend extends DatabaseComponent {
                      conf("password") = Some(tok.substring(p2 + 1))
         }
       }
-
       // PART :: hostspec or proto(proto_opts)
       tail.lastIndexOf("/") match {
         case -1 => tok = tail; tail = ""
@@ -105,7 +105,6 @@ trait RepositoryBackend extends DatabaseComponent {
           conf("hostspec") = None
         }
       }
-
       // PART :: database
       if (0 < tail.length) {
         val regex = """^(.+)=(.+)$""".r
@@ -115,6 +114,7 @@ trait RepositoryBackend extends DatabaseComponent {
                      conf("options")  = tail.substring(p + 1).split("&").map{ case regex(k, v) => (k -> v) }
         }
       }
+      // Instantiate an object.
       DatabaseSouceConfigDef.getClass.getMethods
         .find(_.getName == "apply").get.invoke(DatabaseSouceConfigDef,
           conf.values.toList.map(_.asInstanceOf[AnyRef]): _*).asInstanceOf[DatabaseSouceConfigDef]
