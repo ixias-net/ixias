@@ -10,7 +10,7 @@ package core
 package port.adapter.persistence
 package backend
 
-import action.IOActionContext
+import io.IOActionContext
 import util.EnumOf
 
 trait DatabaseComponent { self =>

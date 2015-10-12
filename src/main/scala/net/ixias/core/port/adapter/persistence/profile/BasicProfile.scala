@@ -10,7 +10,7 @@ package core
 package port.adapter.persistence
 package profile
 
-import action.IOAction
+import io.IOAction
 import backend.DatabaseComponent
 import lifted.ExtensionMethodConversions
 import com.typesafe.config.{ Config, ConfigFactory }

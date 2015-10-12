@@ -11,7 +11,7 @@ package port.adapter.persistence
 package profile
 
 import domain.model.{ Identity, Entity }
-import action.EntityIOAction
+import io.EntityIOAction
 import backend.RepositoryBackend
 import com.typesafe.config.{ Config, ConfigFactory }
 

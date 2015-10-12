@@ -8,7 +8,7 @@
 package net.ixias
 package core
 package port.adapter.persistence
-package action
+package io
 
 import scalaz._
 import scalaz.Scalaz._

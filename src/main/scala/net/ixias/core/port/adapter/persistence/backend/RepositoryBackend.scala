@@ -10,7 +10,7 @@ package core
 package port.adapter.persistence
 package backend
 
-import action.IOActionContext
+import io.IOActionContext
 
 trait RepositoryBackend extends DatabaseComponent {
   // --[ TypeDefs ]-------------------------------------------------------------
