@@ -7,8 +7,7 @@
 
 package net.ixias
 package core
-package port.adapter.persistence
-package io
+package port.adapter.persistence.io
 
 /**
  * The base trait for the context object passed topersistent actions

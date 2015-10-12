@@ -7,13 +7,12 @@
 
 package net.ixias
 package core
-package port.adapter.persistence
-package profile
+package port.adapter.persistence.profile
 
-import io.IOAction
-import backend.DatabaseComponent
-import lifted.ExtensionMethodConversions
 import com.typesafe.config.{ Config, ConfigFactory }
+import port.adapter.persistence.io.IOAction
+import port.adapter.persistence.backend.DatabaseComponent
+import port.adapter.persistence.lifted.ExtensionMethodConversions
 
 /**
  * The basic functionality that has to be implemented by all repositories.

@@ -7,15 +7,14 @@
 
 package net.ixias
 package core
-package port.adapter.persistence
-package lifted
+package port.adapter.persistence.lifted
 
 import scalaz._
 import scalaz.Scalaz._
 import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration.Duration
 import scala.language.implicitConversions
-import io.IOAction
+import port.adapter.persistence.io.IOAction
 
 final class FutureOps[A](val self: Future[A]) {
   def await[A1](implicit convert: A => A1): IOAction#ValidationNel[A1] = {

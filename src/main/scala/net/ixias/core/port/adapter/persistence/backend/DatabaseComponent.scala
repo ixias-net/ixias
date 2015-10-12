@@ -7,11 +7,10 @@
 
 package net.ixias
 package core
-package port.adapter.persistence
-package backend
+package port.adapter.persistence.backend
 
-import io.IOActionContext
 import util.EnumOf
+import port.adapter.persistence.io.IOActionContext
 
 trait DatabaseComponent { self =>
 

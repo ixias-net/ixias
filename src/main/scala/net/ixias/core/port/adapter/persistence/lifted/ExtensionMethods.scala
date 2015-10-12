@@ -7,8 +7,7 @@
 
 package net.ixias
 package core
-package port.adapter.persistence
-package lifted
+package port.adapter.persistence.lifted
 
 import scala.language.implicitConversions
 

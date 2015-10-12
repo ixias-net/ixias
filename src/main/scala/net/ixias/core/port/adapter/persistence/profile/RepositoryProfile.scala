@@ -7,13 +7,12 @@
 
 package net.ixias
 package core
-package port.adapter.persistence
-package profile
+package port.adapter.persistence.profile
 
-import domain.model.{ Identity, Entity }
-import io.EntityIOAction
-import backend.RepositoryBackend
 import com.typesafe.config.{ Config, ConfigFactory }
+import domain.model.{ Identity, Entity }
+import port.adapter.persistence.io.EntityIOAction
+import port.adapter.persistence.backend.RepositoryBackend
 
 /**
  * The basic functionality that has to be implemented by all repositories.
