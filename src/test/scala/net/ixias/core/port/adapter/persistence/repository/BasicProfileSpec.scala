@@ -7,8 +7,7 @@
 
 package net.ixias
 package core
-package port.adapter.persistence
-package profile
+package port.adapter.persistence.repository
 
 import org.joda.time.DateTime
 import org.specs2.mutable.Specification
@@ -26,7 +25,11 @@ object Test {
   case class Id(val value: Long) extends Identity[Long]
 }
 
-object TestRepository extends BasicRepository[Test.Id, Test] {
+object TestRepository extends BasicProfile[Test.Id, Test] {
+  import api._
+  def get(id: Id)(implicit ctx: Context): ValidationNel[Option[Entity]] = ???
+  def update(entity: Entity)(implicit ctx: Context): Unit = ???
+  def remove(id: Id)(implicit ctx: Context): ValidationNel[Option[Entity]] = ???
 }
 
 // -----------------------------------------------------------------------------
