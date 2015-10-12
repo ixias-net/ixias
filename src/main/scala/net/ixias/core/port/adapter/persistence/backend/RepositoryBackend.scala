@@ -37,7 +37,20 @@ trait RepositoryBackend extends DatabaseComponent {
     val user:     Option[String] = None,
     val password: Option[String] = None,
     val options:  Map[String, String] = Map.empty
-  ) extends super.DatabaseSouceConfigDef
+  ) extends super.DatabaseSouceConfigDef {
+    override def toString =
+      s"""|${this.getClass.getSimpleName}: {
+          |  path:     $path,
+          |  protocol: $protocol
+          |  socket:   $socket
+          |  hostspec: $hostspec
+          |  port:     $port
+          |  database: $database
+          |  user:     $user
+          |  password: $password
+          |  options:  $options
+          |}""".stripMargin
+  }
 
   // --[ DatabaseSouceConfigFactoryDef ] ---------------------------------------
   /** The database souce config factory */

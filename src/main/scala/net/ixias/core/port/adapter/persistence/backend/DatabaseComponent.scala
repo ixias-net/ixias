@@ -42,6 +42,11 @@ trait DatabaseComponent { self =>
   trait DatabaseSouceConfigDef extends Serializable { this: DatabaseSouceConfig =>
     val path:     String
     val protocol: Protocol
+    override def toString =
+      s"""|${this.getClass.getSimpleName}: {
+          |  path:     $path,
+          |  protocol: $protocol
+          |}""".stripMargin
   }
 
   /** The factory to create a database source config. */
