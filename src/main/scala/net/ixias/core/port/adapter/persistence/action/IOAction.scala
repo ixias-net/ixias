@@ -16,7 +16,7 @@ import scalaz.Scalaz._
 /**
  * A Persistence I/O Action that can be executed on a database.
  */
-private[action] trait IOAction {
+trait IOAction {
 
   /** The type of the context used for running IOActions. */
   type Context >: Null <: IOActionContext
