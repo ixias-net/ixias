@@ -23,31 +23,31 @@ trait DatabaseComponent { self =>
   /** The type of the database souce config factory used by this backend. */
   type DatabaseSouceConfigFactory <: DatabaseSouceConfigFactoryDef
   /** The type of the context used for running Database Actions */
-  type Context >: Null <: DatabaseActionContext
+  type Context >: Null <: IOActionContext
 
   // --[ Properties ]-----------------------------------------------------------
   /** The database factory */
   val DatabaseSouceConfig: DatabaseSouceConfigFactory
 
-  // --[ DatabaseSouceConfigDef ] ----------------------------------------------
+  /** The protocol types used for running IOAction. */
+  sealed abstract class Protocol
+  object Protocol extends EnumOf[Protocol] {
+    case object TCP     extends Protocol
+    case object UDP     extends Protocol
+    case object Unix    extends Protocol
+    case object Unknown extends Protocol
+  }
+
+  // --[ DatabaseSouceConfig ] -------------------------------------------------
   /** A database souce config instance to which connections can be created. */
   trait DatabaseSouceConfigDef extends Serializable { this: DatabaseSouceConfig =>
-    /** The protocol types used for running IOAction. */
-    sealed abstract class Protocol
-    object Protocol extends EnumOf[Protocol] {
-      case object TCP     extends Protocol
-      case object UDP     extends Protocol
-      case object Unix    extends Protocol
-      case object Unknown extends Protocol
-    }
+    val path:     String
+    val protocol: Protocol
   }
 
-  // --[ DatabaseSouceConfigFactoryDef ] ---------------------------------------
-  /** The database souce config factory */
+  /** The factory to create a database source config. */
   trait DatabaseSouceConfigFactoryDef { this: DatabaseSouceConfigFactory =>
-  }
-
-  /** The context object passed to database actions by the repository. */
-  trait DatabaseActionContext extends IOActionContext {
+    /** Load a configuration for persistent database. */
+    def forDSN(name: String): DatabaseSouceConfig
   }
 }
