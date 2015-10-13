@@ -17,7 +17,9 @@ import com.typesafe.config.{ Config, ConfigFactory }
 
 /** The repository for persistence with using the Slick library. */
 trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
-    extends BasicRepository[K, V] with SlickActionComponent[K, V, P] {
+    extends BasicRepository[K, V] with SlickActionComponent[K, V, P]
+    with SlickRelationalTableComponent[P]
+    with SlickRelationalTypesComponent[P] {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The back-end type required by this profile */
@@ -39,8 +41,9 @@ trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
-  trait API extends super.API with driver.API {
-  }
+  trait API extends super.API with driver.API
+      with ImplicitColumnTypes
+      with ImplicitColumnOptions
   override val api: API = new API {}
 }
 
