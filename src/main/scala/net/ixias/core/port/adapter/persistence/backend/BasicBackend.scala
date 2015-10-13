@@ -122,6 +122,7 @@ trait BasicBackend extends DatabaseComponent {
   }
 
   /** The context object passed to database actions by the repository. */
-  trait RepositoryIOActionContext extends IOActionContext {
-  }
+  case class RepositoryIOActionContext(
+    val conf: com.typesafe.config.Config
+  ) extends IOActionContext
 }
