@@ -25,7 +25,7 @@ object Test {
   case class Id(val value: Long) extends Identity[Long]
 }
 
-object TestRepository extends BasicProfile[Test.Id, Test] {
+object TestRepository extends BasicRepository[Test.Id, Test] {
   import api._
   def get(id: Id)(implicit ctx: Context): ValidationNel[Option[Entity]] = ???
   def update(entity: Entity)(implicit ctx: Context): Unit = ???

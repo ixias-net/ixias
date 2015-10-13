@@ -14,9 +14,9 @@ import domain.model.{ Identity, Entity }
 import port.adapter.persistence.io.EntityIOAction
 import port.adapter.persistence.backend.BasicBackend
 
-/** A profile for persistence that does not assume
+/** The repository for persistence that does not assume
   * the existence driver for database abstract layer. */
-trait BasicProfile[K <: Identity[_], V <: Entity[K]]
+trait BasicRepository[K <: Identity[_], V <: Entity[K]]
     extends Profile with BasicActionComponent[K, V] {
 
   // --[ TypeDefs ]-------------------------------------------------------------
@@ -42,5 +42,5 @@ trait BasicProfile[K <: Identity[_], V <: Entity[K]]
 
 trait BasicActionComponent[K <: Identity[_], V <: Entity[K]]
     extends ActionComponent with EntityIOAction[K, V] {
-  profile: BasicProfile[K, V] =>
+  profile: BasicRepository[K, V] =>
 }
