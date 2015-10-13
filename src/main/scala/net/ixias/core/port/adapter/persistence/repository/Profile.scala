@@ -14,7 +14,9 @@ import port.adapter.persistence.io.IOAction
 import port.adapter.persistence.backend.DatabaseComponent
 import port.adapter.persistence.lifted.ExtensionMethodConversions
 
-/** The basic functionality that has to be implemented by all repositories. */
+/**
+ * The basic functionality that has to be implemented by all repositories.
+ */
 trait Profile extends ActionComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------

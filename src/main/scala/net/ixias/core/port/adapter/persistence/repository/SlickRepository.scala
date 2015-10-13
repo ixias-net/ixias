@@ -10,16 +10,16 @@ package core
 package port.adapter.persistence.repository
 
 import slick.driver.JdbcProfile
+import com.typesafe.config.{ Config, ConfigFactory }
 import domain.model.{ Identity, Entity }
+import port.adapter.persistence.lifted._
 import port.adapter.persistence.backend.SlickBackend
 
-import com.typesafe.config.{ Config, ConfigFactory }
-
-/** The repository for persistence with using the Slick library. */
+/**
+ * The repository for persistence with using the Slick library.
+ */
 trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
-    extends BasicRepository[K, V] with SlickActionComponent[K, V, P]
-    with SlickRelationalTableComponent[P]
-    with SlickRelationalTypesComponent[P] {
+    extends BasicRepository[K, V] with SlickActionComponent[K, V, P] { self =>
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The back-end type required by this profile */
@@ -42,9 +42,9 @@ trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
   trait API extends super.API with driver.API
-      with ImplicitColumnTypes
-      with ImplicitColumnOptions
-  override val api: API = new API {}
+      with SlickColumnOptionOps
+      with SlickColumnTypeOps[P]
+  override val api: API = new API { lazy val driver = self.driver }
 }
 
 trait SlickActionComponent[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]

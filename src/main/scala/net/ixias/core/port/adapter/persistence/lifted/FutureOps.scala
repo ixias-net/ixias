@@ -16,7 +16,7 @@ import scala.concurrent.duration.Duration
 import scala.language.implicitConversions
 import port.adapter.persistence.io.IOAction
 
-final class FutureOps[A](val self: Future[A]) {
+final case class FutureOps[A](val self: Future[A]) extends AnyVal {
   def await[A1](implicit convert: A => A1): IOAction#ValidationNel[A1] = {
     Await.ready(self, Duration.Inf)
     self.value.get match {
@@ -27,5 +27,5 @@ final class FutureOps[A](val self: Future[A]) {
 }
 
 trait ToFutureOps {
-  implicit def ToFutureOps[A](a: Future[A]) = new FutureOps(a)
+  implicit def ToFutureOps[A](a: Future[A]) = FutureOps(a)
 }

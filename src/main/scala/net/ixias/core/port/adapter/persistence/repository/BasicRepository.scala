@@ -14,8 +14,10 @@ import domain.model.{ Identity, Entity }
 import port.adapter.persistence.io.EntityIOAction
 import port.adapter.persistence.backend.BasicBackend
 
-/** The repository for persistence that does not assume
-  * the existence driver for database abstract layer. */
+/**
+ * The repository for persistence that
+ * does not assume the existence driver for database abstract layer.
+ */
 trait BasicRepository[K <: Identity[_], V <: Entity[K]]
     extends Profile with BasicActionComponent[K, V] {
 
