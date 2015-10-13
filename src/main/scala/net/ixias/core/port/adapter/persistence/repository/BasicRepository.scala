@@ -19,29 +19,30 @@ import port.adapter.persistence.backend.BasicBackend
  * does not assume the existence driver for database abstract layer.
  */
 trait BasicRepository[K <: Identity[_], V <: Entity[K]]
-    extends Profile with BasicActionComponent[K, V] {
-
-  // --[ TypeDefs ]-------------------------------------------------------------
+    extends BasicProfile with EntityIOAction[K, V] {
   /** The identity type of entity */
   type Id      = K
   /** The entity type of managed by this profile */
   type Entity  = V
+}
+
+trait BasicProfile extends Profile with BasicActionComponent {
+
   /** The back-end type required by this profile */
   type Backend <: BasicBackend
 
-  // --[ Properties ]-----------------------------------------------------------
   /** The back-end implementation for this profile */
   val backend: Backend
 
-  // --[ Methods ]--------------------------------------------------------------
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
   trait API extends super.API
   val api: API = new API {}
+
 }
 
-trait BasicActionComponent[K <: Identity[_], V <: Entity[K]]
-  extends ActionComponent with EntityIOAction[K, V] {
-  profile: BasicRepository[K, V] =>
+trait BasicActionComponent extends ActionComponent {
+  profile: BasicProfile =>
 }
+
