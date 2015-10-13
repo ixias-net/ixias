@@ -6,13 +6,12 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.repository
+package core.port.adapter.persistence.repository
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import port.adapter.persistence.io.IOAction
-import port.adapter.persistence.backend.DatabaseComponent
-import port.adapter.persistence.lifted.ExtensionMethodConversions
+import core.port.adapter.persistence.io.IOAction
+import core.port.adapter.persistence.backend.DatabaseComponent
+import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 
 /**
  * The basic functionality that has to be implemented by all repositories.
@@ -21,9 +20,9 @@ trait Profile extends ActionComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The identity type of entity */
-  type Id      <: domain.model.Identity[_]
+  type Id      <: core.domain.model.Identity[_]
   /** The entity type of managed by this profile */
-  type Entity  <: domain.model.Entity[Id]
+  type Entity  <: core.domain.model.Entity[Id]
   /** The back-end type required by this profile */
   type Backend <: DatabaseComponent
 

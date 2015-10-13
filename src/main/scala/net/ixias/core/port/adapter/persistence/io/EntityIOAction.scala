@@ -6,12 +6,11 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.io
+package core.port.adapter.persistence.io
 
 import scalaz._
 import scalaz.Scalaz._
-import domain.model.{ Identity, Entity }
+import core.domain.model.{ Identity, Entity }
 
 /**
  * An Entity Action that can be executed on a persistence database.

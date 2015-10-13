@@ -6,10 +6,9 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.backend
+package core.port.adapter.persistence.backend
 
-import port.adapter.persistence.io.EntityIOActionContext
+import core.port.adapter.persistence.io.EntityIOActionContext
 
 trait BasicBackend extends DatabaseComponent {
 

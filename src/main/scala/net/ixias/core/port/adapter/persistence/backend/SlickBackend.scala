@@ -6,13 +6,12 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.backend
+package core.port.adapter.persistence.backend
 
 import java.sql.Connection
 import slick.jdbc.JdbcDataSource
 import slick.driver.JdbcProfile
-import util.ConfigExt._
+import core.util.ConfigExt._
 
 trait SlickBackend[P <: JdbcProfile] extends BasicBackend {
 

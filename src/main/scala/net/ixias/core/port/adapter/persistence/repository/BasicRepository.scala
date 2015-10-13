@@ -6,13 +6,12 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.repository
+package core.port.adapter.persistence.repository
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import domain.model.{ Identity, Entity }
-import port.adapter.persistence.io.EntityIOAction
-import port.adapter.persistence.backend.BasicBackend
+import core.domain.model.{ Identity, Entity }
+import core.port.adapter.persistence.io.EntityIOAction
+import core.port.adapter.persistence.backend.BasicBackend
 
 /**
  * The repository for persistence that

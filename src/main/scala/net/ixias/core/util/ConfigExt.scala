@@ -5,8 +5,8 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core
-package util
+package net.ixias
+package core.util
 
 import com.typesafe.config._
 import java.util.Properties

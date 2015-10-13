@@ -5,8 +5,8 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.core
-package util
+package net.ixias
+package core.util
 
 import java.util.concurrent.atomic.AtomicInteger
 

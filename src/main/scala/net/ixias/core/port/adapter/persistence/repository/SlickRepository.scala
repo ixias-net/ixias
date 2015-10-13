@@ -6,13 +6,12 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.repository
+package core.port.adapter.persistence.repository
 
 import slick.driver.JdbcProfile
-import domain.model.{ Identity, Entity }
-import port.adapter.persistence.lifted._
-import port.adapter.persistence.backend.SlickBackend
+import core.domain.model.{ Identity, Entity }
+import core.port.adapter.persistence.lifted._
+import core.port.adapter.persistence.backend.SlickBackend
 
 /**
  * The repository for persistence with using the Slick library.

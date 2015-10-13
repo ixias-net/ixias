@@ -6,11 +6,10 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.backend
+package core.port.adapter.persistence.backend
 
-import util.EnumOf
-import port.adapter.persistence.io.IOActionContext
+import core.util.EnumOf
+import core.port.adapter.persistence.io.IOActionContext
 
 trait DatabaseComponent { self =>
 

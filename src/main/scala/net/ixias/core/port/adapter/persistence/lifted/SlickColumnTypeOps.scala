@@ -6,8 +6,7 @@
  */
 
 package net.ixias
-package core
-package port.adapter.persistence.lifted
+package core.port.adapter.persistence.lifted
 
 import java.sql._
 import java.util.Calendar

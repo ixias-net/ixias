@@ -6,8 +6,7 @@
  */
 
 package net.ixias
-package core
-package domain.model
+package core.domain.model
 
 trait Identity[+T] extends Serializable {
 
