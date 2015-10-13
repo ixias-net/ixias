@@ -9,19 +9,17 @@ package net.ixias
 package core
 package port.adapter.persistence.backend
 
-import port.adapter.persistence.io.IOActionContext
+import port.adapter.persistence.io.EntityIOActionContext
 
 trait BasicBackend extends DatabaseComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
-  /** The type of myself*/
-  type This = BasicBackend
   /** The type of database source config used by this backend. */
   type DatabaseSouceConfig = DatabaseSouceConfigDef
   /** The type of the database souce config factory used by this backend. */
   type DatabaseSouceConfigFactory = DatabaseSouceConfigFactoryDef
   /** The type of the context used for running repository Actions */
-  type Context = RepositoryIOActionContext
+  type Context = EntityIOActionContext
 
   // --[ Properties ]-----------------------------------------------------------
   /** The database factory */
@@ -120,9 +118,4 @@ trait BasicBackend extends DatabaseComponent {
           conf.values.toList.map(_.asInstanceOf[AnyRef]): _*).asInstanceOf[DatabaseSouceConfigDef]
     }
   }
-
-  /** The context object passed to database actions by the repository. */
-  case class RepositoryIOActionContext(
-    val conf: com.typesafe.config.Config
-  ) extends IOActionContext
 }

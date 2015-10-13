@@ -9,10 +9,8 @@ package net.ixias
 package core
 package port.adapter.persistence.io
 
-/**
- * The base trait for the context object passed topersistent actions
- * by the execution engine.
-  */
+/** The base trait for the context object passed topersistent actions
+  * by the execution engine. */
 trait IOActionContext {
 
   private[this] var stickiness = 0
