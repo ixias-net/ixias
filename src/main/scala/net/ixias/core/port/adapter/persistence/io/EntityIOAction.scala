@@ -17,9 +17,6 @@ import core.domain.model.{ Identity, Entity }
  */
 trait EntityIOAction[K <: Identity[_], V <: Entity[K]] extends IOAction {
 
-  /** The type of the context used for running repository Actions */
-  type Context = EntityIOActionContext
-
   /** Optionally returns the value associated with a identity. */
   def get(id: K)(implicit ctx: Context): ValidationNel[Option[V]]
 

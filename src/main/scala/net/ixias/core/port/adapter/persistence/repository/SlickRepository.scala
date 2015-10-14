@@ -8,22 +8,15 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
+import scala.reflect.ClassTag
 import slick.driver.JdbcProfile
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.SlickBackend
 
 /**
- * The repository for persistence with using the Slick library.
+ * The profile for persistence with using the Slick library.
  */
-trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
-    extends BasicRepository[K, V] with SlickProfile[P] {
-
-  /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): T =
-    f(backend.getDatabase(driver, dsn))
-}
-
 trait SlickProfile[P <: JdbcProfile]
     extends BasicProfile with SlickActionComponent[P] { self =>
 
@@ -34,6 +27,7 @@ trait SlickProfile[P <: JdbcProfile]
 
   /** The configured driver. */
   val driver: P
+
   /** The back-end implementation for this profile */
   val backend = new SlickBackend[P] {}
 
@@ -45,8 +39,15 @@ trait SlickProfile[P <: JdbcProfile]
       with SlickColumnTypeOps[P]
   override val api: API = new API { lazy val driver = self.driver }
 
+  /** Run the supplied function with a database object by using pool database session. */
+  def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): T =
+    f(backend.getDatabase(driver, dsn))
 }
 
 trait SlickActionComponent[P <: JdbcProfile] extends BasicActionComponent {
   profile: SlickProfile[P] =>
 }
+
+trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
+    extends BasicRepository[K, V] with SlickProfile[P]
+

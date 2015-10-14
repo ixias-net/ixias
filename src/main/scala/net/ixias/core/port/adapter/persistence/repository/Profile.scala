@@ -9,7 +9,7 @@ package net.ixias
 package core.port.adapter.persistence.repository
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import core.port.adapter.persistence.io.IOAction
+import core.port.adapter.persistence.io.{ IOAction, IOActionContext }
 import core.port.adapter.persistence.backend.DatabaseComponent
 import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 
@@ -25,6 +25,8 @@ trait Profile extends ActionComponent {
   type Entity  <: core.domain.model.Entity[Id]
   /** The back-end type required by this profile */
   type Backend <: DatabaseComponent
+  /** The type of the context used for running IOActions. */
+  type Context >: Null <: IOActionContext
 
   // --[ Properties ]-----------------------------------------------------------
   /** The external interface of this repository which defines the API. */
