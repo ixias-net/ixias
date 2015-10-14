@@ -38,10 +38,9 @@ trait Profile extends ActionComponent {
   /** The configuration for persistence */
   final lazy val config: Config = loadPersistenceConfig
 
-  // --[ Methods ]--------------------------------------------------------------
   /** Load the configuration for this repository. This can be overridden in
     * user-defined repository subclasses to load different configurations. */
-  protected[this] def loadPersistenceConfig: Config = {
+  protected def loadPersistenceConfig: Config = {
     ConfigFactory.load()
   }
 
@@ -56,4 +55,6 @@ trait Profile extends ActionComponent {
 }
 
 trait ActionComponent { profile: Profile =>
+  /** Create the default IOActionContext for this repository. */
+  def createPersistenceActionContext(): Context
 }

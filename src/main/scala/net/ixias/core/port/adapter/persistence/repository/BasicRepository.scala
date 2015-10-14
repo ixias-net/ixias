@@ -35,8 +35,12 @@ trait BasicProfile extends Profile with BasicActionComponent {
 
 }
 
-trait BasicActionComponent extends ActionComponent {
-  profile: BasicProfile =>
+trait BasicActionComponent extends ActionComponent { profile: BasicProfile =>
+  /** Create the default EntityIOActionContext for this repository. */
+  def createPersistenceActionContext(): Context =
+    createPersistenceActionContext(profile.config)
+  def createPersistenceActionContext(c: Config): Context =
+    EntityIOActionContext(config = c)
 }
 
 trait BasicRepository[K <: Identity[_], V <: Entity[K]]

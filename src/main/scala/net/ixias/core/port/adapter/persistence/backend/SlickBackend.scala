@@ -85,7 +85,7 @@ trait SlickBackend[P <: JdbcProfile] extends BasicBackend {
 
       // Build config for HikariCP.
       val hconf = new HikariConfig()
-      val conf  = ctx.conf.getConfig(dsconf.path)
+      val conf  = ctx.config.getConfig(dsconf.path)
       val prefixes = Seq( s"",
         s"""hostspec.${dsconf.hostspec.get}.""",
         s"""${dsconf.database.get}.hostspec.${dsconf.hostspec.get}.""")

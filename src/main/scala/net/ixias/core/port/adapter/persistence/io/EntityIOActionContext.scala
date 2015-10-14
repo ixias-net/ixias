@@ -11,6 +11,6 @@ package core.port.adapter.persistence.io
 import com.typesafe.config.Config
 
 /** The context object passed to database actions by the repository. */
-trait EntityIOActionContext extends IOActionContext {
-  val conf: Config
-}
+case class EntityIOActionContext(
+  val config: Config
+) extends IOActionContext

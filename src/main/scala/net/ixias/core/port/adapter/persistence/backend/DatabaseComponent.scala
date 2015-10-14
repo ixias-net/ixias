@@ -36,7 +36,6 @@ trait DatabaseComponent { self =>
     case object Unknown extends Protocol
   }
 
-  // --[ DatabaseSouceConfig ] -------------------------------------------------
   /** A database souce config instance to which connections can be created. */
   trait DatabaseSouceConfigDef extends Serializable { this: DatabaseSouceConfig =>
     val path:     String
