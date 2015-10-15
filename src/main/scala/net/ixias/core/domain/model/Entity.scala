@@ -23,9 +23,9 @@ trait Entity[ID <: Identity[_]] {
   val versionOpt = if (version < 0) None else Some(version)
 
   /** The date and time when this entity was last updated. */
-  val updatedAt: Option[DateTime]
+  val updatedAt: DateTime
 
   /** The date and time when this entity was added to the system. */
-  val createdAt: Option[DateTime]
+  val createdAt: DateTime
 
 }
