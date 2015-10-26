@@ -9,9 +9,10 @@ package net.ixias
 package play2.auth
 
 import play.api.mvc.{ RequestHeader, Result }
+import scala.concurrent.{ ExecutionContext, Future }
+
 import core.util.EnumOf
 import core.domain.model.{ Identity, Entity }
-import scala.concurrent.{ ExecutionContext, Future }
 
 trait AuthConfig {
 
