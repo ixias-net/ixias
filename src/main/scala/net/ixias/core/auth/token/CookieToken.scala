@@ -35,7 +35,6 @@ case class CookieToken(
   def extract(request: RequestHeader): Option[AuthenticityToken] =
     request.cookies.get(cookieName).flatMap(c => verifyHMAC(c.value))
 
-
   /** Discard a security token in storage */
   def discard(result: Result)(implicit request: RequestHeader): Result =
     result.discardingCookies(DiscardingCookie(cookieName))

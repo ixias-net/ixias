@@ -13,8 +13,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 import core.util.EnumOf
 import core.domain.model.{ Identity, Entity }
+import net.ixias.play2.auth.token._
 
-trait AuthConfig {
+trait AuthConfig { config =>
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
@@ -25,8 +26,19 @@ trait AuthConfig {
   type Authority <: EnumOf[_]
 
   // --[ Properties ]-----------------------------------------------------------
-  /** Specified the timeout value in `seconds` */
+  /** The cookie name */
+  def cookieName: String
+  /** The timeout value in `seconds` */
   def sessionTimeout: Int
+  /** The accessor for security token. */
+  lazy val token: Token = new CookieToken(
+    cookieName           = config.cookieName,
+    cookieMaxAge         = Some(config.sessionTimeout),
+    cookiePathOption     = "/",
+    cookieDomainOption   = None,
+    cookieSecureOption   = play.api.Play.isProd(play.api.Play.current),
+    cookieHttpOnlyOption = true
+  )
 
   // --[ Methods ]--------------------------------------------------------------
   def resolve(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
