@@ -1,0 +1,3 @@
+[submodule "lib/net-ixias-core"]
+	path = lib/net-ixias-core
+	url = git@gitlab.nextbeat.net:ixias/net-ixias-core.git

@@ -5,7 +5,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-name         := """net-ixias-play-auth"""
+name         := """net-ixias-play2-auth"""
 version      := "1.0"
 scalaVersion := "2.11.7"
 
@@ -19,7 +19,9 @@ libraryDependencies ++= Seq(
   cache,
   specs2 % Test
 )
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+
+lazy val core = (project in file("lib/net-ixias-core"))
+lazy val root = (project in file(".")).aggregate(core).dependsOn(core)
 
 scalacOptions ++= Seq(
   "-deprecation",            // Emit warning and location for usages of deprecated APIs.
