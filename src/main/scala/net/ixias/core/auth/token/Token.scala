@@ -22,17 +22,17 @@ trait Token {
   /** Extract a security token from storage */
   def extract(request: RequestHeader): Option[AuthenticityToken]
 
-  /** Delete a security token in storage */
-  def delete(result: Result)(implicit request: RequestHeader): Result
+  /** Discard a security token in storage */
+  def discard(result: Result)(implicit request: RequestHeader): Result
 
   /** Verifies a given HMAC on a piece of data */
-  protected def verifyHmac(token: SignedToken): Option[AuthenticityToken] = {
+  protected def verifyHMAC(token: SignedToken): Option[AuthenticityToken] = {
     val (hmac, value) = token.splitAt(40)
     if (safeEquals(Crypto.sign(value), hmac)) Some(value) else None
   }
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
-  protected def getRawHMAC(token: AuthenticityToken): SignedToken =
+  protected def signWithHMAC(token: AuthenticityToken): SignedToken =
     Crypto.sign(token) + token
 
   /* Do not change this unless you understand the security issues behind timing attacks.
