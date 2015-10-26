@@ -6,9 +6,9 @@
  */
 
 package net.ixias
-package play2.auth.token
+package play.api.auth.token
 
-import play.api.mvc.{ RequestHeader, Result, Cookie, DiscardingCookie}
+import _root_.play.api.mvc.{ RequestHeader, Result, Cookie, DiscardingCookie}
 
 case class CookieToken(
   protected val cookieName:           String,

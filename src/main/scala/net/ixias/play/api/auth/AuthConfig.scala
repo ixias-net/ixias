@@ -6,14 +6,15 @@
  */
 
 package net.ixias
-package play2.auth
+package play.api.auth
 
-import play.api.mvc.{ RequestHeader, Result }
+import _root_.play.api.Play
+import _root_.play.api.mvc.{ RequestHeader, Result }
 import scala.concurrent.{ ExecutionContext, Future }
 
 import core.util.EnumOf
 import core.domain.model.{ Identity, Entity }
-import net.ixias.play2.auth.token._
+import net.ixias.play.api.auth.token._
 
 trait AuthConfig { config =>
 
@@ -36,7 +37,7 @@ trait AuthConfig { config =>
     cookieMaxAge         = Some(config.sessionTimeout),
     cookiePathOption     = "/",
     cookieDomainOption   = None,
-    cookieSecureOption   = play.api.Play.isProd(play.api.Play.current),
+    cookieSecureOption   = Play.isProd(Play.current),
     cookieHttpOnlyOption = true
   )
 

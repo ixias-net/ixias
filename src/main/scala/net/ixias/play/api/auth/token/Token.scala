@@ -6,10 +6,10 @@
  */
 
 package net.ixias
-package play2.auth.token
+package play.api.auth.token
 
-import play.api.libs.Crypto
-import play.api.mvc.{ RequestHeader, Result }
+import _root_.play.api.libs.Crypto
+import _root_.play.api.mvc.{ RequestHeader, Result }
 
 trait Token {
 
