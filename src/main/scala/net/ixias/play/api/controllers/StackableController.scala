@@ -9,21 +9,25 @@ package net.ixias
 package play.api.controllers
 
 import _root_.play.api.mvc._
-import scala.collection.concurrent.TrieMap
-import scala.concurrent.{Future, ExecutionContext}
-import scala.util.{Failure, Success}
-import scala.util.control.{NonFatal, ControlThrowable}
+import _root_.play.api.libs.concurrent.Execution
 
-trait StackableController { self: Controller =>
+import scala.collection.concurrent.TrieMap
+import scala.util.{ Failure, Success }
+import scala.util.control.{ NonFatal, ControlThrowable }
+import scala.concurrent.{ ExecutionContext, Future }
+
+trait StackableController {
   import StackableRequest._
 
   /** Proceed with the next advice or target method invocation */
-  def proceed[A](request: StackableRequest[A])(f: StackableRequest[A] => Future[Result]): Future[Result] = f(request)
+  def proceed[A](request: StackableRequest[A])
+    (f: StackableRequest[A] => Future[Result]): Future[Result] = f(request)
 
   /** Custom action builders */
   sealed case class StackAction(params: Attribute[_]*) extends ActionBuilder[StackableRequest] {
     def invokeBlock[A](request: Request[A], block: (StackableRequest[A]) => Future[Result]): Future[Result] = {
-      val requestExt = new StackableRequest(request, new TrieMap[StackableRequest.AttributeKey[_], Any] ++= params.map(_.toTuple))
+      val attributes = new TrieMap[AttributeKey[_], Any] ++= params.map(_.toTuple)
+      val requestExt = StackableRequest(request, attributes)
       try {
         implicit val ctx = createStackActionExecutionContext(requestExt)
         proceed(requestExt)(block) andThen {
@@ -38,10 +42,9 @@ trait StackableController { self: Controller =>
   }
 
   // --[ ExecutionContext ] ----------------------------------------------------
-  protected object ExecutionContextKey extends StackableRequest.AttributeKey[ExecutionContext]
+  protected object ExecutionContextKey extends AttributeKey[ExecutionContext]
   protected def createStackActionExecutionContext(implicit request: StackableRequest[_]): ExecutionContext =
-    request.get(ExecutionContextKey).getOrElse(
-      _root_.play.api.libs.concurrent.Execution.defaultContext)
+    request.get(ExecutionContextKey).getOrElse(Execution.defaultContext)
 
   // --[ Constructs an Action ] ------------------------------------------------
   /** Constructs an `Action` with default content, and no request parameter. */
@@ -60,7 +63,8 @@ trait StackableController { self: Controller =>
     StackAction(params: _*).apply(p)(f)
 
   // --[ Constructs an Action with Asyncronus ] --------------------------------
-  /** Constructs an `Action` that returns a future of a result, with default content, and no request parameter. */
+  /** Constructs an `Action` that returns a future of a result,
+    * with default content, and no request parameter. */
   final def AsyncStack
     (f: StackableRequest[AnyContent] => Future[Result]): Action[AnyContent] =
     StackAction().async(f)
@@ -78,7 +82,8 @@ trait StackableController { self: Controller =>
   // --[ Callback methods ] ----------------------------------------------------
   /** This method will be called bu StackAction when invokeBlock succeed. */
   def cleanupOnSuccess[A](request: StackableRequest[A]): Unit = ()
-  def cleanupOnSuccess[A](request: StackableRequest[A], result: Option[Result]): Unit = cleanupOnSuccess(request)
+  def cleanupOnSuccess[A](request: StackableRequest[A], result: Option[Result]): Unit =
+    cleanupOnSuccess(request)
 
   /** This method will be called bu StackAction when invokeBlock failed. */
   def cleanupOnFailure[A](request: StackableRequest[A], e: Throwable): Unit = ()

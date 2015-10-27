@@ -11,13 +11,19 @@ package play.api.controllers
 import _root_.play.api.mvc.{ Request, WrappedRequest }
 import scala.collection.concurrent.TrieMap
 
-/* Wrap an existing request. Useful to extend a request. */
+/** Wrap an existing request. Useful to extend a request. */
 case class StackableRequest[A](
   underlying: Request[A],
   attributes: TrieMap[StackableRequest.AttributeKey[_], Any]
 ) extends WrappedRequest[A](underlying) {
-  def get[B](key: StackableRequest.AttributeKey[B]): Option[B] = attributes.get(key).asInstanceOf[Option[B]]
-  def set[B](key: StackableRequest.AttributeKey[B], value: B): StackableRequest[A] = {
+  import StackableRequest._
+
+  /** Retrieve an attribute by specific key. */
+  def get[B](key: AttributeKey[B]): Option[B] =
+    attributes.get(key).asInstanceOf[Option[B]]
+
+  /** Store an attribute under the specific key. */
+  def set[B](key: AttributeKey[B], value: B): StackableRequest[A] = {
     attributes.put(key, value)
     this
   }
@@ -26,9 +32,11 @@ case class StackableRequest[A](
 // Companion object
 //~~~~~~~~~~~~~~~~~~
 object StackableRequest {
+  /** The key of request attribute. */
   trait AttributeKey[A] {
     def ->(value: A): Attribute[A] = Attribute(this, value)
   }
+  /** The request attribute. */
   case class Attribute[A](key: AttributeKey[A], value: A) {
     def toTuple: (AttributeKey[A], A) = (key, value)
   }

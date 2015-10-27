@@ -31,6 +31,7 @@ trait AuthConfig { config =>
   def cookieName: String
   /** The timeout value in `seconds` */
   def sessionTimeout: Int
+
   /** The accessor for security token. */
   lazy val token: Token = new CookieToken(
     cookieName           = config.cookieName,
