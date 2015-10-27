@@ -6,8 +6,9 @@
  */
 
 package net.ixias
-package play.api.auth.token
+package play.api.auth.datastore
 
+import play.api.auth.token._
 import core.domain.model.Identity
 
 trait Container[Id <: Identity[_]] {
