@@ -61,7 +61,7 @@ object Token {
   val random = new Random(new SecureRandom())
 
   /** Generate a new token as string */
-  @tailrec private final def generate(implicit container: Container[_]): AuthenticityToken = {
+  @tailrec final def generate(implicit container: Container[_]): AuthenticityToken = {
     val token  = Iterator.continually(random.nextInt(table.size)).map(table).take(64).mkString
     if (container.read(token).isDefined) generate else token
   }
