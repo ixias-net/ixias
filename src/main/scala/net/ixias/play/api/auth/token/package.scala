@@ -6,6 +6,9 @@
  */
 
 package net.ixias
-package play.api.controllers
+package play.api.auth
 
-trait Controller extends _root_.play.api.mvc.Controller
+package object token {
+  type SignedToken       = String
+  type AuthenticityToken = String
+}

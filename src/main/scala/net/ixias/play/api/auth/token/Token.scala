@@ -10,11 +10,13 @@ package play.api.auth.token
 
 import _root_.play.api.libs.Crypto
 import _root_.play.api.mvc.{ RequestHeader, Result }
+import scala.util.Random
+import scala.annotation.tailrec
+import java.security.SecureRandom
+
+import play.api.auth.datastore.Container
 
 trait Token {
-
-  type SignedToken       = String
-  type AuthenticityToken = String
 
   /** Put a specified security token to storage */
   def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result
@@ -49,4 +51,18 @@ trait Token {
     }
   }
 
+}
+
+// Companion object
+//~~~~~~~~~~~~~~~~~~
+object Token {
+
+  val table  = "abcdefghijklmnopqrstuvwxyz1234567890_.~*'()"
+  val random = new Random(new SecureRandom())
+
+  /** Generate a new token as string */
+  @tailrec final def generate(implicit container: Container[_]): AuthenticityToken = {
+    val token  = Iterator.continually(random.nextInt(table.size)).map(table).take(64).mkString
+    if (container.read(token).isDefined) generate else token
+  }
 }
