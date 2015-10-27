@@ -10,15 +10,16 @@ package play.api.auth.mvc
 
 import _root_.play.api.Play
 import _root_.play.api.mvc._
-import play.api.auth.AuthProfile
+
 import play.api.auth.token._
+import play.api.auth.AuthProfile
 import scala.concurrent.{ ExecutionContext, Future }
 
 /** Provides the utility methods for authorization. */
 trait Authorization { self: AuthProfile with Action =>
 
   /** Verifies what user are authorized to do. */
-  def authorize(authority: Authority)
+  def authorized(authority: Authority)
     (implicit request: RequestHeader, context: ExecutionContext)
       : Future[Either[Result, (User, Result => Result)]] = {
     restoreUser collect {
@@ -36,7 +37,7 @@ trait Authorization { self: AuthProfile with Action =>
   }
 
   /** Retrieve a user data by the session token in `RequestHeader`. */
-  private def restoreUser
+  private[mvc] def restoreUser
     (implicit request: RequestHeader, context: ExecutionContext)
       : Future[(Option[User], Result => Result)] = {
     (for {
@@ -53,7 +54,7 @@ trait Authorization { self: AuthProfile with Action =>
   }
 
   /** Extract a session token in `RequestHeader`. */
-  private def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
+  private[mvc] def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
     if (Play.isTest(Play.current)) {
       request.headers.get("TEST_AUTH_TOKEN").orElse(tokenAccessor.extract(request))
     } else {

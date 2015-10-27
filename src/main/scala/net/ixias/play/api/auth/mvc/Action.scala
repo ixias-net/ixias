@@ -15,10 +15,4 @@ import play.api.auth.AuthProfile
   * An action is essentially a (Request[A] => Result) function that
   * handles a request and generates a result to be sent to the client. */
 trait Action { self: AuthProfile =>
-
-  /** The key of attribute for containing required authority roles. */
-  case object UserKey extends StackRequest.AttributeKey[User]
-
-  /** The key of attribute for containing user data. */
-  case object AuthorityKey extends StackRequest.AttributeKey[Authority]
 }

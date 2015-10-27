@@ -16,7 +16,7 @@ import scala.util.{ Failure, Success }
 import scala.util.control.{ NonFatal, ControlThrowable }
 import scala.concurrent.{ ExecutionContext, Future }
 
-object StackAction { self =>
+trait StackAction { self =>
 
   // --[ Request ]--------------------------------------------------------------
   object StackRequest {
@@ -71,8 +71,7 @@ object StackAction { self =>
   }
 
   /** Proceed with the next advice or target method invocation */
-  def proceed[A](request: StackRequest[A])
-    (f: StackRequest[A] => Future[Result]): Future[Result] = f(request)
+  def proceed[A](request: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = f(request)
 
   // --[ Constructs an Action ] ------------------------------------------------
   /** Constructs an `Action` with default content, and no request parameter. */
@@ -104,3 +103,5 @@ object StackAction { self =>
   protected def createStackActionExecutionContext(implicit request: StackRequest[_]): ExecutionContext =
     request.get(ExecutionContextKey).getOrElse(Execution.defaultContext)
 }
+
+object StackAction extends StackAction
