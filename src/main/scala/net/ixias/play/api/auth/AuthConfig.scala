@@ -25,7 +25,7 @@ trait AuthConfig { config =>
   /** The type of user entity */
   type User <: Entity[Id]
   /** The type of authority roles */
-  type Authority <: EnumOf[_]
+  type Authority >: Nothing
 
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
