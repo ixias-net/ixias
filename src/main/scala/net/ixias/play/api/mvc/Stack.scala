@@ -86,21 +86,23 @@ trait Stack {
     StackActionBuilder(params: _*).apply(p)(f)
 
   // --[ Constructs an Action with Asyncronus ] --------------------------------
-  /** Constructs an `Action` that returns a future of a result,
-    * with default content, and no request parameter. */
-  final def AsyncStackAction
-    (f: StackRequest[AnyContent] => Future[Result]): Action[AnyContent] =
-    StackActionBuilder().async(f)
+  object StackAction {
+    /** Constructs an `Action` that returns a future of a result,
+      * with default content, and no request parameter. */
+    final def async
+      (f: StackRequest[AnyContent] => Future[Result]): Action[AnyContent] =
+      StackActionBuilder().async(f)
 
-  /** Constructs an `Action` that returns a future of a result, with default content. */
-  final def AsyncStackAction(params: Attribute[_]*)
-    (f: StackRequest[AnyContent] => Future[Result]): Action[AnyContent] =
-    StackActionBuilder(params: _*).async(f)
+    /** Constructs an `Action` that returns a future of a result, with default content. */
+    final def async(params: Attribute[_]*)
+      (f: StackRequest[AnyContent] => Future[Result]): Action[AnyContent] =
+      StackActionBuilder(params: _*).async(f)
 
-  /** Constructs an `Action` that returns a future of a result, with default content. */
-  final def AsyncStackAction[A](p: BodyParser[A], params: Attribute[_]*)
-    (f: StackRequest[A] => Future[Result]): Action[A] =
-    StackActionBuilder(params: _*).async(p)(f)
+    /** Constructs an `Action` that returns a future of a result, with default content. */
+    final def async[A](p: BodyParser[A], params: Attribute[_]*)
+      (f: StackRequest[A] => Future[Result]): Action[A] =
+      StackActionBuilder(params: _*).async(p)(f)
+  }
 
   // --[ Callback methods ] ----------------------------------------------------
   /** This method will be called bu StackAction when invokeBlock succeed. */
