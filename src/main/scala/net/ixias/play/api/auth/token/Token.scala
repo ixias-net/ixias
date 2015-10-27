@@ -33,17 +33,6 @@ trait Token {
     if (safeEquals(Crypto.sign(value), hmac)) Some(value) else None
   }
 
-  // --[ Token Generator ]------------------------------------------------------
-  val table  = "abcdefghijklmnopqrstuvwxyz1234567890_.~*'()"
-  val random = new Random(new SecureRandom())
-
-  /** Generate a new token as string */
-  @tailrec private final def generate(implicit container: Container[_]): AuthenticityToken = {
-    val token  = Iterator.continually(random.nextInt(table.size)).map(table).take(64).mkString
-    if (container.read(token).isDefined) generate else token
-  }
-
-  // --[ Verify Methods ]-------------------------------------------------------
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   protected def signWithHMAC(token: AuthenticityToken): SignedToken =
     Crypto.sign(token) + token
@@ -62,4 +51,18 @@ trait Token {
     }
   }
 
+}
+
+// Companion object
+//~~~~~~~~~~~~~~~~~~
+object Token {
+
+  val table  = "abcdefghijklmnopqrstuvwxyz1234567890_.~*'()"
+  val random = new Random(new SecureRandom())
+
+  /** Generate a new token as string */
+  @tailrec private final def generate(implicit container: Container[_]): AuthenticityToken = {
+    val token  = Iterator.continually(random.nextInt(table.size)).map(table).take(64).mkString
+    if (container.read(token).isDefined) generate else token
+  }
 }
