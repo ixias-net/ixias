@@ -8,7 +8,7 @@
 package net.ixias
 package play.api.auth.token
 
-import core.domain.model.{ Identity, Entity }
+import core.domain.model.Identity
 
 trait Container[Id <: Identity[_]] {
 
