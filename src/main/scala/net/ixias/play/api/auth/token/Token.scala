@@ -13,9 +13,6 @@ import _root_.play.api.mvc.{ RequestHeader, Result }
 
 trait Token {
 
-  type SignedToken       = String
-  type AuthenticityToken = String
-
   /** Put a specified security token to storage */
   def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result
 
