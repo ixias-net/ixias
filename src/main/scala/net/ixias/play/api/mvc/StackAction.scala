@@ -6,7 +6,7 @@
  */
 
 package net.ixias
-package play.api.controllers
+package play.api.mvc
 
 import _root_.play.api.mvc._
 import _root_.play.api.libs.concurrent.Execution
@@ -16,18 +16,22 @@ import scala.util.{ Failure, Success }
 import scala.util.control.{ NonFatal, ControlThrowable }
 import scala.concurrent.{ ExecutionContext, Future }
 
-trait Stack {
+object StackAction { self =>
 
   // --[ Request ]--------------------------------------------------------------
-  /** The attribute key of request. */
-  trait AttributeKey[A] {
-    def ->(value: A): Attribute[A] = Attribute(this, value)
+  object StackRequest {
+    /** The attribute key of request. */
+    trait AttributeKey[A] {
+      def ->(value: A): Attribute[A] = Attribute(this, value)
+    }
+    /** The attribute of request. */
+    case class Attribute[A](key: AttributeKey[A], value: A) {
+      def toTuple: (AttributeKey[A], A) = (key, value)
+    }
   }
 
-  /** The attribute of request. */
-  case class Attribute[A](key: AttributeKey[A], value: A) {
-    def toTuple: (AttributeKey[A], A) = (key, value)
-  }
+  /** Import class types for StackRequest attributes. */
+  import StackRequest._
 
   /** Wrap an existing request. Useful to extend a request. */
   case class StackRequest[A](
@@ -49,6 +53,7 @@ trait Stack {
   // --[ Action ]---------------------------------------------------------------
   /** Custom action builders */
   sealed case class StackActionBuilder(params: Attribute[_]*) extends ActionBuilder[StackRequest] {
+    import StackRequest._
     def invokeBlock[A](request: Request[A], block: (StackRequest[A]) => Future[Result]): Future[Result] = {
       val attributes = new TrieMap[AttributeKey[_], Any] ++= params.map(_.toTuple)
       val requestExt = StackRequest(request, attributes)

@@ -14,8 +14,9 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 import core.util.EnumOf
 import core.domain.model.{ Identity, Entity }
-import net.ixias.play.api.auth.token._
-import net.ixias.play.api.auth.datastore._
+import play.api.auth.token._
+import play.api.auth.datastore._
+import play.api.mvc.StackAction._
 
 trait AuthConfig { config =>
 
@@ -26,6 +27,11 @@ trait AuthConfig { config =>
   type User <: Entity[Id]
   /** The type of authority roles */
   type Authority >: Nothing
+
+  /** The key of attribute for containing required authority roles. */
+  case object UserKey      extends StackRequest.AttributeKey[User]
+  /** The key of attribute for containing user data. */
+  case object AuthorityKey extends StackRequest.AttributeKey[Authority]
 
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
@@ -48,7 +54,7 @@ trait AuthConfig { config =>
 
   // --[ Methods ]--------------------------------------------------------------
   /** Resolve user by specified user-id. */
-  def resolveUser(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
+  def resolve(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
 
   /** Verifies what user are authorized to do. */
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
