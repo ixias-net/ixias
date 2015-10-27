@@ -16,9 +16,8 @@ import core.util.EnumOf
 import core.domain.model.{ Identity, Entity }
 import play.api.auth.token._
 import play.api.auth.datastore._
-import play.api.mvc.StackAction._
 
-trait AuthConfig { config =>
+trait AuthProfile { self =>
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
@@ -26,12 +25,7 @@ trait AuthConfig { config =>
   /** The type of user entity */
   type User <: Entity[Id]
   /** The type of authority roles */
-  type Authority >: Nothing
-
-  /** The key of attribute for containing required authority roles. */
-  case object UserKey      extends StackRequest.AttributeKey[User]
-  /** The key of attribute for containing user data. */
-  case object AuthorityKey extends StackRequest.AttributeKey[Authority]
+  type Authority
 
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
@@ -40,9 +34,9 @@ trait AuthConfig { config =>
   def sessionTimeout: Int
 
   /** The accessor for security token. */
-  lazy val token: Token = new CookieToken(
-    cookieName           = config.cookieName,
-    cookieMaxAge         = Some(config.sessionTimeout),
+  lazy val tokenAccessor: Token = new CookieToken(
+    cookieName           = self.cookieName,
+    cookieMaxAge         = Some(self.sessionTimeout),
     cookiePathOption     = "/",
     cookieDomainOption   = None,
     cookieSecureOption   = Play.isProd(Play.current),
