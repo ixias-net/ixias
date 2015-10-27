@@ -15,6 +15,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 import core.util.EnumOf
 import core.domain.model.{ Identity, Entity }
 import net.ixias.play.api.auth.token._
+import net.ixias.play.api.auth.datastore._
 
 trait AuthConfig { config =>
 
@@ -41,6 +42,9 @@ trait AuthConfig { config =>
     cookieSecureOption   = Play.isProd(Play.current),
     cookieHttpOnlyOption = true
   )
+
+  /** The datastore for security token. */
+  lazy val datastore: WrappedContainer[Id] = WrappedContainer(CacheContainer[Id])
 
   // --[ Methods ]--------------------------------------------------------------
   def resolve(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
