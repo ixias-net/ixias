@@ -5,9 +5,10 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-name         := """net-ixias"""
-version      := "1.0"
+organization := "net.ixias"
+name         := "ixias-core"
 scalaVersion := "2.11.7"
+publishTo    := Some("IxiaS Snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/releases")
 
 resolvers := ("Atlassian Releases"             at "https://maven.atlassian.com/public/") +: resolvers.value
 resolvers += "scalaz-bintray"                  at "https://dl.bintray.com/scalaz/releases"
@@ -21,7 +22,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick"                % "3.0.2",
   "com.zaxxer"          % "HikariCP"             % "2.4.1",
   "mysql"               % "mysql-connector-java" % "latest.integration",
-  "joda-time"           % "joda-time"            % "2.8",
+  "joda-time"           % "joda-time"            % "2.9.1",
   "org.joda"            % "joda-convert"         % "1.7",
   "ch.qos.logback"      % "logback-classic"      % "1.0.9",
   "org.specs2"         %% "specs2-core"          % "3.6.4" % "test",
@@ -39,4 +40,22 @@ scalacOptions ++= Seq(
   "-Ywarn-inaccessible",     // Warn about inaccessible types in method signatures.
   "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
   "-Ywarn-numeric-widen"     // Warn when numerics are widened.
+)
+
+// Release
+import ReleaseTransformations._
+publishArtifact in (Compile, packageDoc) := false // disable publishing the main API jar
+publishArtifact in (Compile, packageSrc) := false // disable publishing the main sources jar
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
 )
