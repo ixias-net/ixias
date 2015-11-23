@@ -10,12 +10,10 @@ logLevel := Level.Warn
 
 // The Typesafe repository.
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
-resolvers += "Sonatype snapshots"  at "https://oss.sonatype.org/content/repositories/snapshots/"
-resolvers += "scalaz-bintray"      at "http://dl.bintray.com/scalaz/releases"
-
-// The Github repository.
-resolvers += Resolver.url("GitHub", url("http://shaggyyeti.github.io/releases"))(Resolver.ivyStylePatterns)
-resolvers += Resolver.sonatypeRepo("releases")
 
 // The Play plugin
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.3")
+
+addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.0")
+
+addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.6.0")
