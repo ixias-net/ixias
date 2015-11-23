@@ -12,10 +12,9 @@ import _root_.play.api.Play
 import _root_.play.api.mvc.{ RequestHeader, Result }
 import scala.concurrent.{ ExecutionContext, Future }
 
-import core.util.EnumOf
-import core.domain.model.{ Identity, Entity }
 import play.api.auth.token._
 import play.api.auth.datastore._
+import core.domain.model.{ Identity, Entity }
 
 trait AuthProfile { self =>
 
