@@ -36,8 +36,11 @@ trait SlickProfile[P <: JdbcProfile]
     * and commonly types and objects. */
   trait API extends super.API with driver.API
       with SlickColumnOptionOps
-      with SlickColumnTypeOps[P]
-  override val api: API = new API { lazy val driver = self.driver }
+      with SlickColumnTypeOps[P] {
+    lazy val driver = self.driver
+    implicit lazy val ctx = createPersistenceActionContext()
+  }
+  override val api: API = new API {}
 
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): T =
