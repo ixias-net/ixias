@@ -9,7 +9,7 @@ name         := "net-ixias-core"
 scalaVersion := "2.11.7"
 
 publishMavenStyle := false
-publishTo         := Some("IxiaS Snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/snapshots")
+publishTo         := Some("IxiaS Snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/releases")
 
 resolvers := ("Atlassian Releases"             at "https://maven.atlassian.com/public/") +: resolvers.value
 resolvers += "scalaz-bintray"                  at "https://dl.bintray.com/scalaz/releases"
