@@ -5,7 +5,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-name         := """net-ixias"""
+name         := "net-ixias"
 version      := "1.0"
 scalaVersion := "2.11.7"
 
@@ -39,4 +39,22 @@ scalacOptions ++= Seq(
   "-Ywarn-inaccessible",     // Warn about inaccessible types in method signatures.
   "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
   "-Ywarn-numeric-widen"     // Warn when numerics are widened.
+)
+
+// Release
+import ReleaseTransformations._
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runClean,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+//  releaseStepTask(bintrayRelease in `sbt-release`),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
 )
