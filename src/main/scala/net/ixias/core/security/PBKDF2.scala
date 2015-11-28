@@ -18,7 +18,7 @@ import scala.util.Try
 /** PBKDF2 (Password-Based Key Derivation Function 2) is a key derivation function
   * that is part of RSA Laboratories' Public-Key Cryptography Standards (PKCS) series,
   * specifically PKCS #5 v2.0, */
-sealed case class PBKDF2(
+sealed case class PBKDF2Data(
   val algo: String,
   val salt: Array[Byte],
   val hash: Array[Byte],
@@ -39,7 +39,7 @@ object PBKDF2 {
 
   /** Compares a given hash with a cleantext password. Also extracts the salt from the hash. */
   def compare(input: String, hash: String): Boolean =
-    internals.decode(hash).map { case PBKDF2(algo, salt, hash, iterations) =>
+    internals.decode(hash).map { case PBKDF2Data(algo, salt, hash, iterations) =>
       internals.compare(hash, internals.hash(input, salt, iterations, hash.length, algo))
     }.getOrElse(false)
 
@@ -51,19 +51,19 @@ object PBKDF2 {
     * @param length     (optional) The length the key will be cropped to fit.
     * @param algo       (optional) The hashing algorithm. */
   def hash(input: String, salt: Array[Byte] = internals.salt, iterations: Int = internals.iterations, length: Int = HASH_LENGTH, algo: String = HASH_ALGO): String =
-    internals.encode(PBKDF2(algo, salt, internals.hash(input, salt, iterations, length, algo), iterations))
+    internals.encode(PBKDF2Data(algo, salt, internals.hash(input, salt, iterations, length, algo), iterations))
 
   /** Extracts the salt from a hash/salt-combination */
   def extractSalt(hash: String): Option[Array[Byte]] =
-    internals.decode(hash).map{ case PBKDF2(_, p, _, _) => p }
+    internals.decode(hash).map{ case PBKDF2Data(_, p, _, _) => p }
 
   /** Extracts the saltlength from a hash/salt-combination */
   def extractSaltLength(hash: String): Option[Int] =
-    internals.decode(hash).map{ case PBKDF2(_, p, _, _) => p.length }
+    internals.decode(hash).map{ case PBKDF2Data(_, p, _, _) => p.length }
 
   /** Extracts the number of iterations from a hash/salt-combination */
   def extractIterations(hash: String): Option[Int] =
-    internals.decode(hash).map{ case PBKDF2(_, _, _, p) => p }
+    internals.decode(hash).map{ case PBKDF2Data(_, _, _, p) => p }
 
   /**
    * Implements internal methods.
@@ -112,18 +112,18 @@ object PBKDF2 {
     }
 
     /** Encode PBKDF2 data with the modular crypt format (MCF) */
-    def encode(data :PBKDF2): String = {
+    def encode(data :PBKDF2Data): String = {
       val itrs = data.iterations.toString
       val algo = HASH_ALGO_JAVA_TO_LIB.getOrElse(data.algo, data.algo)
       s"$$pbkdf2-$algo$$$itrs$$${b64Encoder(data.salt)}$$${b64Encoder(data.hash)}"
     }
 
     /** Decodes data encoded with the modular crypt format (MCF). */
-    def decode(data: String): Option[PBKDF2] = {
+    def decode(data: String): Option[PBKDF2Data] = {
       Try {
         val rx = "\\$pbkdf2-([^\\$]+)\\$(\\d+)\\$([^\\$]*)\\$([^\\$]*)".r
         data match {
-          case rx(a, i, s, h) => Some(PBKDF2(
+          case rx(a, i, s, h) => Some(PBKDF2Data(
             HASH_ALGO_JAVA_TO_LIB.map(_.swap).getOrElse(a, a),
             b64Decoder(s),
             b64Decoder(h),
