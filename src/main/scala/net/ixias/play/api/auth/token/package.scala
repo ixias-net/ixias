@@ -5,8 +5,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth
+package net.ixias.play.api.auth
 
 package object token {
   type SignedToken       = String

@@ -5,11 +5,9 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.mvc
+package net.ixias.play.api.auth.mvc
 
-import play.api.mvc.StackAction._
-import play.api.auth.AuthProfile
+import net.ixias.play.api.auth.AuthProfile
 
 /** Provides the utility methods for constructing Action.
   * An action is essentially a (Request[A] => Result) function that

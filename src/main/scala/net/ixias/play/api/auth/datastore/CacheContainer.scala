@@ -5,14 +5,12 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.datastore
+package net.ixias.play.api.auth.datastore
 
-import _root_.play.api.Play._
-import _root_.play.api.cache.Cache
-
-import play.api.auth.token._
-import core.domain.model.Identity
+import play.api.Play._
+import play.api.cache.Cache
+import net.ixias.play.api.auth.token._
+import net.ixias.core.domain.model.Identity
 
 /* The datastore for user session with using `play.cache.Cache` */
 case class CacheContainer[Id <: Identity[_]]() extends Container[Id] {

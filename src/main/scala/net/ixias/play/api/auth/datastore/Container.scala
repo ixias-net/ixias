@@ -5,11 +5,10 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.datastore
+package net.ixias.play.api.auth.datastore
 
-import play.api.auth.token._
-import core.domain.model.Identity
+import net.ixias.play.api.auth.token._
+import net.ixias.core.domain.model.Identity
 
 trait Container[Id <: Identity[_]] {
 

@@ -5,16 +5,15 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth
+package net.ixias.play.api.auth
 
-import _root_.play.api.Play
-import _root_.play.api.mvc.{ RequestHeader, Result }
+import play.api.Play
+import play.api.mvc.{ RequestHeader, Result }
 import scala.concurrent.{ ExecutionContext, Future }
 
-import play.api.auth.token._
-import play.api.auth.datastore._
-import core.domain.model.{ Identity, Entity }
+import net.ixias.play.api.auth.token._
+import net.ixias.play.api.auth.datastore._
+import net.ixias.core.domain.model.{ Identity, Entity }
 
 trait AuthProfile { self =>
 

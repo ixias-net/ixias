@@ -5,10 +5,9 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.token
+package net.ixias.play.api.auth.token
 
-import _root_.play.api.mvc.{ RequestHeader, Result, Cookie, DiscardingCookie}
+import play.api.mvc.{ RequestHeader, Result, Cookie, DiscardingCookie}
 
 case class CookieToken(
   protected val cookieName:           String,

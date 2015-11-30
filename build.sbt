@@ -25,7 +25,8 @@ libraryDependencies ++= Seq(
   "net.ixias"       %% "ixias-core"           % (if(release) "1.0.2" else "1.0.3-SNAPSHOT"),
   "ch.qos.logback"   % "logback-classic"      % "1.0.9" % Test,
   "org.specs2"      %% "specs2-core"          % "3.6.4" % Test,
-  "org.specs2"      %% "specs2-matcher-extra" % "3.6.4" % Test
+  "org.specs2"      %% "specs2-matcher-extra" % "3.6.4" % Test,
+  cache
 )
 
 // scala compile options
@@ -44,6 +45,7 @@ scalacOptions ++= Seq(
 
 // setting for project
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
+unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala"
 
 // setting for publisher
 import ReleaseTransformations._

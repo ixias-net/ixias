@@ -5,16 +5,15 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.token
+package net.ixias.play.api.auth.token
 
-import _root_.play.api.libs.Crypto
-import _root_.play.api.mvc.{ RequestHeader, Result }
+import play.api.libs.Crypto
+import play.api.mvc.{ RequestHeader, Result }
 import scala.util.Random
 import scala.annotation.tailrec
 import java.security.SecureRandom
 
-import play.api.auth.datastore.Container
+import net.ixias.play.api.auth.datastore.Container
 
 trait Token {
 

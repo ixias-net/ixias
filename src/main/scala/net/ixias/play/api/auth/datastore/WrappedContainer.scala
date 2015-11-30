@@ -5,14 +5,12 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.datastore
+package net.ixias.play.api.auth.datastore
 
-import _root_.play.api.mvc.RequestHeader
+import play.api.mvc.RequestHeader
 import scala.concurrent.{ ExecutionContext, Future }
-
-import play.api.auth.token._
-import core.domain.model.Identity
+import net.ixias.play.api.auth.token._
+import net.ixias.core.domain.model.Identity
 
 /* Wrap an existing container. Useful to extend a container. */
 case class WrappedContainer[Id <: Identity[_]](container: Container[Id]) {
