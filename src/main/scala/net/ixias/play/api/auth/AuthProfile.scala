@@ -48,6 +48,9 @@ trait AuthProfile { self =>
   /** Resolve user by specified user-id. */
   def resolve(id: Id)(implicit context: ExecutionContext): Future[Option[User]]
 
+  /** Ask the authenticator that has been registered with the system for a password. */
+  def authenticate(id: Id, password: String)(implicit context: ExecutionContext): Option[User]
+
   /** Verifies what user are authorized to do. */
   def authorize(user: User, authority: Authority)(implicit context: ExecutionContext): Future[Boolean]
 
