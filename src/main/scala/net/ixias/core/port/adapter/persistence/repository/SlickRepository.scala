@@ -20,6 +20,7 @@ import core.port.adapter.persistence.backend.SlickBackend
 trait SlickProfile[P <: JdbcProfile]
     extends BasicProfile with SlickActionComponent[P] { self =>
 
+  type This >: this.type <: SlickProfile[P]
   /** The back-end type required by this profile */
   type Backend  = SlickBackend[P]
   /** The type of database objects. */
@@ -38,9 +39,11 @@ trait SlickProfile[P <: JdbcProfile]
       with SlickColumnOptionOps
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver
-    implicit lazy val ctx = createPersistenceActionContext()
   }
   override val api: API = new API {}
+
+  /** Run the supplied function with a default action context. */
+  def withActionContext[T](f: Context => T): T = f(createPersistenceActionContext())
 
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): T =
