@@ -33,4 +33,7 @@ trait OptionalAuthAction extends Action with StackAction with Authorization {
         user.map(u => req.set(UserKey, u)).getOrElse(req))(f).map(updater)
     }
   }
+
+  // Retrieve a user session data.
+  implicit def loggedIn(implicit req: StackRequest[_]): User = req.get(UserKey).get
 }
