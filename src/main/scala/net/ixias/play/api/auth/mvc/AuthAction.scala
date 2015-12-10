@@ -34,4 +34,7 @@ trait AuthAction extends Action with StackAction with Authorization {
       case (None, _)             => authenticationFailed(req)
     }
   }
+
+  /** Retrieve a user session data. */
+  implicit def loggedIn(implicit req: StackRequest[_]): Option[User] = req.get(UserKey)
 }

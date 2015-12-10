@@ -43,5 +43,8 @@ trait AuthorizeAction extends Action with StackAction with Authorization {
       }
     )
   }
+
+  /** Retrieve a user session data. */
+  implicit def loggedIn(implicit req: StackRequest[_]): Option[User] = req.get(UserKey)
 }
 

@@ -13,9 +13,10 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 import net.ixias.play.api.auth.token._
 import net.ixias.play.api.auth.datastore._
+import net.ixias.play.api.mvc.StackAction
 import net.ixias.core.domain.model.{ Identity, Entity }
 
-trait AuthProfile { self =>
+trait AuthProfile { self: StackAction =>
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
