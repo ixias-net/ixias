@@ -16,7 +16,7 @@ import net.ixias.play.api.auth.datastore._
 import net.ixias.play.api.mvc.StackAction
 import net.ixias.core.domain.model.{ Identity, Entity }
 
-trait AuthProfile { self: StackAction =>
+trait AuthProfile { self =>
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
