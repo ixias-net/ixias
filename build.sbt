@@ -8,25 +8,32 @@
 organization := "net.ixias"
 name         := "ixias-core"
 scalaVersion := "2.11.7"
-publishTo    := Some("IxiaS Snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/releases")
 
-resolvers := ("Atlassian Releases"             at "https://maven.atlassian.com/public/") +: resolvers.value
-resolvers += "scalaz-bintray"                  at "https://dl.bintray.com/scalaz/releases"
-resolvers += "Sonatype OSS Release Repository" at "https://oss.sonatype.org/content/repositories/releases/"
+// build mode
+val branch  = "git branch".lines_!.find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
+val release = (branch == "master")
+
+// setting for resolvers
+resolvers := ("Atlassian Releases"  at "https://maven.atlassian.com/public/") +: resolvers.value
+resolvers += "scalaz-bintray"       at "https://dl.bintray.com/scalaz/releases"
+resolvers += "Sonatype OSS Release" at "https://oss.sonatype.org/content/repositories/releases/"
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies ++= Seq(
+  // --[ OSS Libraries ]------------------------------------
+  "joda-time"           % "joda-time"            % "2.9.1",
+  "org.joda"            % "joda-convert"         % "1.7",
   "org.scala-lang"      % "scala-reflect"        % scalaVersion.value,
   "org.scalaz"         %% "scalaz-core"          % "7.1.3",
   "com.typesafe"        % "config"               % "1.3.0",
   "com.typesafe.slick" %% "slick"                % "3.0.2",
   "com.zaxxer"          % "HikariCP"             % "2.4.1",
   "mysql"               % "mysql-connector-java" % "latest.integration",
-  "joda-time"           % "joda-time"            % "2.9.1",
-  "org.joda"            % "joda-convert"         % "1.7",
-  "ch.qos.logback"      % "logback-classic"      % "1.0.9",
-  "org.specs2"         %% "specs2-core"          % "3.6.4" % "test",
-  "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % "test"
+
+  // --[ UnitTest ]-----------------------------------------
+  "ch.qos.logback"      % "logback-classic"      % "1.0.9" % Test,
+  "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
+  "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test
 )
 
 scalacOptions ++= Seq(
@@ -44,6 +51,10 @@ scalacOptions ++= Seq(
 
 // Release
 import ReleaseTransformations._
+publishTo := {
+  val path = if (release) "releases" else "snapshots"
+  Some("Nextbeat snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/" + path)
+}
 publishArtifact in (Compile, packageDoc) := false // disable publishing the main API jar
 publishArtifact in (Compile, packageSrc) := false // disable publishing the main sources jar
 releaseProcess := Seq[ReleaseStep](
@@ -59,3 +70,7 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges
 )
+
+// prompt display
+shellPrompt := (Project.extract(_).currentProject.id + "(" + branch + ") > ")
+
