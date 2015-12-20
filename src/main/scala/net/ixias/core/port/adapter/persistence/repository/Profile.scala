@@ -47,10 +47,7 @@ trait Profile extends ActionComponent {
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
-  trait API extends ExtensionMethodConversions {
-    type Error            = IOAction#Error
-    type ValidationNel[A] = IOAction#ValidationNel[A]
-  }
+  trait API extends ExtensionMethodConversions
   val api: API
 }
 
