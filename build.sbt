@@ -70,7 +70,3 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges
 )
-
-// prompt display
-shellPrompt := (Project.extract(_).currentProject.id + "(" + branch + ") > ")
-
