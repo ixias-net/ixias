@@ -8,7 +8,7 @@
 package net.ixias
 package core.port.adapter.persistence.io
 
-import scala.util.Try
+import scala.util.{ Try, Success }
 import core.domain.model.{ Identity, Entity }
 
 /**
@@ -16,23 +16,9 @@ import core.domain.model.{ Identity, Entity }
  */
 trait EntityIOAction[K <: Identity[_], E <: Entity[K]] extends IOAction {
 
+  // --[ Read ]-----------------------------------------------------------------
   /** Optionally returns the value associated with a identity. */
   def get(id: K)(implicit ctx: Context): Try[Option[E]]
-
-  /** Adds a new identity/entity-value pair to this repository.
-    * If the map already contains a mapping for the identity,
-    * it will be overridden by the new value. */
-  def update(entity: E)(implicit ctx: Context): Try[Unit]
-
-  /** Removes a identity from this map,
-    * returning the value associated previously with that identity as an option. */
-  def remove(id: K)(implicit ctx: Context): Try[Option[E]]
-
-  /** Defines the default value computation for the map,
-    * returned when a identity is not found The method implemented here throws an exception,
-    * but it might be overridden in subclasses. */
-  def default(id: K): E =
-    throw new NoSuchElementException("identity not found: " + id)
 
   /** Returns the value associated with a identity, or
     * a default value if the identity is not contained in the repository. */
@@ -55,9 +41,27 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]] extends IOAction {
   def contains(id: K)(implicit ctx: Context): Try[Boolean] =
     get(id).map(_.isDefined)
 
-  /** Adds a new identity/entity-value pair to this repository and
-    * optionally returns previously bound value.
-    * If the map already contains a mapping for the identity, it will be overridden by the new value. */
+  /** Defines the default value computation for the map,
+    * returned when a identity is not found The method implemented here throws an exception,
+    * but it might be overridden in subclasses. */
+  def default(id: K): E =
+    throw new NoSuchElementException("identity not found: " + id)
+
+  // --[ Write ]----------------------------------------------------------------
+  /** Adds a new identity/entity-value pair to this repository. */
+  def add(entity: E)(implicit ctx: Context): Try[K]
+
+  /** If the map already contains a mapping for the identity,
+    * it will be overridden by the new value. */
+  def update(entity: E)(implicit ctx: Context): Try[Unit]
+
+  /** Removes a identity from this map,
+    * returning the value associated previously with that identity as an option. */
+  def remove(id: K)(implicit ctx: Context): Try[Option[E]]
+
+
+  /** If the map already contains a mapping for the identity,
+    * it will be overridden by the new value, and returns previously bound value. */
   def put(entity: E)(implicit ctx: Context): Try[Option[E]] = {
     val old = entity.id match {
       case Some(id) => get(id)
@@ -65,6 +69,22 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]] extends IOAction {
     }
     update(entity)
     old
+  }
+
+  /** Adds a new identity/entity-value pair to this repository.
+    * If the map already contains a mapping for the identity,
+    * it will be overridden by the new value. */
+  def addOrUpdate(entity: E)(implicit ctx: Context): Try[E] = {
+    entity.id match {
+      case None     => add(entity).flatMap(apply)
+      case Some(id) => for {
+        before <- get(id)
+        after  <- before match {
+          case None    => add(entity).flatMap(apply)
+          case Some(_) => update(entity).flatMap(_ => apply(id))
+        }
+      } yield(after)
+    }
   }
 
   /** If given identity is already in this map, returns associated value. */
