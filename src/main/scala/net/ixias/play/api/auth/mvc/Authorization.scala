@@ -35,7 +35,7 @@ trait Authorization { self: AuthProfile with Action =>
   }
 
   /** Retrieve a user data by the session token in `RequestHeader`. */
-  private[mvc] def restoreUser
+  protected[mvc] def restoreUser
     (implicit request: RequestHeader, context: ExecutionContext)
       : Future[(Option[User], Result => Result)] = {
     (for {
@@ -52,7 +52,7 @@ trait Authorization { self: AuthProfile with Action =>
   }
 
   /** Extract a session token in `RequestHeader`. */
-  private[mvc] def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
+  protected[mvc] def extractToken(request: RequestHeader): Option[AuthenticityToken] = {
     if (Play.isTest(Play.current)) {
       request.headers.get("TEST_AUTH_TOKEN").orElse(tokenAccessor.extract(request))
     } else {
