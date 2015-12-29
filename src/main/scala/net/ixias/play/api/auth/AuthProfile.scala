@@ -28,9 +28,9 @@ trait AuthProfile { self =>
 
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
-  def cookieName: String
+  def cookieName:  String = "sid"
   /** The timeout value in `seconds` */
-  def sessionTimeout: Int
+  def sessionTimeout: Int = 3600 * 24 * 14 // 2weeks
 
   /** The accessor for security token. */
   lazy val tokenAccessor: Token = new CookieToken(
