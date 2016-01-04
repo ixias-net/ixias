@@ -11,7 +11,7 @@ package core.port.adapter.persistence.backend
 import core.util.EnumOf
 import core.port.adapter.persistence.io.IOActionContext
 
-trait DatabaseComponent { self =>
+trait DatabaseComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   type This >: this.type <: DatabaseComponent
