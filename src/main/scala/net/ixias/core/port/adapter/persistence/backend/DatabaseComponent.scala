@@ -14,8 +14,6 @@ import core.port.adapter.persistence.io.IOActionContext
 trait DatabaseComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
-  type This >: this.type <: DatabaseComponent
-
   /** The type of database source config used by this backend. */
   type DatabaseSouceConfig <: DatabaseSouceConfigDef
   /** The type of the database souce config factory used by this backend. */
@@ -37,7 +35,7 @@ trait DatabaseComponent {
   }
 
   /** A database souce config instance to which connections can be created. */
-  trait DatabaseSouceConfigDef extends Serializable { this: DatabaseSouceConfig =>
+  trait DatabaseSouceConfigDef extends Serializable {
     val path:     String
     val protocol: Protocol
     override def toString =
@@ -48,7 +46,7 @@ trait DatabaseComponent {
   }
 
   /** The factory to create a database source config. */
-  trait DatabaseSouceConfigFactoryDef { this: DatabaseSouceConfigFactory =>
+  trait DatabaseSouceConfigFactoryDef {
     /** Load a configuration for persistent database. */
     def forDSN(name: String): DatabaseSouceConfig
   }
