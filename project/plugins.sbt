@@ -12,8 +12,10 @@ logLevel := Level.Warn
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 
 // The Play plugin
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.4.3")
+addSbtPlugin("com.typesafe.play"  % "sbt-plugin"         % "2.4.3")
 
-addSbtPlugin("com.github.gseitz" % "sbt-release" % "1.0.0")
+addSbtPlugin("com.scalapenos"     % "sbt-prompt"         % "0.2.1")
+
+addSbtPlugin("com.github.gseitz"  % "sbt-release"        % "1.0.0")
 
 addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.6.0")
