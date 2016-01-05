@@ -8,7 +8,8 @@
 package net.ixias
 package core.port.adapter.persistence.config
 
-import core.port.adapter.persistence.io.IOActionContext
+import scala.util.Try
+import core.port.adapter.persistence.io.EntityIOActionContext
 
 trait DataSource {
 
@@ -20,7 +21,7 @@ trait DataSource {
   type DataSourceFactory <: DataSourceFactoryDef
 
   /** The type of the context used for running Database Actions */
-  type Context >: Null <: IOActionContext
+  type Context >: Null <: EntityIOActionContext
 
   // --[ Properties ]-----------------------------------------------------------
   /** The database factory */
@@ -33,7 +34,7 @@ trait DataSource {
   /** The factory to create a database source config. */
   trait DataSourceFactoryDef {
     /** Load a configuration for persistent database. */
-    def forDSN(name: String)(implicit ctx: Context): DataSource
+    def forDSN(name: String)(implicit ctx: Context): Try[DataSource]
   }
 }
 

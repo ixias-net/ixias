@@ -8,8 +8,8 @@
 package net.ixias
 package core.port.adapter.persistence.config
 
+import scala.util.Try
 import java.sql.Connection
-import scala.util.{ Try, Success, Failure }
 import slick.jdbc.JdbcDataSource
 import core.port.adapter.persistence.io.EntityIOActionContext
 
@@ -49,9 +49,11 @@ trait SlickDataSource extends DataSource with DataSourceConfig {
     import com.zaxxer.hikari._
 
     /** Create a JdbcDataSource from DSN (Database Souce Name) */
-    def forDSN(name: String)(implicit ctx: Context): DataSource = {
-      val struct: Try[DataSourceName] = convertToStruct(name)
-      println(struct)
+    def forDSN(name: String)(implicit ctx: Context): Try[DataSource] = {
+      val data = for {
+        hosts <- getHosts(name)
+      } yield (hosts)
+      println(data)
       ???
     }
   }
