@@ -54,12 +54,12 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
       for {
         driver <- getDriverClassName(name)
         hosts  <- getHosts(name)
+        url    <- getJdbcUrl(name)
       } yield {
-        println("-----------------")
-        println(driver)
-        println(hosts)
-        println("-----------------")
-        ???
+        val hconf = new HikariConfig()
+        hconf.setDriverClassName(driver)
+        hconf.setJdbcUrl(url)
+        HikariCPDataSource(new HikariDataSource(hconf), hconf)
       }
   }
 }

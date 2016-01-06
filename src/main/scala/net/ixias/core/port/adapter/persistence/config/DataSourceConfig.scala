@@ -25,6 +25,7 @@ trait DataSourceConfig { self: DataSource =>
   protected val CF_PASSWORD               = """password"""
   protected val CF_DRIVER_CLASS_NAME      = """driver_class_name"""
   protected val CF_HOSTSPEC_HOSTS         = """hosts"""
+  protected val CF_HOSTSPEC_DATABASE      = """database"""
   protected val CF_HOSTSPEC_READONLY      = """readonly"""
 
   // --[ Methods ]--------------------------------------------------------------
@@ -49,6 +50,11 @@ trait DataSourceConfig { self: DataSource =>
     (dsn: DataSourceName)(implicit ctx: Context): Try[String] =
     getValue(dsn)(_.getString(CF_DRIVER_CLASS_NAME))
 
+  /** Get the database name. */
+  protected def getDatabaseName
+    (dsn: DataSourceName)(implicit ctx: Context): Try[String] =
+    getValue(dsn)(_.getString(CF_HOSTSPEC_DATABASE))
+
   /** Get host list to connect to database. */
   protected def getHosts
     (dsn: DataSourceName)(implicit ctx: Context): Try[List[String]] =
@@ -67,9 +73,12 @@ trait DataSourceConfig { self: DataSource =>
     (dsn: DataSourceName)(f: (Config) => A)(implicit ctx: Context): Try[A] =
     withConfig { cfg =>
       val haystack = Seq(
-        dsn.database + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec) + ".",
-        dsn.database + ".",  CF_SECTION_HOSTSPEC.format(dsn.hostspec) + ".", "")
-      getValue(cfg, dsn.path, haystack)(f)
+        dsn.path + "." + dsn.database + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
+        dsn.path + "." + dsn.database,
+        dsn.path + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
+        dsn.path
+      )
+      getValue(cfg, haystack)(f)
     }
 
   /** Get a optional value by specified key. */
@@ -79,10 +88,10 @@ trait DataSourceConfig { self: DataSource =>
 
   /** Get a value by specified key. */
   private def getValue[A]
-    (root: Config, key: String, haystack: Seq[String])(f: (Config) => A): Try[A] =
+    (root: Config, haystack: Seq[String])(f: (Config) => A): Try[A] =
     haystack.size match {
-      case 1 => Try(f(root.getConfig(haystack.head + key)))
-      case _ => Try(f(root.getConfig(haystack.head + key))) orElse getValue(root, key, haystack.tail)(f)
+      case 1 => Try(f(root.getConfig(haystack.head)))
+      case _ => Try(f(root.getConfig(haystack.head))) orElse getValue(root, haystack.tail)(f)
     }
 
   /** Get a typesafe config accessor */
