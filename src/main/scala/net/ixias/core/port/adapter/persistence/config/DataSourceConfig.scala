@@ -31,8 +31,6 @@ trait DataSourceConfig { self: DataSource =>
   /** The keys of configuration (2) */
   protected val CF_HOSTSPEC_HOSTS         = """hosts"""
   protected val CF_HOSTSPEC_READONLY      = """readonly"""
-  protected val CF_HOSTSPEC_MIN_IDLE      = """min_idle"""
-  protected val CF_HOSTSPEC_MAX_POOL_SIZE = """max_pool_size"""
 
   // --[ DataSouceName ]--------------------------------------------------------
   /** The DSN structure. */
@@ -49,16 +47,28 @@ trait DataSourceConfig { self: DataSource =>
   }
 
   // --[ Methods ]--------------------------------------------------------------
-  protected def getUser(dsn: DataSourceName)(implicit ctx: Context): Option[String] =
+  /** Get the username used for DataSource */
+  protected def getUser
+    (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
     getOptionalValue(dsn)(_.getStringOpt(CF_USER))
 
-  protected def getPassword(dsn: DataSourceName)(implicit ctx: Context): Option[String] =
+  /** Get the password used for DataSource */
+  protected def getPassword
+    (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
     getOptionalValue(dsn)(_.getStringOpt(CF_PASSWORD))
 
-  protected def getDriverClassName(dsn: DataSourceName)(implicit ctx: Context): Option[String] =
+  /** Get the JDBC driver class name. */
+  protected def getDriverClassName
+    (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
     getOptionalValue(dsn)(_.getStringOpt(CF_DRIVER_CLASS_NAME))
 
+  /** Get the flag for connection in read-only mode. */
+  protected def getHostSpecReadOnly
+    (dsn: DataSourceName)(implicit ctx: Context): Option[Boolean] =
+    getOptionalHostSpecValue(dsn)(_.getBooleanOpt(CF_HOSTSPEC_READONLY))
+
   // --[ Methods ]--------------------------------------------------------------
+  /** Get host list to connect to database. */
   protected def getHosts(dsn: DataSourceName)(implicit ctx: Context): Try[List[String]] =
     withConfig { cfg =>
       val root     = cfg.getConfig(dsn.path)
@@ -70,15 +80,6 @@ trait DataSourceConfig { self: DataSource =>
         case _ => throw new Exception(s"""Illegal value type of host setting. { path: $dsn }""")
       })
     }
-
-  protected def getHostSpecReadOnly(dsn: DataSourceName)(implicit ctx: Context): Option[Boolean] =
-    getOptionalHostSpecValue(dsn)(_.getBooleanOpt(CF_HOSTSPEC_READONLY))
-
-  protected def getHostSpecMinIdle(dsn: DataSourceName)(implicit ctx: Context): Option[Int] =
-    getOptionalHostSpecValue(dsn)( _.getIntOpt(CF_HOSTSPEC_MIN_IDLE))
-
-  protected def getHostSpecMaxPoolSize(dsn: DataSourceName)(implicit ctx: Context): Option[Int] =
-    getOptionalHostSpecValue(dsn)(_.getIntOpt(CF_HOSTSPEC_MAX_POOL_SIZE))
 
   // --[ Configuration ]--------------------------------------------------------
   /** Get a typesafe config accessor */
