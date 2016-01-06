@@ -6,7 +6,7 @@
  */
 
 package net.ixias
-package core.port.adapter.persistence.config
+package core.port.adapter.persistence.backend
 
 import scala.util.Try
 import java.sql.Connection
