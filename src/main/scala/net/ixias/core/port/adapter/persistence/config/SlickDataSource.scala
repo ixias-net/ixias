@@ -59,6 +59,8 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
         val hconf = new HikariConfig()
         hconf.setDriverClassName(driver)
         hconf.setJdbcUrl(url)
+        hconf.setIdleTimeout(20 * 1000)
+        hconf.setMinimumIdle(0)
         HikariCPDataSource(new HikariDataSource(hconf), hconf)
       }
   }

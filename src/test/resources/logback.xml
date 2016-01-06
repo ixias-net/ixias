@@ -1,41 +1,11 @@
 <configuration>
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%date{yyyy-MM-dd HH:mm:ss} [%thread] %level %logger{0} - %msg \(%file:%line\)%n</pattern>
+      <pattern>%date{yyyy-MM-dd HH:mm:ss} [%thread] %level %logger - %msg \(%file:%line\)%n</pattern>
     </encoder>
   </appender>
-  <root level="debug">
+  <root level="info">
     <appender-ref ref="STDOUT" />
   </root>
-  <logger name="slick.backend.DatabaseComponent.action"   level="info" />
-  <logger name="slick.backend.DatabaseComponent.stream"   level="info" />
-  <logger name="slick.compiler"                           level="info" />
-  <logger name="slick.compiler.QueryCompiler"             level="info" />
-  <logger name="slick.compiler.QueryCompilerBenchmark"    level="info" />
-  <logger name="slick.compiler.Inline"                    level="info" />
-  <logger name="slick.compiler.AssignUniqueSymbols"       level="info" />
-  <logger name="slick.compiler.InferTypes"                level="info" />
-  <logger name="slick.compiler.ExpandTables"              level="info" />
-  <logger name="slick.compiler.CreateResultSetMapping"    level="info" />
-  <logger name="slick.compiler.EmulateOuterJoins"         level="info" />
-  <logger name="slick.compiler.ForceOuterBinds"           level="info" />
-  <logger name="slick.compiler.ExpandSums"                level="info" />
-  <logger name="slick.compiler.ExpandRecords"             level="info" />
-  <logger name="slick.compiler.ExpandConditionals"        level="info" />
-  <logger name="slick.compiler.FlattenProjections"        level="info" />
-  <logger name="slick.compiler.RelabelUnions"             level="info" />
-  <logger name="slick.compiler.PruneFields"               level="info" />
-  <logger name="slick.compiler.ResolveZipJoins"           level="info" />
-  <logger name="slick.compiler.ConvertToComprehensions"   level="info" />
-  <logger name="slick.compiler.FuseComprehensions"        level="info" />
-  <logger name="slick.compiler.FixRowNumberOrdering"      level="info" />
-  <logger name="slick.compiler.HoistClientOps"            level="info" />
-  <logger name="slick.compiler.RewriteBooleans"           level="info" />
-  <logger name="slick.compiler.SpecializeParameters"      level="info" />
-  <logger name="slick.compiler.CodeGen"                   level="info" />
-  <logger name="slick.compiler.InsertCompiler"            level="info" />
-  <logger name="slick.jdbc.JdbcBackend.statement"         level="info" />
-  <logger name="slick.jdbc.JdbcBackend.benchmark"         level="info" />
-  <logger name="slick.jdbc.StatementInvoker.result"       level="info" />
-  <logger name="slick.jdbcJdbcModelBuilder"               level="info" />
+  <logger name="com.zaxxer.hikari.HikariConfig" level="debug" />
 </configuration>
