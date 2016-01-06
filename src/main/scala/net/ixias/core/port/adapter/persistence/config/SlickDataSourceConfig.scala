@@ -9,20 +9,49 @@ package net.ixias
 package core.port.adapter.persistence.config
 
 import scala.util.Try
+import java.util.concurrent.TimeUnit
 import core.util.ConfigExt._
 
 trait SlickDataSourceConfig extends DataSourceConfig { self: SlickDataSource =>
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
-  protected val CF_HOSTSPEC_MIN_IDLE      = """min_idle"""
-  protected val CF_HOSTSPEC_MAX_POOL_SIZE = """max_pool_size"""
+  protected val CF_HOSTSPEC_MIN_IDLE           = "min_idle"
+  protected val CF_HOSTSPEC_MAX_POOL_SIZE      = "max_pool_size"
+  protected val CF_HOSTSPEC_CONNECTION_TIMEOUT = "connection_timeout"
+  protected val CF_HOSTSPEC_IDLE_TIMEOUT       = "idle_timeout"
 
   /** Jdbc Url formats */
   protected val JDBC_URL_FORMAT_MYSQL    = """jdbc:mysql://%s/%s"""
   protected val JDBC_URL_FORMAT_MYSQL_LB = """jdbc:mysql:loadbalance://%s/%s"""
 
   // --[ Methods ]--------------------------------------------------------------
+  /** Get the property controls the minimum number of idle connections that
+    * Driver tries to maintain in the pool, including both idle and in-use connections. */
+  protected def getHostSpecMinIdle(dsn: DataSourceName)(implicit ctx: Context): Option[Int] =
+    getOptionalValue(dsn)(_.getInt(CF_HOSTSPEC_MIN_IDLE))
+
+  /** Get the property controls the maximum size that the pool is allowed to reach,
+    * including both idle and in-use connections. Basically this value will determine
+    * the maximum number of actual connections to the database backend. */
+  protected def getHostSpecMaxPoolSize(dsn: DataSourceName)(implicit ctx: Context): Option[Int] =
+    getOptionalValue(dsn)(_.getInt(CF_HOSTSPEC_MAX_POOL_SIZE))
+
+  /** Get the maximum number of milliseconds that a client will wait for
+    * a connection from the pool. If this time is exceeded without
+    * a connection becoming available, a SQLException will be thrown from */
+  protected def getHostSpecConnectionTimeout(dsn: DataSourceName)(implicit ctx: Context): Option[Long] =
+    getOptionalValue(dsn)(_.getDuration(CF_HOSTSPEC_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS))
+
+  /** This property controls the maximum amount of time (in milliseconds) that
+    * a connection is allowed to sit idle in the pool.
+    * Whether a connection is retired as idle or not is subject to
+    * a maximum variation of +30 seconds, and average variation of +15 seconds.
+    * A connection will never be retired as idle before this timeout.
+    * A value of 0 means that idle connections are never removed from the pool. */
+  protected def getHostSpecIdleTimeout(dsn: DataSourceName)(implicit ctx: Context): Option[Long] =
+    getOptionalValue(dsn)(_.getDuration(CF_HOSTSPEC_IDLE_TIMEOUT, TimeUnit.MILLISECONDS))
+
   /** Get the JDBC Url */
   protected def getJdbcUrl(dsn: DataSourceName)(implicit ctx: Context): Try[String] =
     for {
@@ -38,15 +67,4 @@ trait SlickDataSourceConfig extends DataSourceConfig { self: SlickDataSource =>
         case _ => throw new Exception(s"""Could not resolve the JDBC vendor format. '$driver'""")
       }
     }
-
-  /** Get the property controls the minimum number of idle connections that
-    * Driver tries to maintain in the pool, including both idle and in-use connections. */
-  protected def getHostSpecMinIdle(dsn: DataSourceName)(implicit ctx: Context): Option[Int] =
-    getOptionalValue(dsn)(_.getInt(CF_HOSTSPEC_MIN_IDLE))
-
-  /** Get the property controls the maximum size that the pool is allowed to reach,
-    * including both idle and in-use connections. Basically this value will determine
-    * the maximum number of actual connections to the database backend. */
-  protected def getHostSpecMaxPoolSize(dsn: DataSourceName)(implicit ctx: Context): Option[Int] =
-    getOptionalValue(dsn)(_.getInt(CF_HOSTSPEC_MAX_POOL_SIZE))
 }
