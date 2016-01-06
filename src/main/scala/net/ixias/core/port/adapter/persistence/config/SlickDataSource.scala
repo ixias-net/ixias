@@ -47,6 +47,7 @@ trait SlickDataSource extends DataSource with DataSourceConfig {
   /** Factory methods for creating `DatabSouce` instances with using HikariCP. */
   trait HikariCPDataSourceFactory extends DataSourceFactoryDef {
     import com.zaxxer.hikari._
+    import DataSourceName.Implicits._
 
     /** Create a JdbcDataSource from DSN (Database Souce Name) */
     def forDSN(name: String)(implicit ctx: Context): Try[DataSource] = {
