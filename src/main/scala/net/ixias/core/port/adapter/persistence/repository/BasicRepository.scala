@@ -11,7 +11,6 @@ package core.port.adapter.persistence.repository
 import com.typesafe.config.{ Config, ConfigFactory }
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.io.{ EntityIOAction, EntityIOActionContext }
-import core.port.adapter.persistence.backend.BasicBackend
 
 /**
  * The profile for persistence that
@@ -19,8 +18,6 @@ import core.port.adapter.persistence.backend.BasicBackend
  */
 trait BasicProfile extends Profile with BasicActionComponent {
 
-  /** The back-end type required by this profile */
-  type Backend <: BasicBackend
   /** The type of the context used for running repository Actions */
   type Context =  EntityIOActionContext
 

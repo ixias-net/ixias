@@ -10,7 +10,6 @@ package core.port.adapter.persistence.repository
 
 import com.typesafe.config.{ Config, ConfigFactory }
 import core.port.adapter.persistence.io.{ IOAction, IOActionContext }
-import core.port.adapter.persistence.backend.DatabaseComponent
 import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 
 /**
@@ -24,7 +23,7 @@ trait Profile extends ActionComponent {
   /** The entity type of managed by this profile */
   type Entity  <: core.domain.model.Entity[Id]
   /** The back-end type required by this profile */
-  type Backend <: DatabaseComponent
+  type Backend <: core.port.adapter.persistence.backend.Backend
   /** The type of the context used for running IOActions. */
   type Context >: Null <: IOActionContext
 
