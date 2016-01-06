@@ -79,7 +79,10 @@ trait DataSourceConfig { self: DataSource =>
 
   /** Get a optional value by specified key. */
   final protected def getOptionalValue[A]
-    (root: Config, list: Seq[String])(f: (Config) => Option[A]): Option[A] =
-    if (list.isEmpty) None else
-      f(root.getConfig(list.head)) orElse getOptionalValue(root, list.tail)(f)
+    (root: Config, list: Seq[String])(f: (Config) => Option[A]): Option[A] = {
+    if (list.isEmpty) None else {
+      Try(f(root.getConfig(list.head)) orElse
+        getOptionalValue(root, list.tail)(f)).toOption.flatMap(p => p)
+    }
+  }
 }
