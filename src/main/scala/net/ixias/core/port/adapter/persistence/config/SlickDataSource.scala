@@ -50,15 +50,17 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
     import DataSourceName.Implicits._
 
     /** Create a JdbcDataSource from DSN (Database Souce Name) */
-    def forDSN(name: String)(implicit ctx: Context): Try[DataSource] = {
-      val data = getHosts(name)
-      val readOnly = getHostSpecReadOnly(name)
-      println("-----------------")
-      println(data)
-      println(readOnly)
-      println("-----------------")
-      ???
-    }
+    def forDSN(name: String)(implicit ctx: Context): Try[DataSource] =
+      for {
+        driver <- getDriverClassName(name)
+        hosts  <- getHosts(name)
+      } yield {
+        println("-----------------")
+        println(driver)
+        println(hosts)
+        println("-----------------")
+        ???
+      }
   }
 }
 

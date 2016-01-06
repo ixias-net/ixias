@@ -31,22 +31,23 @@ trait DataSourceConfig { self: DataSource =>
   /** Get the username used for DataSource */
   protected def getUser
     (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
-    getOptionalValue(dsn)(_.getStringOpt(CF_USER))
+    getOptionalValue(dsn)(_.getString(CF_USER))
 
   /** Get the password used for DataSource */
   protected def getPassword
     (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
-    getOptionalValue(dsn)(_.getStringOpt(CF_PASSWORD))
-
-  /** Get the JDBC driver class name. */
-  protected def getDriverClassName
-    (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
-    getOptionalValue(dsn)(_.getStringOpt(CF_DRIVER_CLASS_NAME))
+    getOptionalValue(dsn)(_.getString(CF_PASSWORD))
 
   /** Get the flag for connection in read-only mode. */
   protected def getHostSpecReadOnly
     (dsn: DataSourceName)(implicit ctx: Context): Option[Boolean] =
-    getOptionalValue(dsn)(_.getBooleanOpt(CF_HOSTSPEC_READONLY))
+    getOptionalValue(dsn)(_.getBoolean(CF_HOSTSPEC_READONLY))
+
+  // --[ Methods ]--------------------------------------------------------------
+  /** Get the JDBC driver class name. */
+  protected def getDriverClassName
+    (dsn: DataSourceName)(implicit ctx: Context): Try[String] =
+    getValue(dsn)(_.getString(CF_DRIVER_CLASS_NAME))
 
   /** Get host list to connect to database. */
   protected def getHosts
@@ -61,28 +62,29 @@ trait DataSourceConfig { self: DataSource =>
     }
 
   // --[ Configuration ]--------------------------------------------------------
+  /** Get a value by specified key. */
+  final protected def getValue[A]
+    (dsn: DataSourceName)(f: (Config) => A)(implicit ctx: Context): Try[A] =
+    withConfig { cfg =>
+      val haystack = Seq(
+        dsn.database + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec) + ".",
+        dsn.database + ".",  CF_SECTION_HOSTSPEC.format(dsn.hostspec) + ".", "")
+      getValue(cfg, dsn.path, haystack)(f)
+    }
+
+  /** Get a optional value by specified key. */
+  final protected def getOptionalValue[A]
+    (dsn: DataSourceName)(f: (Config) => A)(implicit ctx: Context): Option[A] =
+    getValue(dsn)(f).toOption
+
+  /** Get a value by specified key. */
+  private def getValue[A]
+    (root: Config, key: String, haystack: Seq[String])(f: (Config) => A): Try[A] =
+    haystack.size match {
+      case 1 => Try(f(root.getConfig(haystack.head + key)))
+      case _ => Try(f(root.getConfig(haystack.head + key))) orElse getValue(root, key, haystack.tail)(f)
+    }
+
   /** Get a typesafe config accessor */
   protected def withConfig[A](f: (Config) => A)(implicit ctx: Context) = f(ctx.config)
-
-  /** Get a optional value by specified key. */
-  final protected def getOptionalValue[A]
-    (dsn: DataSourceName)(f: (Config) => Option[A])(implicit ctx: Context): Option[A] =
-    withConfig { cfg =>
-      val paths = Seq(
-        dsn.path + '.' + dsn.database + '.' + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
-        dsn.path + '.' + dsn.database,
-        dsn.path + '.' + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
-        dsn.path
-      )
-      getOptionalValue(cfg, paths)(f)
-    }
-
-  /** Get a optional value by specified key. */
-  final protected def getOptionalValue[A]
-    (root: Config, list: Seq[String])(f: (Config) => Option[A]): Option[A] = {
-    if (list.isEmpty) None else {
-      Try(f(root.getConfig(list.head)) orElse
-        getOptionalValue(root, list.tail)(f)).toOption.flatMap(p => p)
-    }
-  }
 }
