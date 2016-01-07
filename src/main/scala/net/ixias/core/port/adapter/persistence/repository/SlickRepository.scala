@@ -18,7 +18,7 @@ import core.port.adapter.persistence.backend.SlickBackend
  * The profile for persistence with using the Slick library.
  */
 trait SlickProfile[P <: JdbcProfile]
-    extends BasicProfile with SlickActionComponent[P] { self =>
+    extends Repository with SlickActionComponent[P] { self =>
 
   type This >: this.type <: SlickProfile[P]
   /** The back-end type required by this profile */
@@ -50,10 +50,10 @@ trait SlickProfile[P <: JdbcProfile]
     f(backend.getDatabase(driver, dsn))
 }
 
-trait SlickActionComponent[P <: JdbcProfile] extends BasicActionComponent {
+trait SlickActionComponent[P <: JdbcProfile] extends RepositoryActionComponent {
   profile: SlickProfile[P] =>
 }
 
 trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
-    extends BasicRepository[K, V] with SlickProfile[P]
+    extends RepositoryRepository[K, V] with SlickProfile[P]
 

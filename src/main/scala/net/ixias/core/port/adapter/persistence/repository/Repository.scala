@@ -16,7 +16,7 @@ import core.port.adapter.persistence.io.{ EntityIOAction, EntityIOActionContext 
  * The profile for persistence that
  * does not assume the existence driver for database abstract layer.
  */
-trait BasicProfile extends Profile with BasicActionComponent {
+trait Repository extends Profile with RepositoryActionComponent {
 
   /** The type of the context used for running repository Actions */
   type Context =  EntityIOActionContext
@@ -32,7 +32,7 @@ trait BasicProfile extends Profile with BasicActionComponent {
 
 }
 
-trait BasicActionComponent extends ActionComponent { profile: BasicProfile =>
+trait RepositoryActionComponent extends ActionComponent { profile: Repository =>
   /** Create the default EntityIOActionContext for this repository. */
   def createPersistenceActionContext(): Context =
     createPersistenceActionContext(profile.config)
@@ -40,8 +40,8 @@ trait BasicActionComponent extends ActionComponent { profile: BasicProfile =>
     EntityIOActionContext(config = c)
 }
 
-trait BasicRepository[K <: Identity[_], V <: Entity[K]]
-    extends BasicProfile with EntityIOAction[K, V] {
+trait RepositoryRepository[K <: Identity[_], V <: Entity[K]]
+    extends Repository with EntityIOAction[K, V] {
   /** The identity type of entity */
   type Id      = K
   /** The entity type of managed by this profile */
