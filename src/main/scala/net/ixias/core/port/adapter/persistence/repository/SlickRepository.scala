@@ -13,18 +13,27 @@ import slick.driver.JdbcProfile
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.SlickBackend
+import core.port.adapter.persistence.io.EntityIOActionContext
+
+/**
+ * The base repository for persistence with using the Slick library.
+ */
+trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
+    extends Repository[K, V] with SlickProfile[P]
 
 /**
  * The profile for persistence with using the Slick library.
  */
 trait SlickProfile[P <: JdbcProfile]
-    extends Repository with SlickActionComponent[P] { self =>
+    extends Profile with SlickActionComponent[P] { self =>
 
   type This >: this.type <: SlickProfile[P]
   /** The back-end type required by this profile */
   type Backend  = SlickBackend[P]
   /** The type of database objects. */
   type Database = Backend#Database
+  /** The type of the context used for running repository Actions */
+  type Context =  EntityIOActionContext
 
   /** The configured driver. */
   val driver: P
@@ -40,7 +49,7 @@ trait SlickProfile[P <: JdbcProfile]
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver
   }
-  override val api: API = new API {}
+  val api: API = new API {}
 
   /** Run the supplied function with a default action context. */
   def withActionContext[T](f: Context => T): T = f(createPersistenceActionContext())
@@ -50,10 +59,7 @@ trait SlickProfile[P <: JdbcProfile]
     f(backend.getDatabase(driver, dsn))
 }
 
-trait SlickActionComponent[P <: JdbcProfile] extends RepositoryActionComponent {
-  profile: SlickProfile[P] =>
+trait SlickActionComponent[P <: JdbcProfile]
+    extends ActionComponent { profile: SlickProfile[P] =>
 }
-
-trait SlickRepository[K <: Identity[_], V <: Entity[K], P <: JdbcProfile]
-    extends RepositoryRepository[K, V] with SlickProfile[P]
 
