@@ -6,14 +6,19 @@
  */
 
 package net.ixias
-package core.port.adapter.persistence.config
+package core.port.adapter.persistence.backend
 
 import org.specs2.mutable.Specification
+import core.port.adapter.persistence.io.EntityIOActionContext.Implicits.global
 
 class DataSourceSpec extends Specification {
   "DataSource" should {
     "forName" in {
       val exists = 1
+      object SlickDataSource extends SlickDataSource
+      val a = SlickDataSource.DataSource.forDSN("slick.db://master/test")
+      println(a)
+
       // val source1 = DataSource.forName("slick.db://slave/kidsna_udb")
       // val source2 = DataSource.forName("slick.db://user:password@slave/kidsna_udb")
       // val source3 = DataSource.forName("slick.db://user:password@slave:103306/kidsna_udb")
