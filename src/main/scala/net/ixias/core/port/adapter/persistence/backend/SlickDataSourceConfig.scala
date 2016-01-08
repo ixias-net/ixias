@@ -10,7 +10,6 @@ package core.port.adapter.persistence.backend
 
 import scala.util.Try
 import java.util.concurrent.TimeUnit
-import core.util.ConfigExt._
 
 trait SlickDataSourceConfig extends DataSourceConfig { self: SlickDataSource =>
 
