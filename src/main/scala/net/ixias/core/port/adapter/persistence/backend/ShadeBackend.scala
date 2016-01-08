@@ -14,6 +14,9 @@ import shade.memcached.Memcached
 
 trait ShadeBackend extends Backend with ShadeDataSource {
 
+  /** The type of database objects used by this backend. */
+  type Database = Memcached
+
   /** The cache for Database */
   protected var cache: Map[String, Memcached] = Map.empty
 

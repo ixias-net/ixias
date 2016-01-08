@@ -59,7 +59,6 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]] extends IOAction {
     * returning the value associated previously with that identity as an option. */
   def remove(id: K)(implicit ctx: Context): Try[Option[E]]
 
-
   /** If the map already contains a mapping for the identity,
     * it will be overridden by the new value, and returns previously bound value. */
   def put(entity: E)(implicit ctx: Context): Try[Option[E]] = {
