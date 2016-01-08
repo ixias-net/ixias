@@ -16,7 +16,7 @@ trait DataSource {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */
-  type DataSource <: DataSourceDef
+  type DataSource >: Null
 
   /** The type of the database souce config factory used by this backend. */
   type DataSourceFactory <: DataSourceFactoryDef
@@ -27,10 +27,6 @@ trait DataSource {
   // --[ Properties ]-----------------------------------------------------------
   /** The database factory */
   val DataSource: DataSourceFactory
-
-  // --[ Traits ]---------------------------------------------------------------
-  /** A database souce config instance to which connections can be created. */
-  trait DataSourceDef
 
   /** The factory to create a database source config. */
   trait DataSourceFactoryDef {

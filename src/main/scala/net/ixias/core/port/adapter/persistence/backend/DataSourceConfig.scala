@@ -20,12 +20,12 @@ trait DataSourceConfig { self: DataSource =>
   protected val CF_SECTION_HOSTSPEC       = """hostspec.%s"""
 
   /** The keys of configuration */
-  protected val CF_USER                   = """user"""
-  protected val CF_PASSWORD               = """password"""
-  protected val CF_DRIVER_CLASS_NAME      = """driver_class_name"""
-  protected val CF_HOSTSPEC_HOSTS         = """hosts"""
-  protected val CF_HOSTSPEC_DATABASE      = """database"""
-  protected val CF_HOSTSPEC_READONLY      = """readonly"""
+  protected val CF_USER                   = "user"
+  protected val CF_PASSWORD               = "password"
+  protected val CF_DRIVER_CLASS_NAME      = "driver_class_name"
+  protected val CF_HOSTSPEC_HOSTS         = "hosts"
+  protected val CF_HOSTSPEC_DATABASE      = "database"
+  protected val CF_HOSTSPEC_READONLY      = "readonly"
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the username used for DataSource */

@@ -33,7 +33,7 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
   case class HikariCPDataSource (
     val ds:    com.zaxxer.hikari.HikariDataSource,
     val hconf: com.zaxxer.hikari.HikariConfig
-  ) extends DataSourceDef with JdbcDataSource {
+  ) extends JdbcDataSource {
 
     /** Create a new Connection or get one from the pool */
     def createConnection(): Connection = ds.getConnection()
