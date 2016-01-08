@@ -8,6 +8,7 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
+import com.typesafe.config.Config
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.ShadeBackend
@@ -49,7 +50,9 @@ trait ShadeProfile extends Profile with ShadeActionComponent { self =>
     f(backend.getDatabase(dsn))
 }
 
-trait ShadeActionComponent extends ActionComponent {
-  profile: ShadeProfile =>
+trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>
+  /** Create the default IOActionContext for this repository. */
+  def createPersistenceActionContext(cfg: Config): Context =
+     EntityIOActionContext(config = cfg)
 }
 

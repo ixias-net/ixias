@@ -9,6 +9,7 @@ package net.ixias
 package core.port.adapter.persistence.repository
 
 import slick.driver.JdbcProfile
+import com.typesafe.config.Config
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.SlickBackend
@@ -60,5 +61,8 @@ trait SlickProfile[P <: JdbcProfile]
 
 trait SlickActionComponent[P <: JdbcProfile]
     extends ActionComponent { profile: SlickProfile[P] =>
+  /** Create the default IOActionContext for this repository. */
+  def createPersistenceActionContext(cfg: Config): Context =
+     EntityIOActionContext(config = cfg)
 }
 
