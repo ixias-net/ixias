@@ -53,7 +53,6 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
     def forDSN(name: String)(implicit ctx: Context): Try[DataSource] =
       for {
         driver <- getDriverClassName(name)
-        hosts  <- getHosts(name)
         url    <- getJdbcUrl(name)
       } yield {
         val hconf = new HikariConfig()

@@ -20,7 +20,7 @@ trait ShadeDataSourceConfig extends DataSourceConfig { self: ShadeDataSource =>
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the list of server addresses, separated by space. */
-  protected def getAddress(dsn: DataSourceName)(implicit ctx: Context): Try[String] =
+  protected def getAddresses(dsn: DataSourceName)(implicit ctx: Context): Try[String] =
     for {
       hosts <- getHosts(dsn)
     } yield (hosts.mkString(","))
