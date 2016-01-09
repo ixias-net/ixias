@@ -29,9 +29,9 @@ libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick"                % "3.0.2",
   "com.zaxxer"          % "HikariCP"             % "2.4.1",
   "com.bionicspirit"   %% "shade"                % "1.7.1",
-  "mysql"               % "mysql-connector-java" % "latest.integration",
 
   // --[ UnitTest ]-----------------------------------------
+  "mysql"               % "mysql-connector-java" % "latest.integration" % Test,
   "ch.qos.logback"      % "logback-classic"      % "1.0.9" % Test,
   "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
   "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test
