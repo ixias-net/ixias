@@ -46,6 +46,11 @@ abstract class EnumOf[+V: ClassTag] { self =>
 
   // --[ Methods ]-------------------------------------------------------------=
   /**
+   * Finds the first element of the sequence satisfying a predicate, if any.
+   */
+  def find(f: V => Boolean): Option[V] = values.find(f)
+
+  /**
    * Selects all elements of this Enum which satisfy a predicate.
    */
   def filter(f: V => Boolean): List[V] = values.filter(f)
