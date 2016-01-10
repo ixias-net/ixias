@@ -17,8 +17,7 @@ import core.port.adapter.persistence.io.EntityIOActionContext
 /**
  * The base repository for persistence with using the Shade library.
  */
-trait ShadeRepository[K <: Identity[_], V <: Entity[K]]
-    extends Repository[K, V] with ShadeProfile
+trait ShadeRepository[K, V <: Entity[K]] extends Repository[K, V] with ShadeProfile
 
 /**
  * The profile for persistence with using the Shade library.

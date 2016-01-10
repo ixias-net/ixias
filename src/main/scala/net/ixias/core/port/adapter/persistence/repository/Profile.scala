@@ -16,20 +16,18 @@ import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 /**
  * The basic functionality that has to be implemented by all repositories.
  */
-trait Repository[K <: Identity[_], V <: Entity[K]] extends Profile with EntityIOAction[K, V] {
-  /** The identity type of entity */
-  type Id      = K
-  /** The entity type of managed by this profile */
-  type Entity  = V
-}
+trait Repository[K, V <: Entity[K]] extends Profile with EntityIOAction[K, V]
 
+/**
+ * The basic functionality that has to be implemented by all profiles.
+ */
 trait Profile extends ActionComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The identity type of entity */
   type Id      <: core.domain.model.Identity[_]
   /** The entity type of managed by this profile */
-  type Entity  <: core.domain.model.Entity[Id]
+  type Entity  <: core.domain.model.Entity[_]
   /** The back-end type required by this profile */
   type Backend <: core.port.adapter.persistence.backend.Backend
   /** The type of the context used for running IOActions. */
