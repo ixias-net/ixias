@@ -10,7 +10,6 @@ package core.domain.model
 
 import org.joda.time.DateTime
 
-/** Used to manage surrogate identity and optimistic concurrency versioning */
 trait Entity[ID <: Identity[_]] {
 
   /** The entity's identity. */
