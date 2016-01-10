@@ -13,21 +13,46 @@ import org.specs2.mutable.Specification
 
 // ユーザ情報
 //~~~~~~~~~~~~
-case class User(
+case class User1(
   val id:        Identity[Long],
   val email:     String,
   val updatedAt: DateTime = new DateTime(),
   val createdAt: DateTime = new DateTime()
 ) extends Entity[Long]
 
+case class User2Id(val value: Long)
+case class User2(
+  val id:        Identity[User2Id],
+  val email:     String,
+  val updatedAt: DateTime = new DateTime(),
+  val createdAt: DateTime = new DateTime()
+) extends Entity[User2Id]
+
 // テスト
 //~~~~~~~~
 class EntitySpec extends Specification {
   "Enum" should {
-    "indexOf" in {
-      val user = User(SomeId(1), "taro.yamada@nextbeat.net")
-      user.id     must_== SomeId(1)
-      user.id.get must_== 1
+    "user with id as scala variable" in {
+      val user = User1(SomeId(1), "taro.yamada@nextbeat.net")
+      user.id    must_== SomeId(1)
+      user.email must_== "taro.yamada@nextbeat.net"
+    }
+    "user with id as object" in {
+      val id   = SomeId(User2Id(1))
+      val user = User2(id, "taro.yamada@nextbeat.net")
+      user.id    must_== id
+      user.email must_== "taro.yamada@nextbeat.net"
+    }
+    "user with empty id - 1" in {
+      val user = User1(NoneId, "taro.yamada@nextbeat.net")
+      user.id     must_== NoneId
+      user.id.get must throwA[NoSuchElementException]
+      user.email  must_== "taro.yamada@nextbeat.net"
+    }
+    "user with empty id - 2" in {
+      val user = User2(NoneId, "taro.yamada@nextbeat.net")
+      user.id     must_== NoneId
+      user.id.get must throwA[NoSuchElementException]
       user.email  must_== "taro.yamada@nextbeat.net"
     }
   }
