@@ -10,14 +10,18 @@ package core.domain.model
 
 import scala.language.implicitConversions
 
-sealed abstract class Identity[+A] extends Serializable { self =>
+trait Identity[+A] extends Serializable { self =>
+
+  // --[ Properties ]-----------------------------------------------------------
+  /** The value of identity */
+  val value: A
 
   // --[ Methods ]--------------------------------------------------------------
   /** Returns the identity's value. */
-  def get: A
+  def get: A = if (value != null) value else throw new NoSuchElementException("NoneId.get")
 
   /** Returns true if the identity is $noneId, false otherwise. */
-  def isEmpty: Boolean
+  def isEmpty: Boolean = value == null
 
   /** Returns false if the identity is $noneId, true otherwise. */
   final def nonEmpty: Boolean = isDefined
@@ -128,32 +132,4 @@ sealed abstract class Identity[+A] extends Serializable { self =>
     if (isEmpty) Right(right) else Left(this.get)
 }
 
-object Identity {
 
-  /** An implicit conversion that converts an identity to an iterable value */
-  implicit def identity2Iterable[A](xo: Identity[A]): Iterable[A] = xo.toList
-
-  /** An Identity factory which creates SomeId(x)
-    * if the argument is not null, and None if it is null. */
-  def apply[A](x: A): Identity[A] = if (x == null) NoneId else SomeId(x)
-
-  /** An Identity factory which returns `NoneId`
-    * in a manner consistent with the collections hierarchy. */
-  def empty[A] : Identity[A] = NoneId
-}
-
-/**
- * Class `SomeId[A]` represents existing values of type `A`.
- */
-final case class SomeId[+A](x: A) extends Identity[A] {
-  def isEmpty = false
-  def get = x
-}
-
-/**
- * This case object represents non-existent values.
- */
-case object NoneId extends Identity[Nothing] {
-  def isEmpty = true
-  def get = throw new NoSuchElementException("NoneId.get")
-}
