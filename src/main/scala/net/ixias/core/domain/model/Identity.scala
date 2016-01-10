@@ -12,10 +12,6 @@ import scala.language.implicitConversions
 
 sealed abstract class Identity[+A] extends Serializable { self =>
 
-  // --[ Properties ]-----------------------------------------------------------
-  /** The value of identity */
-  val value: A
-
   // --[ Methods ]--------------------------------------------------------------
   /** Returns the identity's value. */
   def get: A
