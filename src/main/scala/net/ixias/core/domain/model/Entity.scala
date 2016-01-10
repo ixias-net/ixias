@@ -10,10 +10,13 @@ package core.domain.model
 
 import org.joda.time.DateTime
 
-trait Entity[ID <: Identity[_]] {
+trait Entity[K] {
+
+  /** The type of Entity Id */
+  type ID = Identity[K]
 
   /** The entity's identity. */
-  val id: Option[ID]
+  val id: ID
 
   /** The current version of the object. Used for optimistic concurrency versioning. */
   val version: Option[Long] = None
