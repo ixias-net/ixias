@@ -13,28 +13,22 @@ import org.specs2.mutable.Specification
 
 // ユーザ情報
 //~~~~~~~~~~~~
-case class UserId(val value: Long) extends Identity[Long]
 case class User(
-  val id:        Option[UserId],
+  val id:        Identity[Long],
   val email:     String,
   val updatedAt: DateTime = new DateTime(),
   val createdAt: DateTime = new DateTime()
-) extends Entity[UserId]
+) extends Entity[Long]
 
 // テスト
 //~~~~~~~~
 class EntitySpec extends Specification {
   "Enum" should {
     "indexOf" in {
-      val exists = 1
-      val user = User(Some(UserId(1)), "taro.yamada@nextbeat.net")
-      println(user.updatedAt)
-      println(user.createdAt)
-
-      SomeId(1)
-      NoneId(1)
-
-      exists must_== 1
+      val user = User(SomeId(1), "taro.yamada@nextbeat.net")
+      user.id     must_== SomeId(1)
+      user.id.get must_== 1
+      user.email  must_== "taro.yamada@nextbeat.net"
     }
   }
 }

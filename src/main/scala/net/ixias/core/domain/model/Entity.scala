@@ -12,11 +12,8 @@ import org.joda.time.DateTime
 
 trait Entity[K] {
 
-  /** The type of Entity Id */
-  type ID = Identity[K]
-
   /** The entity's identity. */
-  val id: ID
+  val id: Identity[K]
 
   /** The current version of the object. Used for optimistic concurrency versioning. */
   val version: Option[Long] = None
