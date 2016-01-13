@@ -22,7 +22,7 @@ trait AuthProfile { self =>
   /** The type of user identity */
   type Id   <: Identity[_]
   /** The type of user entity */
-  type User <: Entity[Id]
+  type User <: Entity[_]
   /** The type of authority roles */
   type Authority
 
