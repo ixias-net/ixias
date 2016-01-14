@@ -9,6 +9,7 @@ package net.ixias.play.api.auth.datastore
 
 import play.api.Play._
 import play.api.cache.Cache
+import scala.concurrent.duration._
 import net.ixias.play.api.auth.token._
 import net.ixias.core.domain.model.Identity
 
@@ -20,9 +21,9 @@ case class CacheContainer[Id <: Identity[_]]() extends Container[Id] {
 
   /** It is the first callback function executed
     * when the session is started automatically or manually */
-  def open(uid: Id, expiry: Int): AuthenticityToken = {
+  def open(uid: Id, expiry: Duration): AuthenticityToken = {
     val token = Token.generate(this)
-    Cache.set(prefix + token, uid, expiry)
+    Cache.set(prefix + token, uid, expiry.toSeconds.toInt)
     token
   }
 
@@ -36,7 +37,7 @@ case class CacheContainer[Id <: Identity[_]]() extends Container[Id] {
     Cache.remove(prefix + token)
 
   /** Sets the timeout setting. */
-  def setTimeout(token: AuthenticityToken, expiry: Int): Unit =
-    read(token).foreach(Cache.set(prefix + token, _, expiry))
+  def setTimeout(token: AuthenticityToken, expiry: Duration): Unit =
+    read(token).foreach(Cache.set(prefix + token, _, expiry.toSeconds.toInt))
 
 }

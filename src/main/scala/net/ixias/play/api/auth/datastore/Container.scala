@@ -7,6 +7,7 @@
 
 package net.ixias.play.api.auth.datastore
 
+import scala.concurrent.duration.Duration
 import net.ixias.play.api.auth.token._
 import net.ixias.core.domain.model.Identity
 
@@ -14,7 +15,7 @@ trait Container[Id <: Identity[_]] {
 
   /** It is the first callback function executed
     * when the session is started automatically or manually */
-  def open(uid: Id, expiry: Int): AuthenticityToken
+  def open(uid: Id, expiry: Duration): AuthenticityToken
 
   /** The read callback must always return
     * a user identity or none if there is no data to read */
@@ -24,6 +25,6 @@ trait Container[Id <: Identity[_]] {
   def destroy(token: AuthenticityToken): Unit
 
   /** Sets the timeout setting. */
-  def setTimeout(token: AuthenticityToken, expiry: Int): Unit
+  def setTimeout(token: AuthenticityToken, expiry: Duration): Unit
 
 }
