@@ -5,16 +5,16 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth
+package net.ixias.play.api.auth
 
-import _root_.play.api.Play
-import _root_.play.api.mvc.{ RequestHeader, Result }
+import play.api.Play
+import play.api.mvc.{ RequestHeader, Result }
 import scala.concurrent.{ ExecutionContext, Future }
 
-import play.api.auth.token._
-import play.api.auth.datastore._
-import core.domain.model.{ Identity, Entity }
+import net.ixias.play.api.auth.token._
+import net.ixias.play.api.auth.datastore._
+import net.ixias.play.api.mvc.StackAction
+import net.ixias.core.domain.model.{ Identity, Entity }
 
 trait AuthProfile { self =>
 
@@ -22,15 +22,15 @@ trait AuthProfile { self =>
   /** The type of user identity */
   type Id   <: Identity[_]
   /** The type of user entity */
-  type User <: Entity[Id]
+  type User <: Entity[_]
   /** The type of authority roles */
   type Authority
 
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
-  def cookieName: String
+  def cookieName:  String = "sid"
   /** The timeout value in `seconds` */
-  def sessionTimeout: Int
+  def sessionTimeout: Int = 3600 * 24 * 14 // 2weeks
 
   /** The accessor for security token. */
   lazy val tokenAccessor: Token = new CookieToken(

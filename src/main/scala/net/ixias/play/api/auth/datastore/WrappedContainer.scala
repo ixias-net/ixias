@@ -5,21 +5,21 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.datastore
+package net.ixias.play.api.auth.datastore
 
-import _root_.play.api.mvc.RequestHeader
+import play.api.mvc.RequestHeader
+import scala.concurrent.duration._
 import scala.concurrent.{ ExecutionContext, Future }
-
-import play.api.auth.token._
-import core.domain.model.Identity
+import net.ixias.play.api.auth.token._
+import net.ixias.core.domain.model.Identity
 
 /* Wrap an existing container. Useful to extend a container. */
 case class WrappedContainer[Id <: Identity[_]](container: Container[Id]) {
 
   /** It is the first callback function executed
     * when the session is started automatically or manually */
-  def open(uid: Id, expiry: Int): Future[AuthenticityToken] =
+  def open(uid: Id, expiry: Int): Future[AuthenticityToken] = open(uid, (expiry.toLong, SECONDS))
+  def open(uid: Id, expiry: Duration): Future[AuthenticityToken] =
     Future.successful(container.open(uid, expiry))
 
   /** The read callback must always return
@@ -32,7 +32,8 @@ case class WrappedContainer[Id <: Identity[_]](container: Container[Id]) {
     Future.successful(container.destroy(token))
 
   /** Sets the timeout setting. */
-  def setTimeout(token: AuthenticityToken, expiry: Int): Future[Unit] =
+  def setTimeout(token: AuthenticityToken, expiry: Int): Future[Unit] = setTimeout(token, (expiry.toLong, SECONDS))
+  def setTimeout(token: AuthenticityToken, expiry: Duration): Future[Unit] =
     Future.successful(container.setTimeout(token, expiry))
 
 }

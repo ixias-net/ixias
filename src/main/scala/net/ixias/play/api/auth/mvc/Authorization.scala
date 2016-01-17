@@ -5,15 +5,13 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.mvc
+package net.ixias.play.api.auth.mvc
 
-import _root_.play.api.Play
-import _root_.play.api.mvc._
-
-import play.api.auth.token._
-import play.api.auth.AuthProfile
+import play.api.Play
+import play.api.mvc._
 import scala.concurrent.{ ExecutionContext, Future }
+import net.ixias.play.api.auth.token._
+import net.ixias.play.api.auth.AuthProfile
 
 /** Provides the utility methods for authorization. */
 trait Authorization { self: AuthProfile with Action =>

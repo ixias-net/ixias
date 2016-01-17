@@ -5,14 +5,12 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.auth.mvc
+package net.ixias.play.api.auth.mvc
 
-import _root_.play.api.mvc.Result
+import play.api.mvc.Result
 import scala.concurrent.Future
-
-import play.api.mvc.StackAction
-import play.api.auth.AuthProfile
+import net.ixias.play.api.mvc.StackAction
+import net.ixias.play.api.auth.AuthProfile
 
 /** Provides the utility methods for authorization. */
 trait AuthorizeAction extends Action with StackAction with Authorization {
@@ -45,5 +43,8 @@ trait AuthorizeAction extends Action with StackAction with Authorization {
       }
     )
   }
+
+  /** Retrieve a user session data. */
+  def loggedIn(implicit req: StackRequest[_]): Option[User] = req.get(UserKey)
 }
 

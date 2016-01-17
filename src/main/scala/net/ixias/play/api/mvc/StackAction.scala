@@ -5,11 +5,10 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias
-package play.api.mvc
+package net.ixias.play.api.mvc
 
-import _root_.play.api.mvc._
-import _root_.play.api.libs.concurrent.Execution
+import play.api.mvc._
+import play.api.libs.concurrent.Execution
 
 import scala.collection.concurrent.TrieMap
 import scala.util.{ Failure, Success }
