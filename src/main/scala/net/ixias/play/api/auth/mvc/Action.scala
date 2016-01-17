@@ -5,12 +5,11 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.play.api.auth.mvc
-
-import net.ixias.play.api.auth.AuthProfile
+package net.ixias
+package play.api.auth.mvc
 
 /** Provides the utility methods for constructing Action.
   * An action is essentially a (Request[A] => Result) function that
   * handles a request and generates a result to be sent to the client. */
-trait Action { self: AuthProfile =>
+trait Action {
 }
