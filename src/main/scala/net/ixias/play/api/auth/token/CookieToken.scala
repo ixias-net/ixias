@@ -5,9 +5,10 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.play.api.auth.token
+package net.ixias
+package play.api.auth.token
 
-import play.api.mvc.{ RequestHeader, Result, Cookie, DiscardingCookie}
+import _root_.play.api.mvc.{ Result, RequestHeader, Cookie, DiscardingCookie }
 
 case class CookieToken(
   protected val cookieName:           String,
@@ -21,22 +22,20 @@ case class CookieToken(
   /** Put a specified security token to storage */
   def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result =
     result.withCookies(Cookie(
-      cookieName,
-      signWithHMAC(token),
-      cookieMaxAge,
-      cookiePathOption,
-      cookieDomainOption,
-      cookieSecureOption,
-      cookieHttpOnlyOption
+      name     = cookieName,
+      value    = Token.signWithHMAC(token),
+      maxAge   = cookieMaxAge,
+      path     = cookiePathOption,
+      domain   = cookieDomainOption,
+      secure   = cookieSecureOption,
+      httpOnly = cookieHttpOnlyOption
     ))
 
   /** Extract a security token from storage */
   def extract(request: RequestHeader): Option[AuthenticityToken] =
-    request.cookies.get(cookieName).flatMap(c => verifyHMAC(c.value))
+    request.cookies.get(cookieName).flatMap(c => Token.verifyHMAC(c.value))
 
   /** Discard a security token in storage */
   def discard(result: Result)(implicit request: RequestHeader): Result =
     result.discardingCookies(DiscardingCookie(cookieName))
-
 }
-
