@@ -26,7 +26,7 @@ trait AuthProfile extends AuthProfileLike {
   /** The type of user entity */
   type User <: Entity[_]
   /** The type of authority roles */
-  type Authority <: Null
+  type Authority >: Null
 
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
