@@ -9,7 +9,7 @@ package net.ixias
 package play.api.auth
 
 import _root_.play.api.Play
-import _root_.play.api.mvc.{ Result, RequestHeader }
+import _root_.play.api.mvc._
 import scala.util.{ Try, Success, Failure }
 import scala.concurrent.duration.Duration
 
@@ -18,7 +18,7 @@ import play.api.auth.data.Container
 import play.api.auth.token.{ Token, AuthenticityToken }
 import core.domain.model.{ Identity, Entity }
 
-trait AuthProfile extends AuthProfileLike {
+trait AuthProfile extends AuthProfileLike with Results {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
@@ -49,16 +49,23 @@ trait AuthProfile extends AuthProfileLike {
   def authorize(user: User, authority: Option[Authority]): Try[Boolean]
 
   // --[ Methods ]--------------------------------------------------------------
+  /** Invoke this method on login succeeded */
+  def loginSucceeded(id: Id)(implicit req: RequestHeader): Result
+
+  /** Invoke this method on logout succeeded */
+  def logoutSucceeded(id: Id)(implicit req: RequestHeader): Result
+
   /** Invoked if authentication failed with the credentials provided.
     * This should only be called where an authentication attempt has truly failed */
-  def authenticationFailed(req: RequestHeader): Result
+  def authenticationFailed(implicit req: RequestHeader): Result
 
   /** Invoked if authorization failed.
     * Authorization is the process of allowing an authenticated users to
     * access the resources by checking whether the user has access rights to the system.
     * Authorization helps you to control access rights by granting or
     * denying specific permissions to an authenticated user. */
-  def authorizationFailed(req: RequestHeader, user: User, authority: Option[Authority]): Result
+  def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
+
 }
 
 // Companion Object
@@ -74,24 +81,33 @@ object AuthProfile {
 //~~~~~~~~~~~~~~~~~~
 trait AuthProfileLike { self: AuthProfile =>
 
+  // --[ Methods ]--------------------------------------------------------------
+  /** Retrieve authorized user. */
+  def loggedIn(implicit req: StackRequest[_]): Option[User] =
+    req.get(AuthProfile.UserKey).map(_.asInstanceOf[User])
+
+  // --[ Methods ]--------------------------------------------------------------
   /** Verifies what user are authenticated to do. */
-  protected[auth] def authenticate(implicit req: RequestHeader) : Either[Result, (User, Result => Result)] =
+  final protected[auth]
+  def authenticate(implicit req: RequestHeader) : Either[Result, (User, Result => Result)] =
     restore match {
       case (Some(user), updater) => Right(user -> updater)
-      case _ => Left(authenticationFailed(req))
+      case _ => Left(authenticationFailed)
     }
 
   /** Verifies what user are authorized to do. */
-  protected[auth] def authorized(authority: Option[Authority])(implicit req: RequestHeader): Either[Result, (User, Result => Result)] =
+  final protected[auth]
+  def authorized(authority: Option[Authority])(implicit req: RequestHeader): Either[Result, (User, Result => Result)] =
     authenticate.right flatMap {
       case (user, updater) => authorize(user, authority) match {
         case Success(_) => Right(user -> updater)
-        case Failure(_) => Left(authorizationFailed(req, user, authority))
+        case Failure(_) => Left(authorizationFailed(user, authority))
       }
     }
 
   /** Retrieve a user data by the session token in `RequestHeader`. */
-  protected[auth] def restore(implicit req: RequestHeader) : (Option[User], Result => Result) =
+  final protected[auth]
+  def restore(implicit req: RequestHeader) : (Option[User], Result => Result) =
     extractToken(req) match {
       case None        => (None -> identity)
       case Some(token) => (for {
@@ -104,10 +120,27 @@ trait AuthProfileLike { self: AuthProfile =>
     }
 
   /** Extract a session token in `RequestHeader`. */
-  protected[auth] def extractToken(req: RequestHeader): Option[AuthenticityToken] =
+  final protected[auth]
+  def extractToken(req: RequestHeader): Option[AuthenticityToken] =
     Play.isTest(Play.current) match {
       case false => tokenAccessor.extract(req)
       case true  => req.headers.get("TEST_AUTH_TOKEN").orElse(tokenAccessor.extract(req))
     }
+
+  // --[ Methods ]--------------------------------------------------------------
+  /** Invoke this method on login succeeded */
+  final protected[auth]
+  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit req: RequestHeader): Result =
+    datastore.open(id, sessionTimeout) match {
+      case Success(token) => tokenAccessor.put(token)(f(token))
+      case Failure(_)     => InternalServerError
+    }
+
+  /** Invoke this method on logout succeeded */
+  final protected[auth]
+  def logoutSucceeded(id: Id)(f: => Result)(implicit req: RequestHeader): Result = {
+    tokenAccessor.extract(req) map { datastore.destroy }
+    tokenAccessor.discard(f)
+  }
 }
 
