@@ -33,6 +33,7 @@ case class StackRequest[A](
   }
 }
 
+/** Declare attribute key and value pair of StackRequest. */
 object StackRequest {
   /** The attribute of request. */
   case class Attribute[A](key: AttributeKey[A], value: A) {
@@ -44,6 +45,7 @@ object StackRequest {
   }
 }
 
+/** The custom playframework action. */
 trait StackAction {
   import StackRequest._
 
