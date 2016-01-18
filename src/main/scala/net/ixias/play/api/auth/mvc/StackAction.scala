@@ -34,6 +34,7 @@ case class StackRequest[A](
 }
 
 /** Declare attribute key and value pair of StackRequest. */
+import StackRequest._
 object StackRequest {
   /** The attribute of request. */
   case class Attribute[A](key: AttributeKey[A], value: A) {
@@ -45,33 +46,28 @@ object StackRequest {
   }
 }
 
-/** The custom playframework action. */
-trait StackAction {
+/** Custom action builders */
+class StackActionBuilder(params: StackRequest.Attribute[_]*) extends ActionBuilder[StackRequest] {
   import StackRequest._
 
-  // --[ Action ]---------------------------------------------------------------
-  /** Proceed with the next advice or target method invocation */
-  def proceed[A](req: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = f(req)
-
-  /** Custom action builders */
-  sealed case class StackActionBuilder(params: StackRequest.Attribute[_]*) extends ActionBuilder[StackRequest]
-  {
-    /** Invoke the block. */
-    def invokeBlock[A](request: Request[A], block: StackRequest[A] => Future[Result]): Future[Result] = {
-      val attributes = new TrieMap[AttributeKey[_], Any] ++= params.map(_.toTuple)
-      val requestExt = StackRequest(request, attributes)
-      try {
-        implicit val ctx = createStackActionExecutionContext(requestExt)
-        proceed(requestExt)(block) andThen {
-          case Success(p) => cleanupOnSuccess(requestExt, Some(p))
-          case Failure(e) => cleanupOnFailure(requestExt, e)
-        }
-      } catch {
-        case e: ControlThrowable => cleanupOnSuccess(requestExt, None); throw e
-        case NonFatal(e)         => cleanupOnFailure(requestExt, e);    throw e
+  /** Invoke the block. */
+  def invokeBlock[A](request: Request[A], block: StackRequest[A] => Future[Result]): Future[Result] = {
+    val attributes = new TrieMap[AttributeKey[_], Any] ++= params.map(_.toTuple)
+    val requestExt = StackRequest(request, attributes)
+    try {
+      implicit val ctx = createStackActionExecutionContext(requestExt)
+      proceed(requestExt)(block) andThen {
+        case Success(p) => cleanupOnSuccess(requestExt, Some(p))
+        case Failure(e) => cleanupOnFailure(requestExt, e)
       }
+    } catch {
+      case e: ControlThrowable => cleanupOnSuccess(requestExt, None); throw e
+      case NonFatal(e)         => cleanupOnFailure(requestExt, e);    throw e
     }
   }
+
+  /** Proceed with the next advice or target method invocation */
+  def proceed[A](req: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = f(req)
 
   // --[ Callback methods ] ----------------------------------------------------
   /** This method will be called bu StackAction when invokeBlock succeed. */
@@ -85,20 +81,20 @@ trait StackAction {
   protected object ExecutionContextKey extends AttributeKey[ExecutionContext]
   protected def createStackActionExecutionContext(implicit req: StackRequest[_]): ExecutionContext =
     req.get(ExecutionContextKey).getOrElse(Execution.defaultContext)
+}
 
-  // --[ Constructs an Action ] ------------------------------------------------
+/** The custom playframework action. */
+object StackAction {
+
   /** Constructs an `Action` with default content, and no request parameter. */
   final def apply(f: StackRequest[AnyContent] => Result): Action[AnyContent] =
-    StackActionBuilder().apply(f)
+    new StackActionBuilder().apply(f)
 
   /** Constructs an `Action` with default content. */
   final def apply(params: Attribute[_]*)(f: StackRequest[AnyContent] => Result): Action[AnyContent] =
-    StackActionBuilder(params: _*).apply(f)
+    new StackActionBuilder(params: _*).apply(f)
 
   /** Constructs an `Action` with default content. */
   final def apply[A](p: BodyParser[A], params: Attribute[_]*)(f: StackRequest[A] => Result): Action[A] =
-    StackActionBuilder(params: _*).apply(p)(f)
+    new StackActionBuilder(params: _*).apply(p)(f)
 }
-
-object StackAction extends StackAction
-
