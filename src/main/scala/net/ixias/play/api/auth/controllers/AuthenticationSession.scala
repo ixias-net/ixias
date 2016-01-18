@@ -14,26 +14,31 @@ import scala.util.{ Success, Failure }
 
 import core.domain.model.{ Identity, Entity }
 import play.api.auth.token.AuthenticityToken
+import play.api.auth.mvc.StackRequest
 import play.api.auth.service.Profile
 
 /** Provides the utility methods for auth session. */
-class AuthenticationSession[T <: Profile] @Inject()(val auth: T) extends Controller {
+class AuthenticationSession @Inject()(val profile: Profile) extends Controller {
 
   /** Typedefs */
-  type Id        = auth.Id
-  type User      = auth.User
-  type Authority = auth.Authority
+  type Id        = profile.Id
+  type User      = profile.User
+  type Authority = profile.Authority
+
+  /** Retrieve a user session data. */
+  def loggedIn(implicit req: StackRequest[_]): Option[User] =
+    req.get(Profile.UserKey).map(_.asInstanceOf[User])
 
   /** Invoke this method on login succeeded */
   def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit req: RequestHeader): Result =
-    auth.datastore.open(id, auth.sessionTimeout) match {
-      case Success(token) => auth.tokenAccessor.put(token)(f(token))
+    profile.datastore.open(id, profile.sessionTimeout) match {
+      case Success(token) => profile.tokenAccessor.put(token)(f(token))
       case Failure(_)     => InternalServerError
     }
 
   /** Invoke this method on logout succeeded */
   def logoutSucceeded(id: Id)(f: => Result)(implicit req: RequestHeader): Result = {
-    auth.tokenAccessor.extract(req) map { auth.datastore.destroy }
-    auth.tokenAccessor.discard(f)
+    profile.tokenAccessor.extract(req) map { profile.datastore.destroy }
+    profile.tokenAccessor.discard(f)
   }
 }

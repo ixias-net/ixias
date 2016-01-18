@@ -6,7 +6,7 @@
  */
 
 package net.ixias
-package play.api.mvc
+package play.api.auth.mvc
 
 import _root_.play.api.mvc._
 import _root_.play.api.libs.concurrent.Execution
@@ -54,8 +54,7 @@ trait StackAction {
   def proceed[A](req: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = f(req)
 
   /** Custom action builders */
-  sealed case class StackActionBuilder(params: StackRequest.Attribute[_]*)
-      extends ActionBuilder[StackRequest]
+  sealed case class StackActionBuilder(params: StackRequest.Attribute[_]*) extends ActionBuilder[StackRequest]
   {
     /** Invoke the block. */
     def invokeBlock[A](request: Request[A], block: StackRequest[A] => Future[Result]): Future[Result] = {

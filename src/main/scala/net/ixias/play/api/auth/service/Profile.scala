@@ -14,7 +14,15 @@ import scala.concurrent.duration.Duration
 
 import play.api.auth.token.Token
 import play.api.auth.data.Container
+import play.api.auth.mvc.StackRequest
 import core.domain.model.{ Identity, Entity }
+
+object Profile {
+  /** The key of attribute for containing required authority roles. */
+  case object UserKey      extends StackRequest.AttributeKey[Profile#User]
+  /** The key of attribute for containing user data. */
+  case object AuthorityKey extends StackRequest.AttributeKey[Profile#Authority]
+}
 
 trait Profile {
 
@@ -25,6 +33,7 @@ trait Profile {
   type User <: Entity[_]
   /** The type of authority roles */
   type Authority <: Null
+
 
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
@@ -44,7 +53,7 @@ trait Profile {
   def resolve(id: Id): Try[Option[User]]
 
   /** Verifies what user are authorized to do. */
-  def authorize(user: User, authority: Authority): Try[Boolean]
+  def authorize(user: User, authority: Option[Authority]): Try[Boolean]
 
   // --[ Methods ]--------------------------------------------------------------
   /** Invoked if authentication failed with the credentials provided.
@@ -56,5 +65,5 @@ trait Profile {
     * access the resources by checking whether the user has access rights to the system.
     * Authorization helps you to control access rights by granting or
     * denying specific permissions to an authenticated user. */
-  def authorizationFailed(req: RequestHeader, user: User, authority: Authority): Result
+  def authorizationFailed(req: RequestHeader, user: User, authority: Option[Authority]): Result
 }
