@@ -15,7 +15,7 @@ import scala.concurrent.duration.Duration
 
 import play.api.auth.mvc.StackRequest
 import play.api.auth.data.Container
-import play.api.auth.token.{ Token, AuthenticityToken }
+import play.api.auth.token.{ Token, AuthenticityToken, SignedToken }
 import core.domain.model.{ Identity, Entity }
 
 trait AuthProfile extends AuthProfileLike with Results {
@@ -95,6 +95,33 @@ trait AuthProfileLike { self: AuthProfile =>
   def loggedInOrNot[A](ifEmpty: => Result)(f: User => Result)(implicit req: StackRequest[A]): Result =
     loggedIn.fold(ifEmpty)(f)
 
+  /** Extract a session token in `RequestHeader`. */
+  def extractToken(implicit req: RequestHeader): Option[AuthenticityToken] =
+    Play.isTest(Play.current) match {
+      case false => tokenAccessor.extract(req)
+      case true  => req.headers.get("TEST_AUTH_TOKEN").orElse(tokenAccessor.extract(req))
+    }
+
+  /** Extract a signed session token in `RequestHeader`. */
+  def extractSignedToken(implicit req: RequestHeader): Option[SignedToken] =
+    extractToken.map(Token.signWithHMAC)
+
+  // --[ Methods ]--------------------------------------------------------------
+  /** Invoke this method on login succeeded */
+  final protected[auth]
+  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit req: RequestHeader): Result =
+    datastore.open(id, sessionTimeout) match {
+      case Success(token) => tokenAccessor.put(token)(f(token))
+      case Failure(_)     => InternalServerError
+    }
+
+  /** Invoke this method on logout succeeded */
+  final protected[auth]
+  def logoutSucceeded(id: Id)(f: => Result)(implicit req: RequestHeader): Result = {
+    tokenAccessor.extract(req) map { datastore.destroy }
+    tokenAccessor.discard(f)
+  }
+
   // --[ Methods ]--------------------------------------------------------------
   /** Verifies what user are authenticated to do. */
   final protected[auth]
@@ -117,7 +144,7 @@ trait AuthProfileLike { self: AuthProfile =>
   /** Retrieve a user data by the session token in `RequestHeader`. */
   final protected[auth]
   def restore(implicit req: RequestHeader) : (Option[User], Result => Result) =
-    extractToken(req) match {
+    extractToken match {
       case None        => (None -> identity)
       case Some(token) => (for {
         Some(uid)  <- datastore.read(token)
@@ -127,29 +154,5 @@ trait AuthProfileLike { self: AuthProfile =>
         Some(user) -> tokenAccessor.put(token) _
       }).getOrElse(None -> identity)
     }
-
-  /** Extract a session token in `RequestHeader`. */
-  final protected[auth]
-  def extractToken(req: RequestHeader): Option[AuthenticityToken] =
-    Play.isTest(Play.current) match {
-      case false => tokenAccessor.extract(req)
-      case true  => req.headers.get("TEST_AUTH_TOKEN").orElse(tokenAccessor.extract(req))
-    }
-
-  // --[ Methods ]--------------------------------------------------------------
-  /** Invoke this method on login succeeded */
-  final protected[auth]
-  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit req: RequestHeader): Result =
-    datastore.open(id, sessionTimeout) match {
-      case Success(token) => tokenAccessor.put(token)(f(token))
-      case Failure(_)     => InternalServerError
-    }
-
-  /** Invoke this method on logout succeeded */
-  final protected[auth]
-  def logoutSucceeded(id: Id)(f: => Result)(implicit req: RequestHeader): Result = {
-    tokenAccessor.extract(req) map { datastore.destroy }
-    tokenAccessor.discard(f)
-  }
 }
 
