@@ -82,9 +82,18 @@ object AuthProfile {
 trait AuthProfileLike { self: AuthProfile =>
 
   // --[ Methods ]--------------------------------------------------------------
-  /** Retrieve authorized user. */
+  /** Returns authorized user. */
   def loggedIn(implicit req: StackRequest[_]): Option[User] =
     req.get(AuthProfile.UserKey).map(_.asInstanceOf[User])
+
+  /** Returns the result response. */
+  def loggedIn[A](f: User => Result)(implicit req: StackRequest[A]): Result =
+    loggedIn.fold(authenticationFailed)(f)
+
+  /** Returns the result response of applying $f to user data
+    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`*/
+  def loggedInOrNot[A](ifEmpty: => Result)(f: User => Result)(implicit req: StackRequest[A]): Result =
+    loggedIn.fold(ifEmpty)(f)
 
   // --[ Methods ]--------------------------------------------------------------
   /** Verifies what user are authenticated to do. */
