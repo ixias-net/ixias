@@ -5,26 +5,43 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package net.ixias.play.api.auth.token
+package net.ixias
+package play.api.auth.token
 
-import play.api.libs.Crypto
-import play.api.mvc.{ RequestHeader, Result }
-import scala.util.Random
-import scala.annotation.tailrec
+import _root_.play.api.libs.Crypto
+import _root_.play.api.mvc.{ RequestHeader, Result }
+import scala.util.{ Try, Random }
 import java.security.SecureRandom
-
-import net.ixias.play.api.auth.datastore.Container
+import net.ixias.play.api.auth.data.Container
 
 trait Token {
-
-  /** Put a specified security token to storage */
-  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result
 
   /** Extract a security token from storage */
   def extract(request: RequestHeader): Option[AuthenticityToken]
 
+  /** Put a specified security token to storage */
+  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result
+
   /** Discard a security token in storage */
   def discard(result: Result)(implicit request: RequestHeader): Result
+
+}
+
+// Companion object
+//~~~~~~~~~~~~~~~~~~
+object Token {
+
+  protected val table  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+  protected val random = new Random(new SecureRandom())
+
+  /** Generate a new token as string */
+  final def generate(implicit container: Container[_]): Try[AuthenticityToken] = {
+    val token = Iterator.continually(random.nextInt(table.size)).map(table).take(32).mkString
+    container.read(token) flatMap {
+      case Some(_) => generate
+      case None    => Try(token)
+    }
+  }
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   final def signWithHMAC(token: AuthenticityToken): SignedToken =
@@ -38,7 +55,7 @@ trait Token {
 
   /* Do not change this unless you understand the security issues behind timing attacks.
    * This method intentionally runs in constant time if the two strings have the same length. */
-  protected def safeEquals(a: String, b: String) = {
+  final def safeEquals(a: String, b: String) = {
     if (a.length != b.length) {
       false
     } else {
@@ -48,20 +65,5 @@ trait Token {
       }
       equal == 0
     }
-  }
-
-}
-
-// Companion object
-//~~~~~~~~~~~~~~~~~~
-object Token {
-
-  val table  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-  val random = new Random(new SecureRandom())
-
-  /** Generate a new token as string */
-  @tailrec final def generate(implicit container: Container[_]): AuthenticityToken = {
-    val token  = Iterator.continually(random.nextInt(table.size)).map(table).take(32).mkString
-    if (container.read(token).isDefined) generate else token
   }
 }
