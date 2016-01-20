@@ -10,17 +10,13 @@ package core.domain.model
 
 import org.joda.time.DateTime
 
-/** Used to manage surrogate identity and optimistic concurrency versioning */
-trait Entity[ID <: Identity[_]] {
+trait Entity[K] {
 
   /** The entity's identity. */
-  val id: Option[ID]
+  val id: Identity[K]
 
   /** The current version of the object. Used for optimistic concurrency versioning. */
-  val version: Long = -1L
-
-  /** The version converted to a Option. */
-  val versionOpt = if (version < 0) None else Some(version)
+  val version: Option[Long] = None
 
   /** The date and time when this entity was last updated. */
   val updatedAt: DateTime

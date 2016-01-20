@@ -8,47 +8,37 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import slick.driver.JdbcProfile
 import com.typesafe.config.Config
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.lifted._
-import core.port.adapter.persistence.backend.SlickBackend
+import core.port.adapter.persistence.backend.ShadeBackend
 import core.port.adapter.persistence.io.EntityIOActionContext
 
 /**
- * The base repository for persistence with using the Slick library.
+ * The base repository for persistence with using the Shade library.
  */
-trait SlickRepository[K, V <: Entity[K], P <: JdbcProfile]
-    extends Repository[K, V] with SlickProfile[P]
+trait ShadeRepository[K, V <: Entity[K]] extends Repository[K, V] with ShadeProfile
 
 /**
- * The profile for persistence with using the Slick library.
+ * The profile for persistence with using the Shade library.
  */
-trait SlickProfile[P <: JdbcProfile]
-    extends Profile with SlickActionComponent[P] { self =>
+trait ShadeProfile extends Profile with ShadeActionComponent { self =>
 
-  type This >: this.type <: SlickProfile[P]
+  type This >: this.type <: ShadeProfile
   /** The back-end type required by this profile */
-  type Backend  = SlickBackend[P]
+  type Backend  = ShadeBackend
   /** The type of database objects. */
   type Database = Backend#Database
   /** The type of the context used for running repository Actions */
   type Context =  EntityIOActionContext
 
-  /** The configured driver. */
-  val driver: P
-
   /** The back-end implementation for this profile */
-  val backend = new SlickBackend[P] {}
+  val backend = new ShadeBackend {}
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
-  trait API extends super.API with driver.API
-      with SlickColumnOptionOps
-      with SlickColumnTypeOps[P] {
-    lazy val driver = self.driver
-  }
+  trait API extends super.API
   val api: API = new API {}
 
   /** Run the supplied function with a default action context. */
@@ -56,11 +46,10 @@ trait SlickProfile[P <: JdbcProfile]
 
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): T =
-    f(backend.getDatabase(driver, dsn))
+    f(backend.getDatabase(dsn))
 }
 
-trait SlickActionComponent[P <: JdbcProfile]
-    extends ActionComponent { profile: SlickProfile[P] =>
+trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>
   /** Create the default IOActionContext for this repository. */
   def createPersistenceActionContext(cfg: Config): Context =
      EntityIOActionContext(config = cfg)

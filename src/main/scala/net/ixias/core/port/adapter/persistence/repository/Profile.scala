@@ -9,12 +9,17 @@ package net.ixias
 package core.port.adapter.persistence.repository
 
 import com.typesafe.config.{ Config, ConfigFactory }
-import core.port.adapter.persistence.io.{ IOAction, IOActionContext }
-import core.port.adapter.persistence.backend.DatabaseComponent
+import core.domain.model.{ Identity, Entity }
+import core.port.adapter.persistence.io.{ EntityIOAction, IOActionContext }
 import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 
 /**
  * The basic functionality that has to be implemented by all repositories.
+ */
+trait Repository[K, V <: Entity[K]] extends Profile with EntityIOAction[K, V]
+
+/**
+ * The basic functionality that has to be implemented by all profiles.
  */
 trait Profile extends ActionComponent {
 
@@ -22,9 +27,9 @@ trait Profile extends ActionComponent {
   /** The identity type of entity */
   type Id      <: core.domain.model.Identity[_]
   /** The entity type of managed by this profile */
-  type Entity  <: core.domain.model.Entity[Id]
+  type Entity  <: core.domain.model.Entity[_]
   /** The back-end type required by this profile */
-  type Backend <: DatabaseComponent
+  type Backend <: core.port.adapter.persistence.backend.Backend
   /** The type of the context used for running IOActions. */
   type Context >: Null <: IOActionContext
 
@@ -53,5 +58,7 @@ trait Profile extends ActionComponent {
 
 trait ActionComponent { profile: Profile =>
   /** Create the default IOActionContext for this repository. */
-  def createPersistenceActionContext(): Context
+  def createPersistenceActionContext(cfg: Config): Context
+  def createPersistenceActionContext(): Context =
+      createPersistenceActionContext(profile.config)
 }

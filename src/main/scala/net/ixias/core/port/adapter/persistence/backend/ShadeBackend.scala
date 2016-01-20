@@ -8,24 +8,22 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
-import slick.driver.JdbcProfile
 import scala.collection.mutable.Map
+import scala.concurrent.ExecutionContext.Implicits.global
+import shade.memcached.Memcached
 
-trait SlickBackend[P <: JdbcProfile] extends Backend with SlickDataSource {
-
-  /** The type of Slick Jdbc Driver. */
-  type Driver = P
+trait ShadeBackend extends Backend with ShadeDataSource {
 
   /** The type of database objects used by this backend. */
-  type Database = P#Backend#Database
+  type Database = Memcached
 
   /** The cache for Database */
-  protected var cache: Map[String, Database] = Map.empty
+  protected var cache: Map[String, Memcached] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(driver: Driver, dsn: String)(implicit ctx: Context): Database = {
+  def getDatabase(dsn: String)(implicit ctx: Context): Memcached = {
     val insensitive = dsn.toLowerCase
     cache.getOrElseUpdate(insensitive,
-      driver.backend.Database.forSource(DataSource.forDSN(insensitive).get))
+      Memcached(DataSource.forDSN(insensitive).get))
   }
 }

@@ -14,8 +14,8 @@ val branch  = "git branch".lines_!.find{_.head == '*'}.map{_.drop(2)}.getOrElse(
 val release = (branch == "master")
 
 // setting for resolvers
-resolvers := ("Atlassian Releases"  at "https://maven.atlassian.com/public/") +: resolvers.value
-resolvers += "scalaz-bintray"       at "https://dl.bintray.com/scalaz/releases"
+resolvers += "Atlassian Releases"   at "https://maven.atlassian.com/public/"
+resolvers += "scalaz Release"       at "https://dl.bintray.com/scalaz/releases"
 resolvers += "Sonatype OSS Release" at "https://oss.sonatype.org/content/repositories/releases/"
 resolvers += Resolver.sonatypeRepo("snapshots")
 
@@ -28,9 +28,10 @@ libraryDependencies ++= Seq(
   "com.typesafe"        % "config"               % "1.3.0",
   "com.typesafe.slick" %% "slick"                % "3.0.2",
   "com.zaxxer"          % "HikariCP"             % "2.4.1",
-  "mysql"               % "mysql-connector-java" % "latest.integration",
+  "com.bionicspirit"   %% "shade"                % "1.7.1",
 
   // --[ UnitTest ]-----------------------------------------
+  "mysql"               % "mysql-connector-java" % "latest.integration" % Test,
   "ch.qos.logback"      % "logback-classic"      % "1.0.9" % Test,
   "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
   "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test
