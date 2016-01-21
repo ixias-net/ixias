@@ -8,6 +8,7 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
+import scala.util.Try
 import slick.driver.JdbcProfile
 import com.typesafe.config.Config
 import core.domain.model.{ Identity, Entity }
@@ -52,11 +53,12 @@ trait SlickProfile[P <: JdbcProfile]
   val api: API = new API {}
 
   /** Run the supplied function with a default action context. */
-  def withActionContext[T](f: Context => T): T = f(createPersistenceActionContext())
+  def withActionContext[T](f: Context => T): Try[T] =
+    Try { f(createPersistenceActionContext()) }
 
   /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): T =
-    f(backend.getDatabase(driver, dsn))
+  def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): Try[T] =
+    Try { f(backend.getDatabase(driver, dsn)) }
 }
 
 trait SlickActionComponent[P <: JdbcProfile]

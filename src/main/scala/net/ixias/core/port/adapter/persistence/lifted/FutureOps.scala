@@ -8,17 +8,16 @@
 package net.ixias
 package core.port.adapter.persistence.lifted
 
-import scala.util.{ Try, Success, Failure }
+import scala.util.Try
 import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration.Duration
 import scala.language.implicitConversions
 import core.port.adapter.persistence.io.IOAction
 
 final case class FutureOps[A](val self: Future[A]) extends AnyVal {
-  def await(): Try[Unit] = await(_ => Unit)
-  def await[A1](implicit convert: A => A1): Try[A1] = {
-    Await.ready(self, Duration.Inf)
-    self.value.get.map(convert(_))
+  def await(): Unit = await(_ => Unit)
+  def await[A1](implicit convert: A => A1): A1 = {
+    convert(Await.result(self, Duration.Inf))
   }
 }
 
