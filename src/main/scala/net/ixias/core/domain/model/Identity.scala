@@ -16,6 +16,9 @@ sealed abstract class Identity[+A] extends Serializable { self =>
   /** Returns the identity's value. */
   def get: A
 
+  /** Returns the identity's value as string. */
+  def toString(): String
+
   /** Returns true if the identity is $noneId, false otherwise. */
   def isEmpty: Boolean
 

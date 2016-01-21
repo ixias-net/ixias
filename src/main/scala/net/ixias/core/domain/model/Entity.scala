@@ -10,7 +10,7 @@ package core.domain.model
 
 import org.joda.time.DateTime
 
-trait Entity[K] {
+trait Entity[K] extends Serializable {
 
   /** The entity's identity. */
   val id: Identity[K]
