@@ -40,7 +40,7 @@ trait ShadeDataSource extends DataSource with ShadeDataSourceConfig {
         shade.memcached.Configuration(
           addresses        = addresses,
           keysPrefix       = getKeysPrefix(name),
-          operationTimeout = getHostSpecIdleTimeout(name)
+          operationTimeout = FiniteDuration(getHostSpecIdleTimeout(name), TimeUnit.MILLISECONDS)
         )
       }
   }
