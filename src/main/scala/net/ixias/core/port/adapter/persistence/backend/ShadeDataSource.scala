@@ -41,7 +41,7 @@ trait ShadeDataSource extends DataSource with ShadeDataSourceConfig {
           addresses  = addresses,
           keysPrefix = getKeysPrefix(name),
           operationTimeout = getHostSpecIdleTimeout(name).map(
-            FiniteDuration(_, TimeUnit.MILLISECONDS)).getOrElse(1.second)
+            FiniteDuration(_, TimeUnit.MILLISECONDS)).getOrElse(300.second)
         )
       }
   }
