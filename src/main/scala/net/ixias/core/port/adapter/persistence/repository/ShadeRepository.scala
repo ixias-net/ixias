@@ -8,11 +8,13 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.util.Try
 import scala.reflect.ClassTag
 import scala.concurrent.duration.Duration
-import shade.memcached.MemcachedCodecs
+import scala.util.{ Try, Success, Failure }
+import scala.util.control.NonFatal
 import com.typesafe.config.Config
+import shade.memcached.MemcachedCodecs
+
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.ShadeBackend
@@ -100,7 +102,12 @@ trait ShadeProfile extends Profile with ShadeActionComponent { self =>
 
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): Try[T] =
-    Try { f(backend.getDatabase(dsn)) }
+    try Success(f(backend.getDatabase(dsn))) catch {
+      case NonFatal(ex) => {
+        actionLogger.warn("The database action failed", ex)
+        Failure(ex)
+      }
+    }
 }
 
 trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>

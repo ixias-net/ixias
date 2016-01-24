@@ -8,7 +8,10 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
+import org.slf4j.LoggerFactory
 import com.typesafe.config.{ Config, ConfigFactory }
+
+import core.util.Logger
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.io.{ EntityIOAction, IOActionContext }
 import core.port.adapter.persistence.lifted.ExtensionMethodConversions
@@ -41,7 +44,10 @@ trait Profile extends ActionComponent {
   val backend: Backend
 
   /** The configuration for persistence */
-  final lazy val config: Config = loadPersistenceConfig
+  protected lazy val config = loadPersistenceConfig
+
+  /** The logger for profile */
+  protected lazy val actionLogger = new Logger(LoggerFactory.getLogger(classOf[Profile].getName+".action"))
 
   /** Load the configuration for this repository. This can be overridden in
     * user-defined repository subclasses to load different configurations. */

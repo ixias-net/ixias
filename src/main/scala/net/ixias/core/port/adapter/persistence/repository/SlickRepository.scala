@@ -8,9 +8,11 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.util.Try
-import slick.driver.JdbcProfile
+import scala.util.{ Try, Success, Failure }
+import scala.util.control.NonFatal
 import com.typesafe.config.Config
+import slick.driver.JdbcProfile
+
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.SlickBackend
@@ -58,7 +60,12 @@ trait SlickProfile[P <: JdbcProfile]
 
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): Try[T] =
-    Try { f(backend.getDatabase(driver, dsn)) }
+    try Success(f(backend.getDatabase(driver, dsn))) catch {
+      case NonFatal(ex) => {
+        actionLogger.error("The database action failed", ex)
+        Failure(ex)
+      }
+    }
 }
 
 trait SlickActionComponent[P <: JdbcProfile]
