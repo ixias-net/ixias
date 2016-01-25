@@ -19,14 +19,9 @@ case class Token(
 ) {
 
   /** Generate a new token as string */
-  final def generate(length: Int): Try[String] = {
-    try Success(
-      Iterator.continually(
-        random.nextInt(table.size)).map(table).take(length).mkString
-    ) catch {
-      case NonFatal(e) => Failure(e)
-    }
-  }
+  final def generate(length: Int): String =
+    Iterator.continually(
+      random.nextInt(table.size)).map(table).take(length).mkString
 
   /** Do not change this unless you understand the security issues behind timing attacks.
     * This method intentionally runs in constant time if the two strings have the same length. */
