@@ -8,15 +8,10 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.reflect.ClassTag
-import scala.concurrent.duration.Duration
 import scala.util.{ Try, Success, Failure }
 import scala.util.control.NonFatal
 import com.typesafe.config.Config
-import shade.memcached.MemcachedCodecs
-
-import core.domain.model.{ Identity, Entity }
-import core.port.adapter.persistence.lifted._
+import core.domain.model.Entity
 import core.port.adapter.persistence.backend.ShadeBackend
 import core.port.adapter.persistence.io.EntityIOActionContext
 
@@ -24,55 +19,6 @@ import core.port.adapter.persistence.io.EntityIOActionContext
  * The base repository for persistence with using the Shade library.
  */
 trait ShadeRepository[K, V <: Entity[K]] extends Repository[K, V] with ShadeProfile
-
-/**
- * The base repository which is implemented basic feature methods.
- */
-abstract class ShadeBasicRepository[K, V <: Entity[K]]
-  (implicit ttag: ClassTag[V]) extends ShadeRepository[K, V] with MemcachedCodecs {
-
-  /** Gets a cache client resource. */
-  def withDatabase[T](f: Database => T)(implicit ctx: Context): Try[T]
-
-  /** Gets exprity time. */
-  def exprityTime(key: Id): Duration = Duration.Inf
-
-  /** Fetches a value from the cache store. */
-  def get(key: Id)(implicit ctx: Context): Try[Option[V]] =
-    withDatabase { db =>
-      db.awaitGet[V](key.get.toString)
-    }
-
-  /** Adds a value for a given key, if the key doesn't already exist in the cache store. */
-  def add(value: V)(implicit ctx: Context): Try[Id] =
-    withDatabase { db =>
-      db.awaitAdd(value.id.get.toString, value, exprityTime(value.id))
-      value.id
-    }
-
-  /** Sets a (key, value) in the cache store. */
-  def update(value: V)(implicit ctx: Context): Try[Unit] =
-    withDatabase { db =>
-      db.awaitSet(value.id.get.toString, value, exprityTime(value.id))
-    }
-
-  /** Update existing value exprity in the cache store. */
-  def exprity(key: Id)(implicit ctx: Context): Try[Unit] =
-    withDatabase { db =>
-      db.awaitGet[V](key.get.toString).map { value =>
-        db.awaitSet(key.get.toString, value, exprityTime(key))
-      }
-    }
-
-  /** Deletes a key from the cache store. */
-  def remove(key: Id)(implicit ctx: Context): Try[Option[V]] =
-    withDatabase { db =>
-      db.awaitGet[V](key.get.toString).map { value =>
-        db.awaitDelete(key.get.toString)
-        value
-      }
-    }
-}
 
 /**
  * The profile for persistence with using the Shade library.
