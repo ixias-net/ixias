@@ -13,7 +13,7 @@ import scala.util.control.NonFatal
 import com.typesafe.config.Config
 import slick.driver.JdbcProfile
 
-import core.domain.model.{ Identity, Entity }
+import core.domain.model.Entity
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.SlickBackend
 import core.port.adapter.persistence.io.EntityIOActionContext
