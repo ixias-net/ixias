@@ -63,16 +63,16 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
   def awaitRunWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
     (implicit ctx: Context, codec: R => T): Try[T] = {
     try Success{ backend.getDatabase(driver, dsn).run(action).await } catch {
-      case NonFatal(ex)  => { actionLogger.error("The database action failed", ex); Failure(ex) }
-      case ex: Throwable => { actionLogger.error("The database action failed", ex); throw ex    }
+      case NonFatal(ex)  => { actionLogger.error("The database action failed. dsn=" + dsn, ex); Failure(ex) }
+      case ex: Throwable => { actionLogger.error("The database action failed. dsn=" + dsn, ex); throw ex    }
     }
   }
 
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn: String)(f: Database => T)(implicit ctx: Context): Try[T] =
     try Success{ f(backend.getDatabase(driver, dsn)) } catch {
-      case NonFatal(ex)  => { actionLogger.error("The database action failed", ex); Failure(ex) }
-      case ex: Throwable => { actionLogger.error("The database action failed", ex); throw ex    }
+      case NonFatal(ex)  => { actionLogger.error("The database action failed. dsn=" + dsn, ex); Failure(ex) }
+      case ex: Throwable => { actionLogger.error("The database action failed. dsn=" + dsn, ex); throw ex    }
     }
 }
 

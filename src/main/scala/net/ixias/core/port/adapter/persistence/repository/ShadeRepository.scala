@@ -49,10 +49,8 @@ trait ShadeProfile extends Profile with ShadeActionComponent { self =>
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): Try[T] =
     try Success(f(backend.getDatabase(dsn))) catch {
-      case NonFatal(ex) => {
-        actionLogger.warn("The database action failed", ex)
-        Failure(ex)
-      }
+      case NonFatal(ex)  => { actionLogger.error("The database action failed. dsn=" + dsn, ex); Failure(ex) }
+      case ex: Throwable => { actionLogger.error("The database action failed. dsn=" + dsn, ex); throw ex    }
     }
 }
 
