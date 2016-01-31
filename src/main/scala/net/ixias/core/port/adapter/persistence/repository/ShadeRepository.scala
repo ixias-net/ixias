@@ -8,9 +8,10 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
+import scala.util.{ Try, Success, Failure }
+import scala.util.control.NonFatal
 import com.typesafe.config.Config
-import core.domain.model.{ Identity, Entity }
-import core.port.adapter.persistence.lifted._
+import core.domain.model.Entity
 import core.port.adapter.persistence.backend.ShadeBackend
 import core.port.adapter.persistence.io.EntityIOActionContext
 
@@ -42,11 +43,15 @@ trait ShadeProfile extends Profile with ShadeActionComponent { self =>
   val api: API = new API {}
 
   /** Run the supplied function with a default action context. */
-  def withActionContext[T](f: Context => T): T = f(createPersistenceActionContext())
+  def withActionContext[T](f: Context => T): Try[T] =
+    Try { f(createPersistenceActionContext()) }
 
   /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): T =
-    f(backend.getDatabase(dsn))
+  def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): Try[T] =
+    try Success(f(backend.getDatabase(dsn))) catch {
+      case NonFatal(ex)  => { actionLogger.error("The database action failed. dsn=" + dsn, ex); Failure(ex) }
+      case ex: Throwable => { actionLogger.error("The database action failed. dsn=" + dsn, ex); throw ex    }
+    }
 }
 
 trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>

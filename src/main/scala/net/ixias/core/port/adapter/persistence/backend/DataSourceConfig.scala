@@ -20,7 +20,7 @@ trait DataSourceConfig { self: DataSource =>
   protected val CF_SECTION_HOSTSPEC       = """hostspec.%s"""
 
   /** The keys of configuration */
-  protected val CF_USER                   = "user"
+  protected val CF_USERNAME               = "username"
   protected val CF_PASSWORD               = "password"
   protected val CF_DRIVER_CLASS_NAME      = "driver_class_name"
   protected val CF_HOSTSPEC_HOSTS         = "hosts"
@@ -29,9 +29,9 @@ trait DataSourceConfig { self: DataSource =>
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the username used for DataSource */
-  protected def getUser
+  protected def getUserName
     (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
-    getOptionalValue(dsn)(_.getString(CF_USER))
+    getOptionalValue(dsn)(_.getString(CF_USERNAME))
 
   /** Get the password used for DataSource */
   protected def getPassword

@@ -90,7 +90,7 @@ trait EntityIOAction[K, E <: Entity[K]] extends IOAction {
       case Some(e) => e
       case None    => {
         val entity = op(id)
-        update(entity).map(_ => entity).get
+        add(entity).map(_ => entity).get
       }
     })
 }

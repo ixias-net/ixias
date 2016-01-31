@@ -21,18 +21,19 @@ resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies ++= Seq(
   // --[ OSS Libraries ]------------------------------------
-  "joda-time"           % "joda-time"            % "2.9.1",
-  "org.joda"            % "joda-convert"         % "1.7",
-  "org.scala-lang"      % "scala-reflect"        % scalaVersion.value,
-  "org.scalaz"         %% "scalaz-core"          % "7.1.3",
-  "com.typesafe"        % "config"               % "1.3.0",
-  "com.typesafe.slick" %% "slick"                % "3.0.2",
-  "com.zaxxer"          % "HikariCP"             % "2.4.1",
-  "com.bionicspirit"   %% "shade"                % "1.7.1",
+  "joda-time"           % "joda-time"       % "2.9.1",
+  "org.joda"            % "joda-convert"    % "1.7",
+  "org.scala-lang"      % "scala-reflect"   % scalaVersion.value,
+  "org.scalaz"         %% "scalaz-core"     % "7.1.3",
+  "com.typesafe"        % "config"          % "1.3.0",
+  "com.typesafe.slick" %% "slick"           % "3.0.2",
+  "com.zaxxer"          % "HikariCP"        % "2.4.1",
+  "com.bionicspirit"   %% "shade"           % "1.7.1",
+  "org.slf4j"           % "slf4j-api"       % "1.7.13",
+  "ch.qos.logback"      % "logback-classic" % "1.1.3",
 
   // --[ UnitTest ]-----------------------------------------
   "mysql"               % "mysql-connector-java" % "latest.integration" % Test,
-  "ch.qos.logback"      % "logback-classic"      % "1.0.9" % Test,
   "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
   "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test
 )

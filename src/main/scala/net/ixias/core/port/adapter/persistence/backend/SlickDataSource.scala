@@ -61,7 +61,7 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
         hconf.setPoolName(name)
 
         // Optional properties.
-        getUser(name)                      map hconf.setUsername
+        getUserName(name)                  map hconf.setUsername
         getPassword(name)                  map hconf.setPassword
         getHostSpecReadOnly(name)          map hconf.setReadOnly
         getHostSpecMinIdle(name)           map hconf.setMinimumIdle

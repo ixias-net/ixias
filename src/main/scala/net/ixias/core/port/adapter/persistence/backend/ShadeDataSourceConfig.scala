@@ -33,6 +33,6 @@ trait ShadeDataSourceConfig extends DataSourceConfig { self: ShadeDataSource =>
 
   /** Get the operation timeout; When the limit is reached,
     * the Future responses finish with Failure(TimeoutException)*/
-  protected def getHostSpecIdleTimeout(dsn: DataSourceName)(implicit ctx: Context): Option[Long] =
-    getOptionalValue(dsn)(_.getDuration(CF_OP_TIMEOUT, TimeUnit.MILLISECONDS))
+  protected def getHostSpecIdleTimeout(dsn: DataSourceName)(implicit ctx: Context): Long =
+    getOptionalValue(dsn)(_.getDuration(CF_OP_TIMEOUT, TimeUnit.MILLISECONDS)).getOrElse(30000)
 }

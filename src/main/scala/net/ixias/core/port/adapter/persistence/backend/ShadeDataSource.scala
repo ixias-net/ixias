@@ -38,10 +38,9 @@ trait ShadeDataSource extends DataSource with ShadeDataSourceConfig {
         addresses <- getAddresses(name)
       } yield {
         shade.memcached.Configuration(
-          addresses  = addresses,
-          keysPrefix = getKeysPrefix(name),
-          operationTimeout = getHostSpecIdleTimeout(name).map(
-            FiniteDuration(_, TimeUnit.MILLISECONDS)).getOrElse(1.second)
+          addresses        = addresses,
+          keysPrefix       = getKeysPrefix(name),
+          operationTimeout = FiniteDuration(getHostSpecIdleTimeout(name), TimeUnit.MILLISECONDS)
         )
       }
   }
