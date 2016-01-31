@@ -37,3 +37,27 @@ case class Token(
     }
   }
 }
+
+/** The component to manage token as string */
+trait HasPIN {
+  /** The token provider */
+  protected lazy val worker = Token(table = "1234567890")
+
+  /** The generated pin code */
+  final lazy val pin = worker.generate(4)
+
+  /** Verify a given PIN code **/
+  final def verifyPIN(pin: String): Boolean = worker.safeEquals(this.pin, pin)
+}
+
+/** The component to manage pin as numeric number */
+trait HasToken {
+  /** The token provider */
+  protected lazy val worker = Token(table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
+  /** The generated token */
+  final lazy val token = worker.generate(4)
+
+  /** Verify a given token **/
+  final def verifyToken(token: String): Boolean = worker.safeEquals(this.token, token)
+}
