@@ -22,7 +22,7 @@ class AuthenticatedBuilder(params: Attribute[_]*)(implicit auth: AuthProfile) ex
   override def proceed[A](req: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = {
     implicit val ctx = createStackActionExecutionContext(req)
     auth.authenticate(req) match {
-      case  Left(result)          => Future.successful(result)
+      case Left(result) => Future.successful(result)
       case Right((user, updater)) => super.proceed(req.set(AuthProfile.UserKey, user))(f).map(updater)
     }
   }

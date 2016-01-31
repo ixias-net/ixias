@@ -23,7 +23,7 @@ class AuthorizedBuilder(params: Attribute[_]*)(implicit auth: AuthProfile) exten
     implicit val ctx = createStackActionExecutionContext(req)
     val authority = req.get(AuthProfile.AuthorityKey).map(_.asInstanceOf[auth.Authority])
     auth.authorized(authority)(req) match {
-      case  Left(result)          => Future.successful(result)
+      case Left(result) => Future.successful(result)
       case Right((user, updater)) => super.proceed(req.set(AuthProfile.UserKey, user))(f).map(updater)
     }
   }
