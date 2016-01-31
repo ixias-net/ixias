@@ -50,11 +50,19 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
       db.awaitSet(value.id.get.toString, value, exprityTime(value.id))
     }
 
+  /** Sets a (key, value) in the cache store. */
+  override def addOrUpdate(value: V)(implicit ctx: Context): Try[V] =
+    update(value).map(_ => value)
+
   /** Update existing value exprity in the cache store. */
   def exprity(key: Id)(implicit ctx: Context): Try[Unit] =
     withDatabase { db =>
-      db.awaitGet[V](key.get.toString).map { value =>
-        db.awaitSet(key.get.toString, value, exprityTime(key))
+      try {
+        db.awaitGet[V](key.get.toString).map { value =>
+          db.awaitSet(key.get.toString, value, exprityTime(key))
+        }
+      } catch {
+        case _: java.io.InvalidClassException => None
       }
     }
 
