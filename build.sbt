@@ -22,7 +22,7 @@ resolvers += "IxiaS Releases"   at "http://maven.ixias.net.s3-ap-northeast-1.ama
 // required libraries
 libraryDependencies ++= Seq(cache,
   // --[ Libraries ]--------------
-  "net.ixias"       %% "ixias-core"           % (if (release) "1.0.5" else "1.0.6-SNAPSHOT"),
+  "net.ixias"       %% "ixias-core"           % (if (release) "1.1.0" else "1.1.1-SNAPSHOT"),
   // --[ Libraries for Test ]-----
   "ch.qos.logback"   % "logback-classic"      % "1.0.9" % Test,
   "org.specs2"      %% "specs2-core"          % "3.6.4" % Test,
