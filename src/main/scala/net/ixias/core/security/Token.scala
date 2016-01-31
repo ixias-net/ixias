@@ -40,24 +40,49 @@ case class Token(
 
 /** The component to manage token as string */
 trait HasPIN {
+
+  // --[ Properties ]-----------------------------------------------------------
   /** The token provider */
   protected lazy val worker = Token(table = "1234567890")
 
   /** The generated pin code */
-  final lazy val pin = worker.generate(4)
+  private var _pin = worker.generate(4)
+
+  // --[ Methods ]--------------------------------------------------------------
+  /** Get a PIN code */
+  final def pin = _pin
 
   /** Verify a given PIN code **/
-  final def verifyPIN(pin: String): Boolean = worker.safeEquals(this.pin, pin)
+  final def verifyPIN(pin: String): Boolean = worker.safeEquals(_pin, pin)
+
+  /** Override a PIN code by given value */
+  final def copyPIN[T <: HasPIN](pin: String): T = {
+    _pin = pin
+    this.asInstanceOf[T]
+  }
 }
 
 /** The component to manage pin as numeric number */
 trait HasToken {
-  /** The token provider */
-  protected lazy val worker = Token(table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
+  // --[ Properties ]-----------------------------------------------------------
+  /** The token provider */
+  protected lazy val worker = Token(
+    table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+  )
   /** The generated token */
-  final lazy val token = worker.generate(4)
+  private var _token = worker.generate(32)
+
+  // --[ Methods ]--------------------------------------------------------------
+  /** Get a token */
+  final def token = _token
 
   /** Verify a given token **/
-  final def verifyToken(token: String): Boolean = worker.safeEquals(this.token, token)
+  final def verifyToken(token: String): Boolean = worker.safeEquals(_token, token)
+
+  /** Override a token by given value */
+  final def copyToken[T <: HasToken](token: String): T = {
+    _token = token
+    this.asInstanceOf[T]
+  }
 }
