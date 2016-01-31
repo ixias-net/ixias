@@ -12,6 +12,7 @@ import scala.util.Try
 import scala.util.control.NonFatal
 import scala.reflect.ClassTag
 import scala.concurrent.duration.Duration
+
 import shade.memcached.MemcachedCodecs
 import core.domain.model.Entity
 
@@ -30,7 +31,10 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
   /** Fetches a value from the cache store. */
   def get(key: Id)(implicit ctx: Context): Try[Option[V]] =
     withDatabase { db =>
-      db.awaitGet[V](key.get.toString)
+      try db.awaitGet[V](key.get.toString)
+      catch {
+        case _: java.io.InvalidClassException => None
+      }
     }
 
   /** Adds a value for a given key, if the key doesn't already exist in the cache store. */
@@ -57,9 +61,12 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
   /** Deletes a key from the cache store. */
   def remove(key: Id)(implicit ctx: Context): Try[Option[V]] =
     withDatabase { db =>
-      db.awaitGet[V](key.get.toString).map { value =>
+      try db.awaitGet[V](key.get.toString)
+      catch {
+        case _: java.io.InvalidClassException => None
+      }
+      finally {
         db.awaitDelete(key.get.toString)
-        value
       }
     }
 }
