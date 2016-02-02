@@ -8,6 +8,7 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
+import scala.util.{ Try, Success }
 import scala.collection.mutable.Map
 import scala.concurrent.ExecutionContext.Implicits.global
 import shade.memcached.Memcached
@@ -21,9 +22,13 @@ trait ShadeBackend extends Backend with ShadeDataSource {
   protected var cache: Map[String, Memcached] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: String)(implicit ctx: Context): Memcached = {
+  def getDatabase(dsn: String)(implicit ctx: Context): Try[Memcached] = {
     val insensitive = dsn.toLowerCase
-    cache.getOrElseUpdate(insensitive,
-      Memcached(DataSource.forDSN(insensitive).get))
+    cache.get(insensitive) match {
+      case Some(v) => Success(v)
+      case None    => for {
+        ds <- DataSource.forDSN(insensitive)
+      } yield { val db = Memcached(ds); cache.update(insensitive, db); db }
+    }
   }
 }

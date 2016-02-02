@@ -8,8 +8,9 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
-import slick.driver.JdbcProfile
+import scala.util.{ Try, Success }
 import scala.collection.mutable.Map
+import slick.driver.JdbcProfile
 
 trait SlickBackend[P <: JdbcProfile] extends Backend with SlickDataSource {
 
@@ -23,9 +24,13 @@ trait SlickBackend[P <: JdbcProfile] extends Backend with SlickDataSource {
   protected var cache: Map[String, Database] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(driver: Driver, dsn: String)(implicit ctx: Context): Database = {
+  def getDatabase(driver: Driver, dsn: String)(implicit ctx: Context): Try[Database] = {
     val insensitive = dsn.toLowerCase
-    cache.getOrElseUpdate(insensitive,
-      driver.backend.Database.forSource(DataSource.forDSN(insensitive).get))
+    cache.get(insensitive) match {
+      case Some(v) => Success(v)
+      case None    => for {
+        ds <- DataSource.forDSN(insensitive)
+      } yield { val db = driver.backend.Database.forSource(ds); cache.update(insensitive, db); db }
+    }
   }
 }

@@ -47,7 +47,8 @@ trait Profile extends ActionComponent {
   protected lazy val config = loadPersistenceConfig
 
   /** The logger for profile */
-  protected lazy val actionLogger = new Logger(LoggerFactory.getLogger(classOf[Profile].getName+".action"))
+  protected lazy val actionLogger = new Logger(
+    LoggerFactory.getLogger(classOf[Profile].getName+".action"))
 
   /** Load the configuration for this repository. This can be overridden in
     * user-defined repository subclasses to load different configurations. */
