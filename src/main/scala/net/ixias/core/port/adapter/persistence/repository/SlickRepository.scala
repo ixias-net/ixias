@@ -8,11 +8,13 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.util.{ Try, Success, Failure }
-import scala.util.control.NonFatal
-import com.typesafe.config.Config
-import slick.driver.JdbcProfile
+import scala.util.Failure
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import slick.dbio.{ DBIOAction, NoStream }
+import slick.driver.JdbcProfile
+import com.typesafe.config.Config
 
 import core.domain.model.Entity
 import core.port.adapter.persistence.lifted._
@@ -55,24 +57,23 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
   }
   val api: API = new API {}
 
-  /** Run the supplied function with a default action context. */
-  def withActionContext[T](f: Context => T): Try[T] =
-    Try { f(createPersistenceActionContext()) }
+  /** Run the supplied function with a database object by using pool database session. */
+  def withDatabase[T](dsn: String)(f: Database => Future[T])(implicit ctx: Context): Future[T] =
+    (for {
+      db    <- Future.fromTry(backend.getDatabase(driver, dsn))
+      value <- f(db)
+    } yield value) andThen {
+      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
+    }
 
   /** Run an Action synchronously and return the result as a Try. */
   def awaitRunWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
-    (implicit ctx: Context, codec: R => T): Try[T] = {
-    try Success{ backend.getDatabase(driver, dsn).run(action).await } catch {
-      case NonFatal(ex)  => { actionLogger.error("The database action failed. dsn=" + dsn, ex); Failure(ex) }
-      case ex: Throwable => { actionLogger.error("The database action failed. dsn=" + dsn, ex); throw ex    }
-    }
-  }
-
-  /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn: String)(f: Database => T)(implicit ctx: Context): Try[T] =
-    try Success{ f(backend.getDatabase(driver, dsn)) } catch {
-      case NonFatal(ex)  => { actionLogger.error("The database action failed. dsn=" + dsn, ex); Failure(ex) }
-      case ex: Throwable => { actionLogger.error("The database action failed. dsn=" + dsn, ex); throw ex    }
+    (implicit ctx: Context, codec: R => T): Future[T] =
+    (for {
+      db    <- Future.fromTry(backend.getDatabase(driver, dsn))
+      value <- db.run(action).map(codec)
+    } yield value) andThen {
+      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
     }
 }
 
