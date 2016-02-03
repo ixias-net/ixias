@@ -10,10 +10,14 @@ package core.port.adapter.persistence.repository
 
 import scala.util.{ Try, Success, Failure }
 import scala.util.control.NonFatal
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import com.typesafe.config.Config
+
 import core.domain.model.Entity
 import core.port.adapter.persistence.backend.ShadeBackend
 import core.port.adapter.persistence.io.EntityIOActionContext
+
 
 /**
  * The base repository for persistence with using the Shade library.
@@ -42,16 +46,15 @@ trait ShadeProfile extends Profile with ShadeActionComponent { self =>
   trait API extends super.API
   val api: API = new API {}
 
-  /** Run the supplied function with a default action context. */
-  def withActionContext[T](f: Context => T): Try[T] =
-    Try { f(createPersistenceActionContext()) }
-
   /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn:String)(f: Database => T)(implicit ctx: Context): Try[T] =
-    try Success(f(backend.getDatabase(dsn))) catch {
-      case NonFatal(ex)  => { actionLogger.error("The database action failed. dsn=" + dsn, ex); Failure(ex) }
-      case ex: Throwable => { actionLogger.error("The database action failed. dsn=" + dsn, ex); throw ex    }
+  def withDatabase[T](dsn:String)(f: Database => Future[T])(implicit ctx: Context): Future[T] = {
+    (for {
+      db    <- Future.fromTry(backend.getDatabase(dsn))
+      value <- f(db)
+    } yield value) andThen {
+      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
     }
+  }
 }
 
 trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>
