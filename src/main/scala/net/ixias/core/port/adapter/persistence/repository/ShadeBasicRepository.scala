@@ -8,10 +8,10 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.util.Try
-import scala.util.control.NonFatal
 import scala.reflect.ClassTag
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import shade.memcached.MemcachedCodecs
 import core.domain.model.Entity
@@ -22,59 +22,59 @@ import core.domain.model.Entity
 abstract class ShadeBasicRepository[K, V <: Entity[K]]
   (implicit ttag: ClassTag[V]) extends ShadeRepository[K, V] with MemcachedCodecs {
 
+  // --[ Methods ]--------------------------------------------------------------
   /** Gets a cache client resource. */
-  def withDatabase[T](f: Database => T)(implicit ctx: Context): Try[T]
+  def withDatabase[T](f: Database => Future[T])(implicit ctx: Context): Future[T]
 
-  /** Gets exprity time. */
-  def exprityTime(key: Id): Duration = Duration.Inf
+  /** Gets expiry time. */
+  def expiry(key: Id): Duration = Duration.Inf
 
+  // --[ Methods ]--------------------------------------------------------------
   /** Fetches a value from the cache store. */
-  def get(key: Id)(implicit ctx: Context): Try[Option[V]] =
+  def get(key: Id)(implicit ctx: Context): Future[Option[V]] = {
     withDatabase { db =>
-      try db.awaitGet[V](key.get.toString)
-      catch {
-        case _: java.io.InvalidClassException => None
+      (for {
+        v <- db.get[V](key.get.toString)
+      } yield(v)) recoverWith {
+        case _: java.io.InvalidClassException => Future.successful(None)
       }
     }
+  }
 
-  /** Adds a value for a given key, if the key doesn't already exist in the cache store. */
-  def add(value: V)(implicit ctx: Context): Try[Id] =
+  /** Adds a value for a given key,
+    * if the key doesn't already exist in the cache store. */
+  def add(value: V)(implicit ctx: Context): Future[Id] =
     withDatabase { db =>
-      db.awaitAdd(value.id.get.toString, value, exprityTime(value.id))
-      value.id
+      for {
+        _ <- db.add(value.id.get.toString, value, expiry(value.id))
+      } yield (value.id)
     }
 
   /** Sets a (key, value) in the cache store. */
-  def update(value: V)(implicit ctx: Context): Try[Unit] =
+  def update(value: V)(implicit ctx: Context): Future[Unit] =
     withDatabase { db =>
-      db.awaitSet(value.id.get.toString, value, exprityTime(value.id))
+      db.set(value.id.get.toString, value, expiry(value.id))
     }
 
-  /** Sets a (key, value) in the cache store. */
-  override def addOrUpdate(value: V)(implicit ctx: Context): Try[V] =
-    update(value).map(_ => value)
-
-  /** Update existing value exprity in the cache store. */
-  def exprity(key: Id)(implicit ctx: Context): Try[Unit] =
+  /** Update existing value expiry in the cache store. */
+  def updateExpiry(key: Id)(implicit ctx: Context): Future[Unit] =
     withDatabase { db =>
-      try {
-        db.awaitGet[V](key.get.toString).map { value =>
-          db.awaitSet(key.get.toString, value, exprityTime(key))
-        }
-      } catch {
-        case _: java.io.InvalidClassException => None
+      (for {
+        Some(v) <- db.get[V](key.get.toString)
+        _       <- db.set(key.get.toString, v, expiry(key))
+      } yield ()) recoverWith {
+        case _: NoSuchElementException
+           | _: java.io.InvalidClassException => Future.successful(Unit)
       }
     }
 
   /** Deletes a key from the cache store. */
-  def remove(key: Id)(implicit ctx: Context): Try[Option[V]] =
+  def remove(key: Id)(implicit ctx: Context): Future[Option[V]] =
     withDatabase { db =>
-      try db.awaitGet[V](key.get.toString)
-      catch {
-        case _: java.io.InvalidClassException => None
-      }
-      finally {
-        db.awaitDelete(key.get.toString)
-      }
+      for {
+        old <- db.get[V](key.get.toString) recoverWith {
+          case _: java.io.InvalidClassException => Future.successful(None) }
+        _   <- db.delete(key.get.toString)
+      } yield(old)
     }
 }

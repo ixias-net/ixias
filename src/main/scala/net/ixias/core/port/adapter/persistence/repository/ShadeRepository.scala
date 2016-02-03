@@ -10,7 +10,6 @@ package core.port.adapter.persistence.repository
 
 import scala.util.{ Try, Success, Failure }
 import scala.util.control.NonFatal
-
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.typesafe.config.Config
