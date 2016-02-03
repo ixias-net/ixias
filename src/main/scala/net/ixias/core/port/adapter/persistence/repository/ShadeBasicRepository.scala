@@ -50,17 +50,17 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
     }
 
   /** Sets a (key, value) in the cache store. */
-  def update(value: V)(implicit ctx: Context): Future[Unit] =
-    withDatabase { db =>
-      db.set(value.id.get.toString, value, expiry(value.id))
-    }
-
-  /** Sets a (key, value) in the cache store. */
   def addOrUpdate(value: V)(implicit ctx: Context): Future[V] =
     withDatabase { db =>
       for {
         _ <- db.set(value.id.get.toString, value, expiry(value.id))
       } yield value
+    }
+
+  /** Sets a (key, value) in the cache store. */
+  def update(value: V)(implicit ctx: Context): Future[Unit] =
+    withDatabase { db =>
+      db.set(value.id.get.toString, value, expiry(value.id))
     }
 
   /** Update existing value expiry in the cache store. */
