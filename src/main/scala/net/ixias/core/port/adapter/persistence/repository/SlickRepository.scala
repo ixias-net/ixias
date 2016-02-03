@@ -67,7 +67,7 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
     }
 
   /** Run an Action synchronously and return the result as a Try. */
-  def awaitRunWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
+  def runWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
     (implicit ctx: Context, codec: R => T): Future[T] =
     (for {
       db    <- Future.fromTry(backend.getDatabase(driver, dsn))
