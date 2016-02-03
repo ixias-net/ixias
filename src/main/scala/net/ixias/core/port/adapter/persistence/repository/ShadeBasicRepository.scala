@@ -31,7 +31,7 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
 
   // --[ Methods ]--------------------------------------------------------------
   /** Fetches a value from the cache store. */
-  def get(key: Id)(implicit ctx: Context): Future[Option[V]] = {
+  def get(key: Id)(implicit ctx: Context): Future[Option[V]] =
     withDatabase { db =>
       (for {
         v <- db.get[V](key.get.toString)
@@ -39,7 +39,6 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
         case _: java.io.InvalidClassException => Future.successful(None)
       }
     }
-  }
 
   /** Adds a value for a given key,
     * if the key doesn't already exist in the cache store. */
@@ -54,6 +53,14 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
   def update(value: V)(implicit ctx: Context): Future[Unit] =
     withDatabase { db =>
       db.set(value.id.get.toString, value, expiry(value.id))
+    }
+
+  /** Sets a (key, value) in the cache store. */
+  def addOrUpdate(value: V)(implicit ctx: Context): Future[V] =
+    withDatabase { db =>
+      for {
+        _ <- db.set(value.id.get.toString, value, expiry(value.id))
+      } yield value
     }
 
   /** Update existing value expiry in the cache store. */
