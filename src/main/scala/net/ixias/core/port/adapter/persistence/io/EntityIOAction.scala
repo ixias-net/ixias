@@ -52,7 +52,7 @@ trait EntityIOAction[K, E <: Entity[K]] extends IOAction {
   def contains(id: Id)(implicit ctx: Context): Future[Boolean] =
     get(id).map(_.isDefined)
 
-  //// --[ Methods ]--------------------------------------------------------------
+  // --[ Methods ]--------------------------------------------------------------
   /** Adds a new identity/entity-value pair to this repository.
     * If the map already contains a mapping for the identity,
     * it will be overridden by the new value. and returns previously bound value. */
