@@ -40,27 +40,15 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
       }
     }
 
-  /** Adds a value for a given key,
-    * if the key doesn't already exist in the cache store. */
-  def add(value: V)(implicit ctx: Context): Future[Id] =
+  // --[ Methods ]--------------------------------------------------------------
+  /** Sets a (key, value) in the cache store. */
+  def store(value: V)(implicit ctx: Context): Future[Option[V]] =
     withDatabase { db =>
       for {
-        _ <- db.add(value.id.get.toString, value, expiry(value.id))
-      } yield (value.id)
-    }
-
-  /** Sets a (key, value) in the cache store. */
-  def addOrUpdate(value: V)(implicit ctx: Context): Future[V] =
-    withDatabase { db =>
-      for {
-        _ <- db.set(value.id.get.toString, value, expiry(value.id))
-      } yield value
-    }
-
-  /** Sets a (key, value) in the cache store. */
-  def update(value: V)(implicit ctx: Context): Future[Unit] =
-    withDatabase { db =>
-      db.set(value.id.get.toString, value, expiry(value.id))
+        old <- db.get[V](value.id.get.toString) recoverWith {
+          case _: java.io.InvalidClassException => Future.successful(None) }
+        _   <- db.set(value.id.get.toString, value, expiry(value.id))
+      } yield old
     }
 
   /** Update existing value expiry in the cache store. */
@@ -82,6 +70,6 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
         old <- db.get[V](key.get.toString) recoverWith {
           case _: java.io.InvalidClassException => Future.successful(None) }
         _   <- db.delete(key.get.toString)
-      } yield(old)
+      } yield old
     }
 }
