@@ -44,7 +44,7 @@ final case class SlickColumnOptionsExtension[A <: P#ColumnOptions](val self: A) 
   val AsciiCharBin64  = self.SqlType("VARCHAR(64)  CHARACTER SET ascii COLLATE ascii_bin")
   val AsciiCharBin128 = self.SqlType("VARCHAR(128) CHARACTER SET ascii COLLATE ascii_bin")
   val AsciiCharBin255 = self.SqlType("VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin")
-  val Ts              = self.SqlType("TIMESTAMP")
+  val Ts              = self.SqlType("TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   val TsCurrent       = self.SqlType("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
   val TEXT            = self.SqlType("TEXT CHARACTER SET utf8")
 }
