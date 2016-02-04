@@ -12,13 +12,14 @@ import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration.Duration
 import scala.language.implicitConversions
 
-final case class FutureOps[A](val self: Future[A]) extends AnyVal {
+final case class FutureTransformer[A](val self: Future[A]) extends AnyVal {
   def await(): Unit = await(_ => Unit)
   def await[A1](implicit convert: A => A1): A1 = {
     convert(Await.result(self, Duration.Inf))
   }
 }
 
-trait ToFutureOps {
-  implicit def ToFutureOps[A](a: Future[A]) = FutureOps(a)
+trait FutureOps {
+  implicit def toUnit(a: Future[_]) = Unit
+  implicit def toFutureTransformer[A](a: Future[A]) = FutureTransformer(a)
 }

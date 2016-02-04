@@ -10,4 +10,4 @@ package core.port.adapter.persistence.lifted
 
 import scala.language.implicitConversions
 
-trait ExtensionMethodConversions extends ToFutureOps
+trait ExtensionMethodConversions extends FutureOps
