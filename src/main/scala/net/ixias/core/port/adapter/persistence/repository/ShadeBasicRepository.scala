@@ -42,13 +42,11 @@ abstract class ShadeBasicRepository[K, V <: Entity[K]]
 
   // --[ Methods ]--------------------------------------------------------------
   /** Sets a (key, value) in the cache store. */
-  def store(value: V)(implicit ctx: Context): Future[Option[V]] =
+  def store(value: V)(implicit ctx: Context): Future[Unit] =
     withDatabase { db =>
       for {
-        old <- db.get[V](value.id.get.toString) recoverWith {
-          case _: java.io.InvalidClassException => Future.successful(None) }
-        _   <- db.set(value.id.get.toString, value, expiry(value.id))
-      } yield old
+        _ <- db.set(value.id.get.toString, value, expiry(value.id))
+      } yield ()
     }
 
   /** Update existing value expiry in the cache store. */
