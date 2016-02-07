@@ -14,39 +14,40 @@ import core.domain.model.Entity
 import core.port.adapter.persistence.backend.DataConverter
 
 trait DataConvertOps {
+
   // Transform a record to a domain model object.
-  implicit def toModel[E <: Entity[_], R](value: E)
-    (implicit f: DataConverter[E, R]): R = f.convert(value)
+  implicit def toRecord[R, E <: Entity[_]](value: E)
+    (implicit f: DataConverter[R, E]): R = f.convert(value)
 
-  implicit def toModel[E <: Entity[_], R](value: Option[E])
-    (implicit f: DataConverter[E, R]): Option[R] = value.map(f.convert)
+  implicit def toRecord[R, E <: Entity[_]](value: Option[E])
+    (implicit f: DataConverter[R, E]): Option[R] = value.map(f.convert)
 
-  implicit def toModels[E <: Entity[_], R](values: Seq[E])
-    (implicit f: DataConverter[E, R]): Seq[R] = toModels(values, Seq())
+  implicit def toRecord[R, E <: Entity[_]](values: Seq[E])
+    (implicit f: DataConverter[R, E]): Seq[R] = toRecord(values, Seq())
 
-  @tailrec final def toModels[E <: Entity[_], R](values: Seq[E], results: Seq[R])
-    (implicit f: DataConverter[E, R]): Seq[R] =
+  @tailrec final def toRecord[R, E <: Entity[_]](values: Seq[E], results: Seq[R])
+    (implicit f: DataConverter[R, E]): Seq[R] =
     values match {
-      case head :: tail => toModels(tail, results :+ f.convert(head))
-      case head +: tail => toModels(tail, results :+ f.convert(head))
+      case head :: tail => toRecord(tail, results :+ f.convert(head))
+      case head +: tail => toRecord(tail, results :+ f.convert(head))
       case _ => results
     }
 
   // Transform a domain model object to a record.
-  implicit def toRecord[R, E <: Entity[_]](value: R)
-    (implicit f: DataConverter[E, R]): E = f.convert(value)
+  implicit def toModel[R, E <: Entity[_]](value: R)
+    (implicit f: DataConverter[R, E]): E = f.convert(value)
 
-  implicit def toRecord[R, E <: Entity[_]](value: Option[R])
-    (implicit f: DataConverter[E, R]): Option[E] = value.map(f.convert)
+  implicit def toModel[R, E <: Entity[_]](value: Option[R])
+    (implicit f: DataConverter[R, E]): Option[E] = value.map(f.convert)
 
-  implicit def toRecords[R, E <: Entity[_]](values: Seq[R])
-    (implicit f: DataConverter[E, R]): Seq[E] = toRecords(values, Seq())
+  implicit def toModel[R, E <: Entity[_]](values: Seq[R])
+    (implicit f: DataConverter[R, E]): Seq[E] = toModel(values, Seq())
 
-  @tailrec final def toRecords[R, E <: Entity[_]](values: Seq[R], results: Seq[E])
-    (implicit f: DataConverter[E, R]): Seq[E] =
+  @tailrec final def toModel[R, E <: Entity[_]](values: Seq[R], results: Seq[E])
+    (implicit f: DataConverter[R, E]): Seq[E] =
     values match {
-      case head :: tail => toRecords(tail, results :+ f.convert(head))
-      case head +: tail => toRecords(tail, results :+ f.convert(head))
+      case head :: tail => toModel(tail, results :+ f.convert(head))
+      case head +: tail => toModel(tail, results :+ f.convert(head))
       case _ => results
     }
 }

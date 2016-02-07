@@ -14,7 +14,7 @@ import core.domain.model.Entity
  * Represents a type class that needs to be implemented
  * for conversion to work.
  */
-trait DataConverter[E <: Entity[_], R] {
+trait DataConverter[R, E <: Entity[_]] {
   def convert(value: E): R
   def convert(value: R): E
 }
