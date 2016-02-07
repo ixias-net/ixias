@@ -24,8 +24,8 @@ import core.port.adapter.persistence.io.EntityIOActionContext
 /**
  * The base repository for persistence with using the Slick library.
  */
-trait SlickRepository[K, V <: Entity[K], P <: JdbcProfile]
-    extends Repository[K, V] with SlickProfile[P]
+trait SlickRepository[K, E <: Entity[K], P <: JdbcProfile]
+    extends Repository[K, E] with SlickProfile[P]
 
 /**
  * The profile for persistence with using the Slick library.

@@ -19,7 +19,7 @@ import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 /**
  * The basic functionality that has to be implemented by all repositories.
  */
-trait Repository[K, V <: Entity[K]] extends Profile with EntityIOAction[K, V]
+trait Repository[K, E <: Entity[K]] extends Profile with EntityIOAction[K, E]
 
 /**
  * The basic functionality that has to be implemented by all profiles.
