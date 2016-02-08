@@ -58,10 +58,10 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
   val api: API = new API {}
 
   /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn: String)(f: Database => Future[T])(implicit ctx: Context): Future[T] =
+  def withDatabase[R, T](dsn: String)(f: Database => Future[R])(implicit ctx: Context, codec: R => T): Future[T] =
     (for {
       db    <- Future.fromTry(backend.getDatabase(driver, dsn))
-      value <- f(db)
+      value <- f(db).map(codec)
     } yield value) andThen {
       case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
     }
