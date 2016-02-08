@@ -8,15 +8,17 @@
 package net.ixias
 package core.file.csv
 
+import scala.io.Source
 import org.specs2.mutable.Specification
 
 class CsvReaderSpec extends Specification {
   "CsvReader" should {
     "apply" in {
-      val exists = 1
-      val format = new CsvFormat{}
-      val csv = CsvReader("/Users/sp1rytus/git-dev/ixias/lib.core/src/test/resources/seo_txt_city_and_town_1.tsv")(format)
-      exists must_== 1
+      val format = CsvDefaultFormat
+      val source = Source.fromURL(getClass.getResource("/test.csv"))
+      val csv = new CsvReader(source, format)
+      csv.columns(0) must_== Seq("1", "ほげほげ\nふがふが", "100", "あああ")
+      csv.columns(1) must_== Seq("2", "ふが", "ほげ", "2", "aaaaaa")
     }
   }
 }
