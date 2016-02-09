@@ -108,6 +108,10 @@ sealed abstract class Identity[+A] extends Serializable { self =>
   }
 
   // --[ Methods ]--------------------------------------------------------------
+  /** Returns a [[scala.Option]] containing the $identity's value. */
+  def toOption: Option[A] =
+    if (isEmpty) None else Some(this.get)
+
   /** Returns a singleton list containing the $identity's value
     * if it is nonempty, or the empty list if the $identity is empty. */
   def toList: List[A] =

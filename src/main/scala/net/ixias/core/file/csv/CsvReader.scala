@@ -121,7 +121,9 @@ case class CsvReader(
         buff += current
         pos  +  1
       }
-      pickupValue(buff).foreach { v => row :+= v }
+      pickupValue(buff).foreach {
+        v => row :+= v
+      }
       if (0 < row.length) rows :+ row else rows
     }
   }
