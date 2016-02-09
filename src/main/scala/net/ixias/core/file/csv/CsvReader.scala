@@ -12,8 +12,9 @@ import scala.util.Try
 import scala.io.Source
 
 object CsvReader {
-  def apply(filename: String, encoding: String = "UTF-8")(implicit format: CsvFormat = CsvDefaultFormat): Try[CsvReader] =
-    Try(CsvReader(Source.fromFile(filename, encoding), format))
+  def apply(filename: String, encoding: String = "UTF-8")
+    (implicit format: CsvFormat = CsvDefaultFormat): CsvReader =
+    CsvReader(Source.fromFile(filename, encoding), format)
 }
 
 case class CsvReader(
@@ -121,7 +122,7 @@ case class CsvReader(
         pos  +  1
       }
       pickupValue(buff).foreach { v => row :+= v }
-      rows :+ row
+      if (0 < row.length) rows :+ row else rows
     }
   }
 
