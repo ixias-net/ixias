@@ -59,7 +59,9 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
         hconf.setDriverClassName(driver)
         hconf.setJdbcUrl(url)
         hconf.setPoolName(name)
-        hconf.setMaximumPoolSize(10)
+
+        // NOTE. ForkJoinPool x pool size
+        hconf.setMaximumPoolSize(1)
 
         // Optional properties.
         getUserName(name)                  map hconf.setUsername
