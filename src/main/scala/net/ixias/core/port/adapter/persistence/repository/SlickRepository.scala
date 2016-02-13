@@ -54,6 +54,18 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
     lazy val driver = self.driver
   }
   val api: API = new API {}
+
+  /** Run an Action synchronously and return the result as a `Future`. */
+  /*
+  def runWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
+    (implicit ctx: Context, codec: R => T): Future[T] =
+    (for {
+      db    <- Future.fromTry(backend.getDatabase(dsn))
+      value <- db.run(action).map(codec)
+    } yield value) andThen {
+      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
+    }
+  */
 }
 
 trait SlickActionComponent[P <: JdbcProfile]
