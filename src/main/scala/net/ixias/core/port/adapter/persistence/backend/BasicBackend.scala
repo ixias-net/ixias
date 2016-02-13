@@ -11,7 +11,7 @@ package core.port.adapter.persistence.backend
 import scala.util.Try
 
 /** Backend for the basic database and session handling features. */
-trait Backend extends DataSource {
+trait BasicBackend extends BasicDataSource {
 
   /** The type of database objects used by this backend. */
   type Database >: Null <: AnyRef

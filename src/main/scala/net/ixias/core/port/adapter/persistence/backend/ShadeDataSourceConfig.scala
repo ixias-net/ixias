@@ -11,7 +11,7 @@ package core.port.adapter.persistence.backend
 import scala.util.Try
 import java.util.concurrent.TimeUnit
 
-trait ShadeDataSourceConfig extends DataSourceConfig { self: ShadeDataSource =>
+trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSource =>
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */

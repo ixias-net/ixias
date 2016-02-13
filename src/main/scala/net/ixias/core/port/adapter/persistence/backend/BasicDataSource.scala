@@ -12,7 +12,7 @@ import scala.util.Try
 import scala.language.implicitConversions
 import core.port.adapter.persistence.io.EntityIOActionContext
 
-trait DataSource {
+trait BasicDataSource {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */

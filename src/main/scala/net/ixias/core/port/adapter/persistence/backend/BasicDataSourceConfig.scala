@@ -14,7 +14,7 @@ import scala.language.implicitConversions
 import com.typesafe.config.Config
 import core.port.adapter.persistence.io.EntityIOActionContext
 
-trait DataSourceConfig { self: DataSource =>
+trait BasicDataSourceConfig { self: BasicDataSource =>
 
   /** The section format */
   protected val CF_SECTION_HOSTSPEC       = """hostspec.%s"""

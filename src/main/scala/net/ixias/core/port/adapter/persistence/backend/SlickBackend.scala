@@ -12,7 +12,7 @@ import scala.util.{ Try, Success }
 import scala.collection.mutable.Map
 import slick.driver.JdbcProfile
 
-trait SlickBackend[P <: JdbcProfile] extends Backend with SlickDataSource {
+trait SlickBackend[P <: JdbcProfile] extends BasicBackend with SlickDataSource {
 
   /** The type of Slick Jdbc Driver. */
   type Driver = P

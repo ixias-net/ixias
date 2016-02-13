@@ -16,6 +16,9 @@ trait Table[R, P <: JdbcProfile] { self =>
   /** The configured driver. */
   val driver: P
 
+  /** The map of DSN as string. */
+  val dsn: Map[String, String]
+
   /** The type of table row. */
   type TableRecord = R
 
@@ -31,9 +34,9 @@ trait Table[R, P <: JdbcProfile] { self =>
   type TableQuery      <: slick.lifted.TableQuery[Table]
   type BasicTableQuery =  slick.lifted.TableQuery[Table]
 
-  /** Provided a Writes implicit for its type is available,
+  /** Provided a Converter implicit for its type is available,
     * convert any object into a specified type. */
-  // def convert[A, B](o: A)(implicit conv: TableWrites[A, B]): B = conv.writes(o)
+  def convert[A, B](o: A)(implicit conv: Converter[A, B]): B = conv.convert(o)
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,

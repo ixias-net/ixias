@@ -13,7 +13,7 @@ import java.sql.Connection
 import slick.jdbc.JdbcDataSource
 import core.port.adapter.persistence.io.EntityIOActionContext
 
-trait SlickDataSource extends DataSource with SlickDataSourceConfig {
+trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */

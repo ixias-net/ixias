@@ -8,7 +8,7 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.util.Failure
+import scala.util.{ Try, Failure }
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -17,6 +17,7 @@ import slick.driver.JdbcProfile
 import com.typesafe.config.Config
 
 import core.domain.model.Entity
+import core.port.adapter.persistence.model.{ Table, Converter }
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.SlickBackend
 import core.port.adapter.persistence.io.EntityIOActionContext
@@ -53,20 +54,11 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
     lazy val driver = self.driver
   }
   val api: API = new API {}
-
-  /** Run an Action synchronously and return the result as a Try. */
-  def runWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
-    (implicit ctx: Context, codec: R => T): Future[T] =
-    (for {
-      db    <- Future.fromTry(backend.getDatabase(dsn))
-      value <- db.run(action).map(codec)
-    } yield value) andThen {
-      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
-    }
 }
 
 trait SlickActionComponent[P <: JdbcProfile]
     extends ActionComponent { profile: SlickProfile[P] =>
+
   /** Create the default IOActionContext for this repository. */
   def createPersistenceActionContext(cfg: Config): Context =
      EntityIOActionContext(config = cfg)

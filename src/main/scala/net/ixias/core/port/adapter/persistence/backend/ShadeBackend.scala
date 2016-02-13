@@ -13,7 +13,7 @@ import scala.collection.mutable.Map
 import scala.concurrent.ExecutionContext.Implicits.global
 import shade.memcached.Memcached
 
-trait ShadeBackend extends Backend with ShadeDataSource {
+trait ShadeBackend extends BasicBackend with ShadeDataSource {
 
   /** The type of database objects used by this backend. */
   type Database = Memcached

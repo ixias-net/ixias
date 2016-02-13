@@ -13,7 +13,7 @@ import scala.concurrent.duration._
 import java.util.concurrent.TimeUnit
 import core.port.adapter.persistence.io.EntityIOActionContext
 
-trait ShadeDataSource extends DataSource with ShadeDataSourceConfig {
+trait ShadeDataSource extends BasicDataSource with ShadeDataSourceConfig {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */

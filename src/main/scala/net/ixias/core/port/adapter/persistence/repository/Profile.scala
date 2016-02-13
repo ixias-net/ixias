@@ -35,7 +35,7 @@ trait Profile extends ActionComponent {
   /** The entity type of managed by this profile */
   type Entity   <: core.domain.model.Entity[_]
   /** The back-end type required by this profile */
-  type Backend  <: core.port.adapter.persistence.backend.Backend
+  type Backend  <: core.port.adapter.persistence.backend.BasicBackend
   /** The type of database objects. */
   type Database = backend.Database
   /** The type of the context used for running IOActions. */
