@@ -26,6 +26,12 @@ case class UserTableRecord(
 
 /** テーブル定義 */
 trait UserTable[P <: JdbcProfile] extends Table[UserTableRecord, P] {
+
+  /** クエリー定義 */
+  object TableQuery extends BasicTableQuery(new Table(_)) {
+  }
+
+  /** テーブル定義 */
   class Table(tag: Tag) extends BasicTable(tag, "user") {
     import api._
     def id        = column[String]         ("id",         O.AsciiChar8, O.PrimaryKey)
