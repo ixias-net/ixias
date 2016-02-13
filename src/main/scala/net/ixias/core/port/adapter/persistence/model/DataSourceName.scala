@@ -15,7 +15,24 @@ case class DataSourceName(
   val path:     String,
   val hostspec: String,
   val database: String
-)
+) {
+  override final def toString: String =
+    "%s://%s/%s".format(path, hostspec, database)
+
+  override final def hashCode: Int =
+    31 ^ 3 * path.## + 31 ^ 2 * hostspec.## + 31 ^ 1 * database.##
+
+  override final def equals(other: Any): Boolean = other match {
+    case that: DataSourceName => {
+      (that _equal this) &&
+      (this.path     == that.path)     &&
+      (this.hostspec == that.hostspec) &&
+      (this.database == that.database)
+    }
+    case _ => false
+  }
+  private def _equal(other: Any) = other.isInstanceOf[DataSourceName]
+}
 
 /** Conpanion object */
 object DataSourceName {

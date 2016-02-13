@@ -34,15 +34,14 @@ trait ShadeDataSource extends BasicDataSource with ShadeDataSourceConfig {
   // --[ Factory ]--------------------------------------------------------------
   /** Factory methods for creating `DatabSouce` instances with using Shade. */
   trait ShadeDataSourceFactory extends DataSourceFactoryDef {
-    import DataSourceName.Implicits._
-    def forDSN(name: String)(implicit ctx: Context): Try[DataSource] =
+    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Try[DataSource] =
       for {
-        addresses <- getAddresses(name)
+        addresses <- getAddresses(dsn)
       } yield {
         shade.memcached.Configuration(
           addresses        = addresses,
-          keysPrefix       = getKeysPrefix(name),
-          operationTimeout = FiniteDuration(getHostSpecIdleTimeout(name), TimeUnit.MILLISECONDS)
+          keysPrefix       = getKeysPrefix(dsn),
+          operationTimeout = FiniteDuration(getHostSpecIdleTimeout(dsn), TimeUnit.MILLISECONDS)
         )
       }
   }

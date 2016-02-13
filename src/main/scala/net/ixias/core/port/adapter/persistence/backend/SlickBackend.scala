@@ -11,6 +11,7 @@ package core.port.adapter.persistence.backend
 import scala.util.{ Try, Success }
 import scala.collection.mutable.Map
 import slick.driver.JdbcProfile
+import core.port.adapter.persistence.model.DataSourceName
 
 trait SlickBackend[P <: JdbcProfile] extends BasicBackend with SlickDataSource {
 
@@ -24,16 +25,17 @@ trait SlickBackend[P <: JdbcProfile] extends BasicBackend with SlickDataSource {
   val driver: P
 
   /** The cache for Database */
-  protected var cache: Map[String, Database] = Map.empty
+  protected var cache: Map[Int, Database] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: String)(implicit ctx: Context): Try[Database] = {
-    val insensitive = dsn.toLowerCase
-    cache.get(insensitive) match {
+  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Try[Database] = {
+    cache.get(dsn.hashCode) match {
       case Some(v) => Success(v)
       case None    => for {
-        ds <- DataSource.forDSN(insensitive)
-      } yield { val db = driver.backend.Database.forSource(ds); cache.update(insensitive, db); db }
+        ds <- DataSource.forDSN(dsn)
+        db <- Try(driver.backend.Database.forSource(ds))
+        _  <- Try(cache.update(dsn.hashCode, db))
+      } yield db
     }
   }
 }

@@ -9,6 +9,7 @@ package net.ixias
 package core.port.adapter.persistence.backend
 
 import scala.util.Try
+import core.port.adapter.persistence.model.DataSourceName
 import core.port.adapter.persistence.io.EntityIOActionContext
 
 trait BasicDataSource {
@@ -30,6 +31,6 @@ trait BasicDataSource {
   /** The factory to create a database source config. */
   trait DataSourceFactoryDef {
     /** Load a configuration for persistent database. */
-    def forDSN(name: String)(implicit ctx: Context): Try[DataSource]
+    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Try[DataSource]
   }
 }

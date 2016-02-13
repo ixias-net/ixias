@@ -9,6 +9,7 @@ package net.ixias
 package core.port.adapter.persistence.backend
 
 import scala.util.Try
+import core.port.adapter.persistence.model.DataSourceName
 
 /** Backend for the basic database and session handling features. */
 trait BasicBackend extends BasicDataSource {
@@ -17,5 +18,5 @@ trait BasicBackend extends BasicDataSource {
   type Database >: Null <: AnyRef
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: String)(implicit ctx: Context): Try[Database]
+  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Try[Database]
 }

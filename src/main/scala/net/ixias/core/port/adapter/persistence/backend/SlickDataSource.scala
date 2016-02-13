@@ -49,27 +49,26 @@ trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig {
   /** Factory methods for creating `DatabSouce` instances with using HikariCP. */
   trait HikariCPDataSourceFactory extends DataSourceFactoryDef {
     import com.zaxxer.hikari._
-    import DataSourceName.Implicits._
 
     /** Create a JdbcDataSource from DSN (Database Souce Name) */
-    def forDSN(name: String)(implicit ctx: Context): Try[DataSource] =
+    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Try[DataSource] =
       for {
-        driver <- getDriverClassName(name)
-        url    <- getJdbcUrl(name)
+        driver <- getDriverClassName(dsn)
+        url    <- getJdbcUrl(dsn)
       } yield {
         val hconf = new HikariConfig()
         hconf.setDriverClassName(driver)
         hconf.setJdbcUrl(url)
-        hconf.setPoolName(name)
+        hconf.setPoolName(dsn.toString)
 
         // Optional properties.
-        getUserName(name)                  map hconf.setUsername
-        getPassword(name)                  map hconf.setPassword
-        getHostSpecReadOnly(name)          map hconf.setReadOnly
-        getHostSpecMinIdle(name)           map hconf.setMinimumIdle
-        getHostSpecMaxPoolSize(name)       map hconf.setMaximumPoolSize
-        getHostSpecConnectionTimeout(name) map hconf.setConnectionTimeout
-        getHostSpecIdleTimeout(name)       map hconf.setIdleTimeout
+        getUserName(dsn)                  map hconf.setUsername
+        getPassword(dsn)                  map hconf.setPassword
+        getHostSpecReadOnly(dsn)          map hconf.setReadOnly
+        getHostSpecMinIdle(dsn)           map hconf.setMinimumIdle
+        getHostSpecMaxPoolSize(dsn)       map hconf.setMaximumPoolSize
+        getHostSpecConnectionTimeout(dsn) map hconf.setConnectionTimeout
+        getHostSpecIdleTimeout(dsn)       map hconf.setIdleTimeout
 
         HikariCPDataSource(new HikariDataSource(hconf), hconf)
       }
