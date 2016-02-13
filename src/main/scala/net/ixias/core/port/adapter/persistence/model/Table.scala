@@ -17,15 +17,21 @@ trait Table[R, P <: JdbcProfile] { self =>
   /** The configured driver. */
   val driver: P
 
-  /** The all table row objects. */
-  type Table <: driver.Table[R]
-  val  Table: Table
+  /** The type of table row. */
+  type TableRecord = R
+
+  /** The type of all table row objects. */
+  type Table      <: driver.Table[TableRecord]
+  type BasicTable =  driver.Table[TableRecord]
 
   /** Represents a database table. Implementation class add extension methods to TableQuery
     * for operations that can be performed on tables but not on arbitrary queries. */
   type TableQuery = slick.lifted.TableQuery[Table]
   val  TableQuery: TableQuery
-  val  BasicTableQuery = slick.lifted.TableQuery
+  val  TableQueryFactory = slick.lifted.TableQuery
+
+  /** A Tag marks a specific row represented by an AbstractTable instance. */
+  type Tag = slick.lifted.Tag
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,

@@ -15,6 +15,7 @@ import org.specs2.mutable.Specification
 
 // 定義
 //~~~~~~
+/** レコード定義 */
 case class UserTableRecord(
   val uid:       String,
   val name:      Option[String],
@@ -23,7 +24,17 @@ case class UserTableRecord(
   val createdAt: DateTime = new DateTime
 )
 
+/** テーブル定義 */
 trait UserTable[P <: JdbcProfile] extends Table[UserTableRecord, P] {
+  class Table(tag: Tag) extends BasicTable(tag, "user") {
+    import api._
+    def id        = column[String]         ("id",         O.AsciiChar8, O.PrimaryKey)
+    def name      = column[Option[String]] ("id",         O.AsciiChar8, O.PrimaryKey)
+    def email     = column[Option[String]] ("id",         O.AsciiChar8, O.PrimaryKey)
+    def updatedAt = column[DateTime]       ("updated_at", O.TsCurrent)
+    def createdAt = column[DateTime]       ("created_at", O.Ts)
+    def * = (id, name, email, updatedAt, createdAt) <> (UserTableRecord.tupled, UserTableRecord.unapply)
+  }
 }
 
 // テスト
