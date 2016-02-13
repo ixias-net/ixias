@@ -30,12 +30,9 @@ trait ShadeRepository[K, E <: Entity[K]] extends Repository[K, E] with ShadeProf
 trait ShadeProfile extends Profile with ShadeActionComponent { self =>
 
   type This >: this.type <: ShadeProfile
+
   /** The back-end type required by this profile */
   type Backend  = ShadeBackend
-  /** The type of database objects. */
-  type Database = Backend#Database
-  /** The type of the context used for running repository Actions */
-  type Context =  EntityIOActionContext
 
   /** The back-end implementation for this profile */
   val backend = new ShadeBackend {}
@@ -45,16 +42,6 @@ trait ShadeProfile extends Profile with ShadeActionComponent { self =>
     * and commonly types and objects. */
   trait API extends super.API
   val api: API = new API {}
-
-  /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn:String)(f: Database => Future[T])(implicit ctx: Context): Future[T] = {
-    (for {
-      db    <- Future.fromTry(backend.getDatabase(dsn))
-      value <- f(db)
-    } yield value) andThen {
-      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
-    }
-  }
 }
 
 trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>

@@ -20,11 +20,14 @@ trait SlickBackend[P <: JdbcProfile] extends Backend with SlickDataSource {
   /** The type of database objects used by this backend. */
   type Database = P#Backend#Database
 
+  /** The configured driver. */
+  val driver: P
+
   /** The cache for Database */
   protected var cache: Map[String, Database] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(driver: Driver, dsn: String)(implicit ctx: Context): Try[Database] = {
+  def getDatabase(dsn: String)(implicit ctx: Context): Try[Database] = {
     val insensitive = dsn.toLowerCase
     cache.get(insensitive) match {
       case Some(v) => Success(v)

@@ -10,10 +10,13 @@ package core.port.adapter.persistence.repository
 
 import org.slf4j.LoggerFactory
 import com.typesafe.config.{ Config, ConfigFactory }
+import scala.concurrent.Future
+import scala.util.Failure
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import core.util.Logger
 import core.domain.model.{ Identity, Entity }
-import core.port.adapter.persistence.io.{ EntityIOAction, IOActionContext }
+import core.port.adapter.persistence.io.EntityIOAction
 import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 
 /**
@@ -28,13 +31,15 @@ trait Profile extends ActionComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The identity type of entity */
-  type Id      <: core.domain.model.Identity[_]
+  type Id       <: core.domain.model.Identity[_]
   /** The entity type of managed by this profile */
-  type Entity  <: core.domain.model.Entity[_]
+  type Entity   <: core.domain.model.Entity[_]
   /** The back-end type required by this profile */
-  type Backend <: core.port.adapter.persistence.backend.Backend
+  type Backend  <: core.port.adapter.persistence.backend.Backend
+  /** The type of database objects. */
+  type Database = backend.Database
   /** The type of the context used for running IOActions. */
-  type Context >: Null <: IOActionContext
+  type Context  = backend.Context
 
   // --[ Properties ]-----------------------------------------------------------
   /** The external interface of this repository which defines the API. */
@@ -64,6 +69,16 @@ trait Profile extends ActionComponent {
 }
 
 trait ActionComponent { profile: Profile =>
+
+  /** Run the supplied function with a database object by using pool database session. */
+  def withDatabase[T](dsn: String)(f: Database => Future[T])(implicit ctx: Context): Future[T] =
+    (for {
+      db    <- Future.fromTry(backend.getDatabase(dsn)(ctx))
+      value <- f(db)
+    } yield value) andThen {
+      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
+    }
+
   /** Create the default IOActionContext for this repository. */
   def createPersistenceActionContext(cfg: Config): Context
   def createPersistenceActionContext(): Context =

@@ -34,18 +34,15 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
     with SlickActionComponent[P] with ExtensionMethodConversions { self =>
 
   type This >: this.type <: SlickProfile[P]
+
   /** The back-end type required by this profile */
   type Backend  = SlickBackend[P]
-  /** The type of database objects. */
-  type Database = Backend#Database
-  /** The type of the context used for running repository Actions */
-  type Context =  EntityIOActionContext
 
   /** The configured driver. */
   val driver: P
 
   /** The back-end implementation for this profile */
-  val backend = new SlickBackend[P] {}
+  val backend = new SlickBackend[P] { val driver = self.driver }
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
@@ -57,20 +54,11 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
   }
   val api: API = new API {}
 
-  /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn: String)(f: Database => Future[T])(implicit ctx: Context): Future[T] =
-    (for {
-      db    <- Future.fromTry(backend.getDatabase(driver, dsn))
-      value <- f(db)
-    } yield value) andThen {
-      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
-    }
-
   /** Run an Action synchronously and return the result as a Try. */
   def runWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
     (implicit ctx: Context, codec: R => T): Future[T] =
     (for {
-      db    <- Future.fromTry(backend.getDatabase(driver, dsn))
+      db    <- Future.fromTry(backend.getDatabase(dsn))
       value <- db.run(action).map(codec)
     } yield value) andThen {
       case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
