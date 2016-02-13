@@ -31,7 +31,7 @@ trait SlickRepository[K, E <: Entity[K], P <: JdbcProfile]
 /**
  * The profile for persistence with using the Slick library.
  */
-trait SlickProfile[P <: JdbcProfile] extends Profile
+trait SlickProfile[P <: JdbcProfile] extends BasicProfile
     with SlickActionComponent[P] with ExtensionMethodConversions { self =>
 
   type This >: this.type <: SlickProfile[P]

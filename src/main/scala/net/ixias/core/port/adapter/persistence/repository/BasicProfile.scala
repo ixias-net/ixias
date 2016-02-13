@@ -22,12 +22,12 @@ import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 /**
  * The basic functionality that has to be implemented by all repositories.
  */
-trait Repository[K, E <: Entity[K]] extends Profile with EntityIOAction[K, E]
+trait Repository[K, E <: Entity[K]] extends BasicProfile with EntityIOAction[K, E]
 
 /**
  * The basic functionality that has to be implemented by all profiles.
  */
-trait Profile extends ActionComponent {
+trait BasicProfile extends ActionComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The identity type of entity */
@@ -43,7 +43,7 @@ trait Profile extends ActionComponent {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The external interface of this repository which defines the API. */
-  val profile: Profile = this
+  val profile: BasicProfile = this
 
   /** The back-end implementation for this profile */
   val backend: Backend
@@ -53,7 +53,7 @@ trait Profile extends ActionComponent {
 
   /** The logger for profile */
   protected lazy val actionLogger = new Logger(
-    LoggerFactory.getLogger(classOf[Profile].getName+".action"))
+    LoggerFactory.getLogger(classOf[BasicProfile].getName+".action"))
 
   /** Load the configuration for this repository. This can be overridden in
     * user-defined repository subclasses to load different configurations. */
@@ -68,7 +68,7 @@ trait Profile extends ActionComponent {
   val api: API
 }
 
-trait ActionComponent { profile: Profile =>
+trait ActionComponent { profile: BasicProfile =>
 
   /** Run the supplied function with a database object by using pool database session. */
   def withDatabase[T](dsn: String)(f: Database => Future[T])(implicit ctx: Context): Future[T] =
