@@ -40,11 +40,9 @@ object DataSourceName {
   /** The synatx format for DSN */
   val SYNTAX_DATA_SOURCE_NAME = """^([.\w]+)://(\w+?)/(\w+)$""".r
 
-  object Implicits {
-    /** Convert to structure data from dsn as string */
-    implicit def convertToStruct(name: String): DataSourceName = name match {
-      case SYNTAX_DATA_SOURCE_NAME(p1, p2, p3) => DataSourceName(p1, p2, p3)
-      case _ => throw new Exception(s"""Dose not match the DSN format. ($name)""")
-    }
+  /** Build a `DataSourceName` object. */
+  def apply(dsn: String): DataSourceName = dsn match {
+    case SYNTAX_DATA_SOURCE_NAME(p1, p2, p3) => DataSourceName(p1, p2, p3)
+    case _ => throw new Exception(s"""Dose not match the DSN format. ($dsn)""")
   }
 }
