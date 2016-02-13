@@ -46,9 +46,13 @@ trait UserTable[P <: JdbcProfile] extends Table[UserTableRecord, P] {
 // テスト
 //~~~~~~~~
 class TableSpec extends Specification {
+  def unlift[A, B](f: A => Option[B]): A => B = Function.unlift(f)
+
   "Table" should {
     "declare" in {
       val exists = 1
+      val user = UserTableRecord("1001", Some("name"), Some("name@nextbeat.net"))
+      println(unlift(UserTableRecord.unapply)(user))
       exists must_== 1
     }
   }

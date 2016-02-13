@@ -9,7 +9,6 @@ package net.ixias
 package core.port.adapter.persistence.model
 
 import slick.driver.JdbcProfile
-
 import core.port.adapter.persistence.lifted._
 
 trait Table[R, P <: JdbcProfile] { self =>
