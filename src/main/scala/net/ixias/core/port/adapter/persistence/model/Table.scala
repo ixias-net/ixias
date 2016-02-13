@@ -31,6 +31,10 @@ trait Table[R, P <: JdbcProfile] { self =>
   type TableQuery      <: slick.lifted.TableQuery[Table]
   type BasicTableQuery =  slick.lifted.TableQuery[Table]
 
+  /** Provided a Writes implicit for its type is available,
+    * convert any object into a specified type. */
+  // def convert[A, B](o: A)(implicit conv: TableWrites[A, B]): B = conv.writes(o)
+
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
