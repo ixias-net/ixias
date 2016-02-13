@@ -10,8 +10,7 @@ package core.port.adapter.persistence.repository
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import core.port.adapter.persistence.model.Converter
+import core.port.adapter.persistence.model.{ DataSourceName, Converter }
 import core.port.adapter.persistence.backend.BasicBackend
 import core.port.adapter.persistence.io.{ IOActionContext, EntityIOActionContext }
 
@@ -21,7 +20,7 @@ trait Action[T <: BasicBackend, P] {
   type Backend = T
 
   /** Invokes this action. */
-  def apply(backend: Backend): Future[P]
+  def apply(backend: Backend, dsn: DataSourceName): Future[P]
 }
 
 /** A builder for generic Actions that generalizes over the type of requests. */
@@ -34,7 +33,7 @@ trait ActionFunction[T <: BasicBackend, +P] {
     * This is the main method that an ActionBuilder has to implement,
     * any other actions, modify the request object or
     * potentially use a different class to represent the request. */
-  def invokeBlock[A](backend: Backend, block: P => Future[A]): Future[A]
+  def invokeBlock[A](backend: Backend, dsn: DataSourceName, block: P => Future[A]): Future[A]
 
   /** Get the action context to run the request in. */
   protected def IOActionContext: IOActionContext = EntityIOActionContext.Implicits.global
@@ -44,9 +43,10 @@ trait ActionBuilder[T <: BasicBackend, +P] extends ActionFunction[T, P] {
 
   /** Constructs an `Action` that returns a future of a result */
   def apply[A, B](block: P => Future[A])
-    (implicit backend: Backend, conv: Converter[A, B]): Action[T, B] = new Action[T, B] {
-    def apply(backend: Backend): Future[B] = {
-      invokeBlock(backend, block).map(conv.convert)
+    (implicit backend: Backend, dsn: DataSourceName, conv: Converter[A, B]): Action[T, B] =
+    new Action[T, B] {
+      def apply(backend: Backend, dsn: DataSourceName): Future[B] = {
+        invokeBlock(backend, dsn, block).map(conv.convert)
+      }
     }
-  }
 }

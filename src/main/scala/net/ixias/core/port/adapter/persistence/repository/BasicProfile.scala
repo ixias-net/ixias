@@ -71,6 +71,7 @@ trait BasicProfile extends ActionComponent {
 trait ActionComponent { profile: BasicProfile =>
 
   /** Run the supplied function with a database object by using pool database session. */
+  /*
   def withDatabase[T](dsn: String)(f: Database => Future[T])(implicit ctx: Context): Future[T] =
     (for {
       db    <- Future.fromTry(backend.getDatabase(dsn)(ctx))
@@ -78,6 +79,7 @@ trait ActionComponent { profile: BasicProfile =>
     } yield value) andThen {
       case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
     }
+  */
 
   /** Create the default IOActionContext for this repository. */
   def createPersistenceActionContext(cfg: Config): Context
