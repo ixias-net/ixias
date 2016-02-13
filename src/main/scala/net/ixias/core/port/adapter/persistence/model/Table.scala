@@ -9,18 +9,22 @@ package net.ixias
 package core.port.adapter.persistence.model
 
 import slick.driver.JdbcProfile
+
 import core.port.adapter.persistence.lifted._
 
-trait Table[R <: TableRecord, P <: JdbcProfile] { self =>
-
-  /** The type of all table row objects. */
-  type Table = driver.Table[R]
+trait Table[R, P <: JdbcProfile] { self =>
 
   /** The configured driver. */
   val driver: P
 
   /** The all table row objects. */
-  val table: Table
+  type Table = driver.Table[R]
+  val  Table: Table
+
+  /** Represents a database table. Implementation class add extension methods to TableQuery
+    * for operations that can be performed on tables but not on arbitrary queries. */
+  type TableQuery = slick.lifted.TableQuery[Table]
+  val  TableQuery = slick.lifted.TableQuery
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
