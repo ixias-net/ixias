@@ -11,6 +11,8 @@ package core.port.adapter.persistence.backend
 import scala.util.Try
 import scala.concurrent.duration._
 import java.util.concurrent.TimeUnit
+
+import core.port.adapter.persistence.model.DataSourceName
 import core.port.adapter.persistence.io.EntityIOActionContext
 
 trait ShadeDataSource extends BasicDataSource with ShadeDataSourceConfig {

@@ -11,6 +11,8 @@ package core.port.adapter.persistence.backend
 import scala.util.Try
 import java.sql.Connection
 import slick.jdbc.JdbcDataSource
+
+import core.port.adapter.persistence.model.DataSourceName
 import core.port.adapter.persistence.io.EntityIOActionContext
 
 trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig {

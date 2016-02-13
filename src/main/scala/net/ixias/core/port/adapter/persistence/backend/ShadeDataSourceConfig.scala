@@ -10,6 +10,7 @@ package core.port.adapter.persistence.backend
 
 import scala.util.Try
 import java.util.concurrent.TimeUnit
+import core.port.adapter.persistence.model.DataSourceName
 
 trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSource =>
 
