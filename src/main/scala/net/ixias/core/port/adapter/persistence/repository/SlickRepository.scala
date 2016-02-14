@@ -24,8 +24,8 @@ import core.port.adapter.persistence.io.EntityIOActionContext
 /**
  * The base repository for persistence with using the Slick library.
  */
-trait SlickRepository[K, V <: Entity[K], P <: JdbcProfile]
-    extends Repository[K, V] with SlickProfile[P]
+trait SlickRepository[K, E <: Entity[K], P <: JdbcProfile]
+    extends Repository[K, E] with SlickProfile[P]
 
 /**
  * The profile for persistence with using the Slick library.
@@ -58,16 +58,16 @@ trait SlickProfile[P <: JdbcProfile] extends Profile
   val api: API = new API {}
 
   /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn: String)(f: Database => Future[T])(implicit ctx: Context): Future[T] =
+  def withDatabase[R, T](dsn: String)(f: Database => Future[R])(implicit ctx: Context, codec: R => T): Future[T] =
     (for {
       db    <- Future.fromTry(backend.getDatabase(driver, dsn))
-      value <- f(db)
+      value <- f(db).map(codec)
     } yield value) andThen {
       case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
     }
 
   /** Run an Action synchronously and return the result as a Try. */
-  def awaitRunWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
+  def runWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
     (implicit ctx: Context, codec: R => T): Future[T] =
     (for {
       db    <- Future.fromTry(backend.getDatabase(driver, dsn))
