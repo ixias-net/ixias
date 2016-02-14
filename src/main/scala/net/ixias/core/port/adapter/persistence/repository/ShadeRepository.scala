@@ -8,45 +8,65 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.util.{ Try, Success, Failure }
-import scala.util.control.NonFatal
+import scala.reflect.ClassTag
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
-import com.typesafe.config.Config
-
+import shade.memcached.MemcachedCodecs
 import core.domain.model.Entity
-import core.port.adapter.persistence.backend.ShadeBackend
-import core.port.adapter.persistence.io.EntityIOActionContext
-
 
 /**
- * The base repository for persistence with using the Shade library.
+ * The base repository which is implemented basic feature methods.
  */
-trait ShadeRepository[K, E <: Entity[K]] extends Repository[K, E] with ShadeProfile
+abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
+    extends ShadeProfile[K, V] with MemcachedCodecs {
 
-/**
- * The profile for persistence with using the Shade library.
- */
-trait ShadeProfile extends Profile with ShadeActionComponent { self =>
+  // --[ Methods ]--------------------------------------------------------------
+  /** Gets a cache client resource. */
+  def withDatabase[T](f: Database => Future[T])(implicit ctx: Context): Future[T] = ???
 
-  type This >: this.type <: ShadeProfile
+  /** Gets expiry time. */
+  def expiry(key: Id): Duration = Duration.Inf
 
-  /** The back-end type required by this profile */
-  type Backend  = ShadeBackend
+  // --[ Methods ]--------------------------------------------------------------
+  /** Fetches a value from the cache store. */
+  def get(key: Id)(implicit ctx: Context): Future[Option[V]] =
+    withDatabase { db =>
+      (for {
+        v <- db.get[V](key.get.toString)
+      } yield(v)) recoverWith {
+        case _: java.io.InvalidClassException => Future.successful(None)
+      }
+    }
 
-  /** The back-end implementation for this profile */
-  val backend = new ShadeBackend {}
+  // --[ Methods ]--------------------------------------------------------------
+  /** Sets a (key, value) in the cache store. */
+  def store(value: V)(implicit ctx: Context): Future[Unit] =
+    withDatabase { db =>
+      for {
+        _ <- db.set(value.id.get.toString, value, expiry(value.id))
+      } yield ()
+    }
 
-  /** The API for using the utility methods with a single import statement.
-    * This provides the repository's implicits, the Database connections,
-    * and commonly types and objects. */
-  trait API extends super.API
-  val api: API = new API {}
+  /** Update existing value expiry in the cache store. */
+  def updateExpiry(key: Id)(implicit ctx: Context): Future[Unit] =
+    withDatabase { db =>
+      (for {
+        Some(v) <- db.get[V](key.get.toString)
+        _       <- db.set(key.get.toString, v, expiry(key))
+      } yield ()) recoverWith {
+        case _: NoSuchElementException
+           | _: java.io.InvalidClassException => Future.successful(Unit)
+      }
+    }
+
+  /** Deletes a key from the cache store. */
+  def remove(key: Id)(implicit ctx: Context): Future[Option[V]] =
+    withDatabase { db =>
+      for {
+        old <- db.get[V](key.get.toString) recoverWith {
+          case _: java.io.InvalidClassException => Future.successful(None) }
+        _   <- db.delete(key.get.toString)
+      } yield old
+    }
 }
-
-trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>
-  /** Create the default IOActionContext for this repository. */
-  def createPersistenceActionContext(cfg: Config): Context =
-     EntityIOActionContext(config = cfg)
-}
-
