@@ -42,8 +42,8 @@ trait ActionFunction[T <: BasicBackend, +P] {
 trait ActionBuilder[T <: BasicBackend, +P] extends ActionFunction[T, P] {
 
   /** Constructs an `Action` that returns a future of a result */
-  def apply[A, B](block: P => Future[A])
-    (implicit backend: Backend, dsn: DataSourceName, conv: Converter[A, B]): Action[T, B] =
+  def apply[A, B](dsn: DataSourceName)(block: P => Future[A])
+    (implicit backend: Backend, conv: Converter[A, B]): Action[T, B] =
     new Action[T, B] {
       def apply(backend: Backend, dsn: DataSourceName): Future[B] = {
         invokeBlock(backend, dsn, block).map(conv.convert)
