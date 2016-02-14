@@ -14,7 +14,7 @@ import core.port.adapter.persistence.backend.ShadeBackend
 /**
  * The profile for persistence with using the Shade library.
  */
-trait ShadeProfile[K, E <: Entity[K]] extends Profile[K, E] {
+trait ShadeProfile[K, E <: Entity[K]] extends Profile[K, E] with ShadeAction {
 
   /** The back-end type required by this profile */
   type Backend = ShadeBackend

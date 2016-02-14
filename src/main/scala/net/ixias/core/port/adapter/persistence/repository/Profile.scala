@@ -37,7 +37,7 @@ trait Profile[K, E <: Entity[K]] extends EntityIOAction[K, E] {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The back-end implementation for this profile */
-  protected implicit val backend: Backend
+  protected val backend: Backend
 
   /** The configuration for persistence */
   protected lazy val config = loadPersistenceConfig

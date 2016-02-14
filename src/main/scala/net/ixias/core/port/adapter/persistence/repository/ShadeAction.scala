@@ -17,7 +17,7 @@ import core.port.adapter.persistence.model.DataSourceName
 trait ShadeAction { self: ShadeProfile[_, _] =>
 
   /** Run the supplied function with a database object by using pool database session. */
-  object DBAction extends ActionBuilder[Backend, Database] {
+  object DBAction extends Action[Backend, Database] {
     def invokeBlock[A](backend: Backend, dsn: DataSourceName, block: Database => Future[A]): Future[A] =
       (for {
         db <- backend.getDatabase(dsn)
