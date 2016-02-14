@@ -42,6 +42,9 @@ object DataSourceName {
   /** The synatx format for DSN */
   val SYNTAX_DATA_SOURCE_NAME = """^([.\w]+)://(\w+?)/(\w+)$""".r
 
+  val RESERVED_NAME_MASTER    = "master"
+  val RESERVED_NAME_SLAVE     = "slave"
+
   /** Build a `DataSourceName` object. */
   def apply(dsn: String): DataSourceName = dsn match {
     case SYNTAX_DATA_SOURCE_NAME(p1, p2, p3) => DataSourceName(p1, p2, p3)
