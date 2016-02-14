@@ -13,31 +13,39 @@ import core.port.adapter.persistence.lifted._
 
 trait Table[R, P <: JdbcProfile] { self =>
 
+  //-- [ Required properties ] -------------------------------------------------
   /** The configured driver. */
   val driver: P
 
   /** The map of DSN as string. */
   val dsn: Map[String, String]
 
-  /** The type of table row. */
-  type TableRecord = R
+  /** The table query. */
+  val query: slick.lifted.TableQuery[Table]
 
+  //-- [ Table Manifest ] ------------------------------------------------------
   /** A Tag marks a specific row represented by an AbstractTable instance. */
   type Tag = slick.lifted.Tag
+
+  /** The type of table row. */
+  type TableRecord = R
 
   /** The type of all table row objects. */
   type Table      <: driver.Table[TableRecord]
   type BasicTable =  driver.Table[TableRecord]
 
+  //-- [ Table Query ] ---------------------------------------------------------
   /** Represents a database table. Implementation class add extension methods to TableQuery
     * for operations that can be performed on tables but not on arbitrary queries. */
   type TableQuery      <: slick.lifted.TableQuery[Table]
   type BasicTableQuery =  slick.lifted.TableQuery[Table]
 
+  //-- [ Converter ] -----------------------------------------------------------
   /** Provided a Converter implicit for its type is available,
     * convert any object into a specified type. */
   def convert[A, B](o: A)(implicit conv: Converter[A, B]): B = conv.convert(o)
 
+  //-- [ Utility Methods ] -----------------------------------------------------
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
@@ -46,6 +54,6 @@ trait Table[R, P <: JdbcProfile] { self =>
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver
   }
-
   val api: API = new API {}
 }
+
