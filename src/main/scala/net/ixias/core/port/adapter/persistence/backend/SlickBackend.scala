@@ -8,8 +8,10 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
-import scala.util.{ Try, Success }
+import scala.concurrent.Future
 import scala.collection.mutable.Map
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import slick.driver.JdbcProfile
 import core.port.adapter.persistence.model.DataSourceName
 
@@ -28,13 +30,13 @@ trait SlickBackend[P <: JdbcProfile] extends BasicBackend with SlickDataSource {
   protected var cache: Map[Int, Database] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Try[Database] = {
+  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Database] = {
     cache.get(dsn.hashCode) match {
-      case Some(v) => Success(v)
+      case Some(v) => Future.successful(v)
       case None    => for {
         ds <- DataSource.forDSN(dsn)
-        db <- Try(driver.backend.Database.forSource(ds))
-        _  <- Try(cache.update(dsn.hashCode, db))
+        db <- Future(driver.backend.Database.forSource(ds))
+        _  <- Future(cache.update(dsn.hashCode, db))
       } yield db
     }
   }

@@ -8,7 +8,7 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
-import scala.util.Try
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import java.util.concurrent.TimeUnit
 
@@ -34,15 +34,17 @@ trait ShadeDataSource extends BasicDataSource with ShadeDataSourceConfig {
   // --[ Factory ]--------------------------------------------------------------
   /** Factory methods for creating `DatabSouce` instances with using Shade. */
   trait ShadeDataSourceFactory extends DataSourceFactoryDef {
-    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Try[DataSource] =
-      for {
-        addresses <- getAddresses(dsn)
-      } yield {
-        shade.memcached.Configuration(
-          addresses        = addresses,
-          keysPrefix       = getKeysPrefix(dsn),
-          operationTimeout = FiniteDuration(getHostSpecIdleTimeout(dsn), TimeUnit.MILLISECONDS)
-        )
-      }
+    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Future[DataSource] =
+      Future.fromTry(
+        for {
+          addresses <- getAddresses(dsn)
+        } yield {
+          shade.memcached.Configuration(
+            addresses        = addresses,
+            keysPrefix       = getKeysPrefix(dsn),
+            operationTimeout = FiniteDuration(getHostSpecIdleTimeout(dsn), TimeUnit.MILLISECONDS)
+          )
+        }
+      )
   }
 }
