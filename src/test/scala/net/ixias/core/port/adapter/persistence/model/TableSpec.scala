@@ -35,9 +35,7 @@ case class UserTableRecord (
 /** テーブル定義 */
 trait UserTable[P <: JdbcProfile] extends Table[UserTableRecord, P] {
 
-  /** クエリー定義 */
-  object TableQuery extends BasicTableQuery(new Table(_)) {
-  }
+  lazy val query = new TableQuery
 
   /** テーブル定義 */
   class Table(tag: Tag) extends BasicTable(tag, "user") {
@@ -49,11 +47,12 @@ trait UserTable[P <: JdbcProfile] extends Table[UserTableRecord, P] {
     def createdAt = column[DateTime]       ("created_at", O.Ts)
     def * = (id, name, email, updatedAt, createdAt) <> (UserTableRecord.tupled, UserTableRecord.unapply)
   }
+
+  /** クエリー定義 */
+  class TableQuery extends BasicTableQuery(new Table(_))
 }
 
 /** 変換定義 */
-
-
 // テスト
 //~~~~~~~~
 class TableSpec extends Specification {

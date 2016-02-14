@@ -18,7 +18,7 @@ trait Table[R, P <: JdbcProfile] { self =>
   val driver: P
 
   /** The map of DSN as string. */
-  val dsn: Map[String, String]
+  val dsn: Map[String, DataSourceName]
 
   /** The table query. */
   val query: slick.lifted.TableQuery[Table]
@@ -43,6 +43,9 @@ trait Table[R, P <: JdbcProfile] { self =>
   //-- [ Converter ] -----------------------------------------------------------
   /** Provided a Converter implicit for its type is available,
     * convert any object into a specified type. */
+  trait ConverterImplicits
+  val converte: ConverterImplicits = new ConverterImplicits{}
+
   def convert[A, B](o: A)(implicit conv: Converter[A, B]): B = conv.convert(o)
 
   //-- [ Utility Methods ] -----------------------------------------------------

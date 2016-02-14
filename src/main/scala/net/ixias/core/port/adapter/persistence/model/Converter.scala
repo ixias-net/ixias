@@ -28,19 +28,19 @@ trait TableDefaultConverter {
   import scala.language.implicitConversions
 
   /** Serializer for Seq[T] types. */
-  implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]):
-      Converter[Seq[A], Seq[B]] = new Converter[Seq[A], Seq[B]] {
-    def convert(itr: Seq[A]) = itr.foldLeft(Seq.empty[B]){
-      (prev, o) => prev :+ fmt.convert(o)
+  implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]): Converter[Seq[A], Seq[B]] =
+    new Converter[Seq[A], Seq[B]] {
+      def convert(itr: Seq[A]) = itr.foldLeft(Seq.empty[B]){
+        (prev, o) => prev :+ fmt.convert(o)
+      }
     }
-  }
 
   /** Serializer for Option. */
-  implicit def OptionConv[A, B](implicit fmt: Converter[A, B]):
-      Converter[Option[A], Option[B]] = new Converter[Option[A], Option[B]] {
-    def convert(o: Option[A]) = o match {
-      case Some(value) => Some(fmt.convert(value))
-      case None        => None
+  implicit def OptionConv[A, B](implicit fmt: Converter[A, B]): Converter[Option[A], Option[B]] =
+    new Converter[Option[A], Option[B]] {
+      def convert(o: Option[A]) = o match {
+        case Some(value) => Some(fmt.convert(value))
+        case None        => None
+      }
     }
-  }
 }

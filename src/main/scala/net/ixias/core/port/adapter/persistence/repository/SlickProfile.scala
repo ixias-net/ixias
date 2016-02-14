@@ -17,13 +17,16 @@ import core.port.adapter.persistence.backend.SlickBackend
  * The profile for persistence with using the Slick library.
  */
 trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile]
-    extends Profile[K, E] with ExtensionMethodConversions { self =>
+    extends Profile[K, E] with SlickAction[P] with ExtensionMethodConversions { self =>
+
+  /** The type of slick driver */
+  type Driver  = P
 
   /** The back-end type required by this profile */
-  type Backend = SlickBackend[P]
+  type Backend = SlickBackend[Driver]
 
   /** The configured driver. */
-  val driver: P
+  val driver: Driver
 
   /** The back-end implementation for this profile */
   protected implicit lazy val backend = new SlickBackend[P] { val driver = self.driver }
@@ -33,20 +36,8 @@ trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile]
     * and commonly types and objects. */
   trait API extends super.API with driver.API
       with SlickColumnOptionOps
-      with SlickColumnTypeOps[P] {
+      with SlickColumnTypeOps[Driver] {
     lazy val driver = self.driver
   }
   val api: API = new API {}
-
-  /** Run an Action synchronously and return the result as a `Future`. */
-  /*
-  def runWithDatabase[R, T](dsn: String)(action: => DBIOAction[R, NoStream, Nothing])
-    (implicit ctx: Context, codec: R => T): Future[T] =
-    (for {
-      db    <- Future.fromTry(backend.getDatabase(dsn))
-      value <- db.run(action).map(codec)
-    } yield value) andThen {
-      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
-    }
-  */
 }
