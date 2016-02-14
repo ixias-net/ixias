@@ -22,12 +22,12 @@ import core.port.adapter.persistence.lifted.ExtensionMethodConversions
 /**
  * The basic functionality that has to be implemented by all repositories.
  */
-trait Repository[K, E <: Entity[K]] extends BasicProfile with EntityIOAction[K, E]
+trait Repository[K, E <: Entity[K]] extends Profile with EntityIOAction[K, E]
 
 /**
  * The basic functionality that has to be implemented by all profiles.
  */
-trait BasicProfile extends ActionComponent {
+trait Profile extends ActionComponent {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The identity type of entity */
@@ -37,13 +37,13 @@ trait BasicProfile extends ActionComponent {
   /** The back-end type required by this profile */
   type Backend  <: core.port.adapter.persistence.backend.BasicBackend
   /** The type of database objects. */
-  type Database = backend.Database
+  type Database = Backend#Database
   /** The type of the context used for running IOActions. */
-  type Context  = backend.Context
+  type Context  = Backend#Context
 
   // --[ Properties ]-----------------------------------------------------------
   /** The external interface of this repository which defines the API. */
-  val profile: BasicProfile = this
+  val profile: Profile = this
 
   /** The back-end implementation for this profile */
   val backend: Backend
@@ -53,7 +53,7 @@ trait BasicProfile extends ActionComponent {
 
   /** The logger for profile */
   protected lazy val actionLogger = new Logger(
-    LoggerFactory.getLogger(classOf[BasicProfile].getName+".action"))
+    LoggerFactory.getLogger(classOf[Profile].getName+".action"))
 
   /** Load the configuration for this repository. This can be overridden in
     * user-defined repository subclasses to load different configurations. */
@@ -68,7 +68,7 @@ trait BasicProfile extends ActionComponent {
   val api: API
 }
 
-trait ActionComponent { profile: BasicProfile =>
+trait ActionComponent { profile: Profile =>
 
   /** Run the supplied function with a database object by using pool database session. */
   /*

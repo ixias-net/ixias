@@ -27,7 +27,7 @@ trait ShadeRepository[K, E <: Entity[K]] extends Repository[K, E] with ShadeProf
 /**
  * The profile for persistence with using the Shade library.
  */
-trait ShadeProfile extends BasicProfile with ShadeActionComponent { self =>
+trait ShadeProfile extends Profile with ShadeActionComponent { self =>
 
   type This >: this.type <: ShadeProfile
 

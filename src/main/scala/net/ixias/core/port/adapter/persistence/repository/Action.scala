@@ -36,7 +36,7 @@ trait ActionFunction[T <: BasicBackend, +P] {
   def invokeBlock[A](backend: Backend, dsn: DataSourceName, block: P => Future[A]): Future[A]
 
   /** Get the action context to run the request in. */
-  protected def IOActionContext: IOActionContext = EntityIOActionContext.Implicits.global
+  protected implicit val IOActionContext = EntityIOActionContext.Implicits.global
 }
 
 trait ActionBuilder[T <: BasicBackend, +P] extends ActionFunction[T, P] {

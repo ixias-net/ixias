@@ -16,13 +16,13 @@ trait BasicDataSource {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */
-  type DataSource >: Null
+  type DataSource <: AnyRef
 
   /** The type of the database souce config factory used by this backend. */
   type DataSourceFactory <: DataSourceFactoryDef
 
   /** The type of the context used for running Database Actions */
-  type Context >: Null <: EntityIOActionContext
+  type Context <: EntityIOActionContext
 
   // --[ Properties ]-----------------------------------------------------------
   /** The database factory */

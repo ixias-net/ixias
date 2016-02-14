@@ -23,6 +23,9 @@ trait EntityIOAction[K, E <: Entity[K]] extends IOAction {
   /** The type of entity */
   type Entity  = E
 
+  /** The type of the context used for running IOActions. */
+  type Context <: EntityIOActionContext
+
   // --[ Methods ]--------------------------------------------------------------
   /** Defines the default value computation for the map,
     * returned when a identity is not found The method implemented here throws an exception,

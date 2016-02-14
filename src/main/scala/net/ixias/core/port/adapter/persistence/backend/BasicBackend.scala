@@ -15,7 +15,7 @@ import core.port.adapter.persistence.model.DataSourceName
 trait BasicBackend extends BasicDataSource {
 
   /** The type of database objects used by this backend. */
-  type Database >: Null <: AnyRef
+  type Database <: AnyRef
 
   /** Get a Database instance from connection pool. */
   def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Database]

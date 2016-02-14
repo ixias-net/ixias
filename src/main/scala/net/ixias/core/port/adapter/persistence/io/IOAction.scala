@@ -16,7 +16,7 @@ import scala.util.{ Try, Success, Failure }
 trait IOAction {
 
   /** The type of the context used for running IOActions. */
-  type Context >: Null <: IOActionContext
+  type Context <: IOActionContext
 
   /** Construct a success validation value. */
   def success[T](value: T): Try[T] = Success(value)
