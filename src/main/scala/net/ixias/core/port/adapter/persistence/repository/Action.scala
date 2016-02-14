@@ -14,12 +14,6 @@ import core.port.adapter.persistence.model.{ DataSourceName, Converter }
 import core.port.adapter.persistence.backend.BasicBackend
 import core.port.adapter.persistence.io.{ IOActionContext, EntityIOActionContext }
 
-/** A action request. */
-trait ActionRequest[T <: BasicBackend] {
-  val backend: T
-  val dsn:     DataSourceName
-}
-
 /** A builder for generic Actions that generalizes over the type of requests. */
 trait ActionFunction[-R, +P] {
 

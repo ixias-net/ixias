@@ -20,7 +20,7 @@ trait ShadeProfile[K, E <: Entity[K]] extends Profile[K, E] with ShadeAction {
   type Backend = ShadeBackend
 
   /** The back-end implementation for this profile */
-  protected implicit lazy val backend = new ShadeBackend {}
+  protected lazy val backend = new ShadeBackend {}
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,

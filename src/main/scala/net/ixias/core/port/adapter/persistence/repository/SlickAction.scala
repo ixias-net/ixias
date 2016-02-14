@@ -23,43 +23,61 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
   val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_MASTER
 
   /** The action request. */
-  protected case class SlickActionRequest[T <: Table[_, Driver]](
-    val backend: Backend,
-    val dsn:     DataSourceName,
-    val table:   T
-  ) extends ActionRequest[Backend]
-
+  protected case class DBActionRequest[T <: Table[_, Driver]](
+    val dsn:   DataSourceName,
+    val table: T
+  )
 
   /** Run the supplied function with a database object by using pool database session. */
-  class DBAction[T <: Table[_, Driver]] extends Action[SlickActionRequest[T], (Database, T#Query)] {
+  class DBAction[T <: Table[_, Driver]]
+      extends Action[DBActionRequest[T], (Database, T#Query)]
+  {
+    type Request       =  DBActionRequest[T]
+    type BlockArgument = (Database, T#Query)
 
     /** Invoke the block. */
-    def invokeBlock[A](request: SlickActionRequest[T], block: ((Database, T#Query)) => Future[A]): Future[A] =
+    def invokeBlock[A](request: Request, block: BlockArgument => Future[A]): Future[A] =
       (for {
-        db <- request.backend.getDatabase(request.dsn)
+        db <- backend.getDatabase(request.dsn)
         v  <- block((db, request.table.query))
       } yield v) andThen {
         case Failure(ex) => logger.error(
           "The database action failed. dsn=" + request.dsn.toString, ex)
       }
   }
+
+  // --[ DBAction ]-------------------------------------------------------------
   object DBAction {
     /** Returns a future of a result */
-    def apply[T <: Table[_, Driver], A, B](table: T, keyDSN: String = DEFAULT_DSN_KEY)
-      (block: ((Database, T#Query)) => Future[A])(implicit backend: Backend, conv: Converter[A, B]): Future[B] =
+    def apply[T <: Table[_, Driver], A, B]
+      (table: T, keyDSN: String = DEFAULT_DSN_KEY)
+      (block: ((Database, T#Query)) => Future[A])
+      (implicit conv: Converter[A, B]): Future[B] =
+    {
       for {
         dsn <- Future(table.dsn.get(keyDSN).get)
-        v1  <- (new DBAction[T]).invokeBlock(SlickActionRequest(backend, dsn, table), block)
+        v1  <- (new DBAction[T]).invokeBlock(DBActionRequest(dsn, table), block)
         v2  <- Future(conv.convert(v1))
       } yield (v2)
+    }
   }
 
-
+  // --[ RunDBAction ]-------------------------------------------------------------
   /** Run a database action by using pool database session. */
   object RunDBAction {
     /** Returns a future of a result */
-    def apply[T <: Table[_, Driver], A, B](table: T, keyDSN: String = DEFAULT_DSN_KEY)
-      (block: T#Query => DBIOAction[A, NoStream, Nothing])(implicit backend: Backend, conv: Converter[A, B]): Future[B] =
-      ???
+    def apply[T <: Table[_, Driver], A, B]
+      (table: T, keyDSN: String = DEFAULT_DSN_KEY)
+      (action: T#Query => DBIOAction[A, NoStream, Nothing])
+      (implicit conv: Converter[A, B]): Future[B] =
+    {
+      for {
+        dsn <- Future(table.dsn.get(keyDSN).get)
+        v1  <- (new DBAction[T]).invokeBlock(DBActionRequest(dsn, table), {
+          case (db, slick) => db.run(action(slick))
+        })
+        v2  <- Future(conv.convert(v1))
+      } yield (v2)
+    }
   }
 }

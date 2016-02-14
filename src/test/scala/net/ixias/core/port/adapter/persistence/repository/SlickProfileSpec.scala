@@ -24,7 +24,9 @@ object UserRepository extends { val driver = MySQLDriver }
 
   // --[ Read ]-----------------------------------------------------------------
   /** Optionally returns the value associated with a identity. */
-  def get(id: Id): Future[Option[User]] = ???
+  def get(id: Id): Future[Option[User]] = RunDBAction(UserTable) { slick =>
+    slick.filter(_.id === id.get).result.headOption
+  }
 
   // --[ Write ]----------------------------------------------------------------
   /** Adds a new identity/entity-value pair to this repository.
@@ -37,18 +39,10 @@ object UserRepository extends { val driver = MySQLDriver }
 
   /** Removes a identity from this map,
     * returning the value associated previously with that identity as an option. */
-  def remove(id: Id): Future[Option[User]] =
-    DBAction(UserTable) { case (db, slick) =>
-      db.run(for {
-        old <- slick.filter(_.id === id.get).result.headOption
-        _   <- slick.filter(_.id === id.get).delete
-      } yield old)
-    }
-
-  def test(id: Id): Future[Unit] =
-    DBAction(UserTable) { case (db, slick) =>
-      db.run(for {
-        old <- slick.filter(_.id === id.get).result.headOption
-      } yield old)
-    }
+  def remove(id: Id): Future[Option[User]] = RunDBAction(UserTable) { slick =>
+    for {
+      old <- slick.filter(_.id === id.get).result.headOption
+      _   <- slick.filter(_.id === id.get).delete
+    } yield old
+  }
 }
