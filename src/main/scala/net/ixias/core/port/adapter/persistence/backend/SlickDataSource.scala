@@ -8,12 +8,14 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
-import scala.util.Try
+import scala.concurrent.Future
 import java.sql.Connection
 import slick.jdbc.JdbcDataSource
+
+import core.port.adapter.persistence.model.DataSourceName
 import core.port.adapter.persistence.io.EntityIOActionContext
 
-trait SlickDataSource extends DataSource with SlickDataSourceConfig {
+trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */
@@ -47,32 +49,30 @@ trait SlickDataSource extends DataSource with SlickDataSourceConfig {
   /** Factory methods for creating `DatabSouce` instances with using HikariCP. */
   trait HikariCPDataSourceFactory extends DataSourceFactoryDef {
     import com.zaxxer.hikari._
-    import DataSourceName.Implicits._
 
     /** Create a JdbcDataSource from DSN (Database Souce Name) */
-    def forDSN(name: String)(implicit ctx: Context): Try[DataSource] =
-      for {
-        driver <- getDriverClassName(name)
-        url    <- getJdbcUrl(name)
-      } yield {
-        val hconf = new HikariConfig()
-        hconf.setDriverClassName(driver)
-        hconf.setJdbcUrl(url)
-        hconf.setPoolName(name)
+    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Future[DataSource] =
+      Future.fromTry{
+        for {
+          driver <- getDriverClassName(dsn)
+          url    <- getJdbcUrl(dsn)
+        } yield {
+          val hconf = new HikariConfig()
+          hconf.setDriverClassName(driver)
+          hconf.setJdbcUrl(url)
+          hconf.setPoolName(dsn.toString)
 
-        // NOTE. ForkJoinPool x pool size
-        hconf.setMaximumPoolSize(1)
+          // Optional properties.
+          getUserName(dsn)                  map hconf.setUsername
+          getPassword(dsn)                  map hconf.setPassword
+          getHostSpecReadOnly(dsn)          map hconf.setReadOnly
+          getHostSpecMinIdle(dsn)           map hconf.setMinimumIdle
+          getHostSpecMaxPoolSize(dsn)       map hconf.setMaximumPoolSize
+          getHostSpecConnectionTimeout(dsn) map hconf.setConnectionTimeout
+          getHostSpecIdleTimeout(dsn)       map hconf.setIdleTimeout
 
-        // Optional properties.
-        getUserName(name)                  map hconf.setUsername
-        getPassword(name)                  map hconf.setPassword
-        getHostSpecReadOnly(name)          map hconf.setReadOnly
-        getHostSpecMinIdle(name)           map hconf.setMinimumIdle
-        getHostSpecMaxPoolSize(name)       map hconf.setMaximumPoolSize
-        getHostSpecConnectionTimeout(name) map hconf.setConnectionTimeout
-        getHostSpecIdleTimeout(name)       map hconf.setIdleTimeout
-
-        HikariCPDataSource(new HikariDataSource(hconf), hconf)
+          HikariCPDataSource(new HikariDataSource(hconf), hconf)
+        }
       }
   }
 }

@@ -33,7 +33,7 @@ trait EntityIOAction[K, E <: Entity[K]] extends IOAction {
   /** Retrieves the value which is associated with the given identity.
     * This method invokes the `default` method of the map if there is no mapping
     * from the given identity to a value. */
-  def apply(id: Id)(implicit ctx: Context): Future[E] =
+  def apply(id: Id): Future[E] =
     get(id).flatMap(_ match {
       case Some(v) => Future.successful(v)
       case None    => default(id)
@@ -41,24 +41,24 @@ trait EntityIOAction[K, E <: Entity[K]] extends IOAction {
 
   // --[ Methods ]--------------------------------------------------------------
   /** Optionally returns the value associated with a identity. */
-  def get(id: Id)(implicit ctx: Context): Future[Option[E]]
+  def get(id: Id): Future[Option[E]]
 
   /** Returns the value associated with a identity, or
     * a default value if the identity is not contained in the repository. */
-  def getOrElse[E2 >: E](id: Id, f: Id => E2)(implicit ctx: Context): Future[E2] =
+  def getOrElse[E2 >: E](id: Id, f: Id => E2): Future[E2] =
     get(id).map(_.getOrElse(f(id)))
 
   /** Tests whether this repository contains a binding for a identity. */
-  def contains(id: Id)(implicit ctx: Context): Future[Boolean] =
+  def contains(id: Id): Future[Boolean] =
     get(id).map(_.isDefined)
 
   // --[ Methods ]--------------------------------------------------------------
   /** Adds a new identity/entity-value pair to this repository.
     * If the map already contains a mapping for the identity,
     * it will be overridden by the new value */
-  def store(entity: E)(implicit ctx: Context): Future[Unit]
+  def store(entity: E): Future[Unit]
 
   /** Removes a identity from this map,
     * returning the value associated previously with that identity as an option. */
-  def remove(id: Id)(implicit ctx: Context): Future[Option[E]]
+  def remove(id: Id): Future[Option[E]]
 }

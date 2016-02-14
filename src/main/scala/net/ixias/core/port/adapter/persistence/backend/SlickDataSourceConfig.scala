@@ -10,8 +10,9 @@ package core.port.adapter.persistence.backend
 
 import scala.util.Try
 import java.util.concurrent.TimeUnit
+import core.port.adapter.persistence.model.DataSourceName
 
-trait SlickDataSourceConfig extends DataSourceConfig { self: SlickDataSource =>
+trait SlickDataSourceConfig extends BasicDataSourceConfig { self: SlickDataSource =>
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */

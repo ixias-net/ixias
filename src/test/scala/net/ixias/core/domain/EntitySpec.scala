@@ -13,7 +13,7 @@ import org.specs2.mutable.Specification
 
 // ユーザ情報
 //~~~~~~~~~~~~
-case class User1(
+case class User(
   val id:        Identity[Long],
   val email:     String,
   val updatedAt: DateTime = new DateTime(),
@@ -33,7 +33,7 @@ case class User2(
 class EntitySpec extends Specification {
   "Enum" should {
     "user with id as scala variable" in {
-      val user = User1(SomeId(1), "taro.yamada@nextbeat.net")
+      val user = User(SomeId(1), "taro.yamada@nextbeat.net")
       user.id    must_== SomeId(1)
       user.email must_== "taro.yamada@nextbeat.net"
     }
@@ -44,7 +44,7 @@ class EntitySpec extends Specification {
       user.email must_== "taro.yamada@nextbeat.net"
     }
     "user with empty id - 1" in {
-      val user = User1(NoneId, "taro.yamada@nextbeat.net")
+      val user = User(NoneId, "taro.yamada@nextbeat.net")
       user.id     must_== NoneId
       user.id.get must throwA[NoSuchElementException]
       user.email  must_== "taro.yamada@nextbeat.net"

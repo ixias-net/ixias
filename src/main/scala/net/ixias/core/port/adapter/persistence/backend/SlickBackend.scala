@@ -8,11 +8,14 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
-import scala.util.{ Try, Success }
+import scala.concurrent.Future
 import scala.collection.mutable.Map
-import slick.driver.JdbcProfile
+import scala.concurrent.ExecutionContext.Implicits.global
 
-trait SlickBackend[P <: JdbcProfile] extends Backend with SlickDataSource {
+import slick.driver.JdbcProfile
+import core.port.adapter.persistence.model.DataSourceName
+
+trait SlickBackend[P <: JdbcProfile] extends BasicBackend with SlickDataSource {
 
   /** The type of Slick Jdbc Driver. */
   type Driver = P
@@ -20,17 +23,21 @@ trait SlickBackend[P <: JdbcProfile] extends Backend with SlickDataSource {
   /** The type of database objects used by this backend. */
   type Database = P#Backend#Database
 
+  /** The configured driver. */
+  val driver: P
+
   /** The cache for Database */
-  protected var cache: Map[String, Database] = Map.empty
+  protected var cache: Map[Int, Database] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(driver: Driver, dsn: String)(implicit ctx: Context): Try[Database] = {
-    val insensitive = dsn.toLowerCase
-    cache.get(insensitive) match {
-      case Some(v) => Success(v)
+  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Database] = {
+    cache.get(dsn.hashCode) match {
+      case Some(v) => Future.successful(v)
       case None    => for {
-        ds <- DataSource.forDSN(insensitive)
-      } yield { val db = driver.backend.Database.forSource(ds); cache.update(insensitive, db); db }
+        ds <- DataSource.forDSN(dsn)
+        db <- Future(driver.backend.Database.forSource(ds))
+        _  <- Future(cache.update(dsn.hashCode, db))
+      } yield db
     }
   }
 }

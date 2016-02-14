@@ -8,58 +8,66 @@
 package net.ixias
 package core.port.adapter.persistence.repository
 
-import scala.util.{ Try, Success, Failure }
-import scala.util.control.NonFatal
+import scala.reflect.ClassTag
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
-import com.typesafe.config.Config
+import shade.memcached.MemcachedCodecs
 
 import core.domain.model.Entity
-import core.port.adapter.persistence.backend.ShadeBackend
-import core.port.adapter.persistence.io.EntityIOActionContext
-
+import core.port.adapter.persistence.model.DataSourceName
 
 /**
- * The base repository for persistence with using the Shade library.
+ * The base repository which is implemented basic feature methods.
  */
-trait ShadeRepository[K, E <: Entity[K]] extends Repository[K, E] with ShadeProfile
+abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
+    extends ShadeProfile[K, V] with MemcachedCodecs {
 
-/**
- * The profile for persistence with using the Shade library.
- */
-trait ShadeProfile extends Profile with ShadeActionComponent { self =>
+  // --[ Methods ]--------------------------------------------------------------
+  protected val dsn: DataSourceName
 
-  type This >: this.type <: ShadeProfile
-  /** The back-end type required by this profile */
-  type Backend  = ShadeBackend
-  /** The type of database objects. */
-  type Database = Backend#Database
-  /** The type of the context used for running repository Actions */
-  type Context =  EntityIOActionContext
+  /** Gets expiry time. */
+  def expiry(key: Id): Duration = Duration.Inf
 
-  /** The back-end implementation for this profile */
-  val backend = new ShadeBackend {}
-
-  /** The API for using the utility methods with a single import statement.
-    * This provides the repository's implicits, the Database connections,
-    * and commonly types and objects. */
-  trait API extends super.API
-  val api: API = new API {}
-
-  /** Run the supplied function with a database object by using pool database session. */
-  def withDatabase[T](dsn:String)(f: Database => Future[T])(implicit ctx: Context): Future[T] = {
-    (for {
-      db    <- Future.fromTry(backend.getDatabase(dsn))
-      value <- f(db)
-    } yield value) andThen {
-      case Failure(ex) => actionLogger.error("The database action failed. dsn=" + dsn, ex)
+  // --[ Methods ]--------------------------------------------------------------
+  /** Fetches a value from the cache store. */
+  def get(key: Id): Future[Option[V]] =
+    DBAction(dsn) { db =>
+      (for {
+        v <- db.get[V](key.get.toString)
+      } yield(v)) recoverWith {
+        case _: java.io.InvalidClassException => Future.successful(None)
+      }
     }
-  }
-}
 
-trait ShadeActionComponent extends ActionComponent { profile: ShadeProfile =>
-  /** Create the default IOActionContext for this repository. */
-  def createPersistenceActionContext(cfg: Config): Context =
-     EntityIOActionContext(config = cfg)
-}
+  // --[ Methods ]--------------------------------------------------------------
+  /** Sets a (key, value) in the cache store. */
+  def store(value: V): Future[Unit] =
+    DBAction(dsn) { db =>
+      for {
+        _ <- db.set(value.id.get.toString, value, expiry(value.id))
+      } yield ()
+    }
 
+  /** Update existing value expiry in the cache store. */
+  def updateExpiry(key: Id): Future[Unit] =
+    DBAction(dsn) { db =>
+      (for {
+        Some(v) <- db.get[V](key.get.toString)
+        _       <- db.set(key.get.toString, v, expiry(key))
+      } yield ()) recoverWith {
+        case _: NoSuchElementException
+           | _: java.io.InvalidClassException => Future.successful(Unit)
+      }
+    }
+
+  /** Deletes a key from the cache store. */
+  def remove(key: Id): Future[Option[V]] =
+    DBAction(dsn) { db =>
+      for {
+        old <- db.get[V](key.get.toString) recoverWith {
+          case _: java.io.InvalidClassException => Future.successful(None) }
+        _   <- db.delete(key.get.toString)
+      } yield old
+    }
+}
