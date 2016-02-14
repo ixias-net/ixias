@@ -11,6 +11,8 @@ package core.port.adapter.persistence.repository
 import scala.util.Failure
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+
+import slick.dbio.{ DBIOAction, NoStream }
 import slick.driver.JdbcProfile
 import core.port.adapter.persistence.model.{ DataSourceName, Table, Converter }
 
@@ -41,7 +43,6 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
           "The database action failed. dsn=" + request.dsn.toString, ex)
       }
   }
-
   object DBAction {
     /** Returns a future of a result */
     def apply[T <: Table[_, Driver], A, B](table: T, keyDSN: String = DEFAULT_DSN_KEY)
@@ -51,5 +52,14 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
         v1  <- (new DBAction[T]).invokeBlock(SlickActionRequest(backend, dsn, table), block)
         v2  <- Future(conv.convert(v1))
       } yield (v2)
+  }
+
+
+  /** Run a database action by using pool database session. */
+  object RunDBAction {
+    /** Returns a future of a result */
+    def apply[T <: Table[_, Driver], A, B](table: T, keyDSN: String = DEFAULT_DSN_KEY)
+      (block: T#Query => DBIOAction[A, NoStream, Nothing])(implicit backend: Backend, conv: Converter[A, B]): Future[B] =
+      ???
   }
 }

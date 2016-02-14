@@ -22,10 +22,9 @@ trait ActionRequest[T <: BasicBackend] {
 
 /** A builder for generic Actions that generalizes over the type of requests. */
 trait ActionFunction[-R, +P] {
+
   /** Invoke the block.
-    * This is the main method that an ActionBuilder has to implement,
-    * any other actions, modify the request object or
-    * potentially use a different class to represent the request. */
+    * This is the main method that an ActionBuilder has to implement */
   def invokeBlock[A](request: R, block: P => Future[A]): Future[A]
 
   /** Get the action context to run the request in. */
