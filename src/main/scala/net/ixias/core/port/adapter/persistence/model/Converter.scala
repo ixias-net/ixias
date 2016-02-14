@@ -17,7 +17,7 @@ trait Converter[-A, B] {
 }
 
 /** The factory object for converter. */
-object Converter extends TableDefaultConverter {
+object Converter { // extends TableDefaultConverter {
   def apply[A, B](f: A => B): Converter[A, B] = new Converter[A, B] {
     def convert(o: A): B = f(o)
   }
@@ -26,6 +26,14 @@ object Converter extends TableDefaultConverter {
 /** Default Serializers. */
 trait TableDefaultConverter {
   import scala.language.implicitConversions
+
+  /** Convert to Unit. */
+  // implicit object ToUnitConv extends Converter[AnyVal, Unit] {
+  //   def convert(o: AnyVal) = Unit
+  // }
+  // implicit object ToUnitConv2 extends Converter[AnyRef, Unit] {
+  //   def convert(o: AnyRef) = Unit
+  // }
 
   /** Serializer for Seq[T] types. */
   implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]): Converter[Seq[A], Seq[B]] =

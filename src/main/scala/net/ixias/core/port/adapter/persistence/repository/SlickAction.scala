@@ -12,7 +12,6 @@ import scala.util.Failure
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import slick.driver.JdbcProfile
-import slick.lifted.TableQuery
 import core.port.adapter.persistence.model.{ DataSourceName, Table, Converter }
 
 /** Provides actions */
@@ -22,17 +21,18 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
   val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_MASTER
 
   /** The action request. */
-  protected case class SlickActionRequest(
+  protected case class SlickActionRequest[T <: Table[Driver]](
     val backend: Backend,
     val dsn:     DataSourceName,
-    val table:   Table[Driver]
+    val table:   T
   ) extends ActionRequest[Backend]
 
+
   /** Run the supplied function with a database object by using pool database session. */
-  object DBAction extends Action[SlickActionRequest, (Database, TableQuery[_])] {
+  class DBAction[T <: Table[Driver]] extends Action[SlickActionRequest[T], (Database, T#Query)] {
 
     /** Invoke the block. */
-    def invokeBlock[A](request: SlickActionRequest, block: ((Database, TableQuery[_])) => Future[A]): Future[A] =
+    def invokeBlock[A](request: SlickActionRequest[T], block: ((Database, T#Query)) => Future[A]): Future[A] =
       (for {
         db <- request.backend.getDatabase(request.dsn)
         v  <- block((db, request.table.query))
@@ -40,14 +40,16 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
         case Failure(ex) => logger.error(
           "The database action failed. dsn=" + request.dsn.toString, ex)
       }
+  }
 
+  object DBAction {
     /** Returns a future of a result */
-    def apply[A, B](table: Table[Driver], keyDSN: String = DEFAULT_DSN_KEY)(block: ((Database, TableQuery[_])) => Future[A])
-      (implicit backend: Backend, conv: Converter[A, B]): Future[B] =
+    def apply[T <: Table[Driver], A, B](table: T, keyDSN: String = DEFAULT_DSN_KEY)
+      (block: ((Database, T#Query)) => Future[A])(implicit backend: Backend, conv: Converter[A, B]): Future[B] =
       for {
         dsn <- Future(table.dsn.get(keyDSN).get)
-        v1  <- invokeBlock(SlickActionRequest(backend, dsn, table), block)
+        v1  <- (new DBAction[T]).invokeBlock(SlickActionRequest(backend, dsn, table), block)
         v2  <- Future(conv.convert(v1))
-      } yield(v2)
+      } yield (v2)
   }
 }

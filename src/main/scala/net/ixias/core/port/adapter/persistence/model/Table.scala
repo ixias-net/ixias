@@ -21,7 +21,7 @@ trait Table[P <: JdbcProfile] { self =>
   val dsn: Map[String, DataSourceName]
 
   /** The table query. */
-  val query: slick.lifted.TableQuery[Table]
+  val query: Query
 
   //-- [ Table Manifest ] ------------------------------------------------------
   /** The type of table row. */
