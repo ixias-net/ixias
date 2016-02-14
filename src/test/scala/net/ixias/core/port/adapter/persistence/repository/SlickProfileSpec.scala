@@ -17,9 +17,10 @@ import core.port.adapter.persistence.model
 
 object UserRepository extends { val driver = MySQLDriver }
     with SlickProfile[Long, User, MySQLDriver]
-{
+{ self =>
   import api._
   val UserTable = model.UserTable[MySQLDriver](driver)
+  import UserTable.ToModelConv
 
   // --[ Read ]-----------------------------------------------------------------
   /** Optionally returns the value associated with a identity. */
@@ -41,6 +42,13 @@ object UserRepository extends { val driver = MySQLDriver }
       db.run(for {
         old <- slick.filter(_.id === id.get).result.headOption
         _   <- slick.filter(_.id === id.get).delete
+      } yield old)
+    }
+
+  def test(id: Id): Future[Unit] =
+    DBAction(UserTable) { case (db, slick) =>
+      db.run(for {
+        old <- slick.filter(_.id === id.get).result.headOption
       } yield old)
     }
 }

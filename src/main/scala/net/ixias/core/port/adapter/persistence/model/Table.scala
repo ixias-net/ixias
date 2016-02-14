@@ -11,7 +11,7 @@ package core.port.adapter.persistence.model
 import slick.driver.JdbcProfile
 import core.port.adapter.persistence.lifted._
 
-trait Table[P <: JdbcProfile] { self =>
+trait Table[R, P <: JdbcProfile] { self =>
 
   //-- [ Required properties ] -------------------------------------------------
   /** The configured driver. */
@@ -25,7 +25,7 @@ trait Table[P <: JdbcProfile] { self =>
 
   //-- [ Table Manifest ] ------------------------------------------------------
   /** The type of table row. */
-  type Record
+  type Record = R
 
   /** A Tag marks a specific row represented by an AbstractTable instance. */
   type Tag = slick.lifted.Tag

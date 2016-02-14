@@ -13,8 +13,17 @@ import slick.driver.JdbcProfile
 import core.domain.model._
 import org.specs2.mutable.Specification
 
+/** レコード定義 */
+case class UserRecord (
+  val id:        Long,
+  val email:     String,
+  val updatedAt: DateTime = new DateTime,
+  val createdAt: DateTime = new DateTime
+)
+
 /** テーブル定義 */
-case class UserTable[P <: JdbcProfile](val driver: P) extends Table[P] { self =>
+case class UserTable[P <: JdbcProfile](val driver: P)
+    extends Table[UserRecord, P] { self =>
   import api._
 
   /** DNS定義 */
@@ -23,26 +32,25 @@ case class UserTable[P <: JdbcProfile](val driver: P) extends Table[P] { self =>
     "slave"  -> DataSourceName("ixais.db.slick://slave/test")
   )
 
-  /** レコード定義 */
-  case class Record (
-    val id:        Long,
-    val name:      Option[String],
-    val email:     Option[String],
-    val updatedAt: DateTime = new DateTime,
-    val createdAt: DateTime = new DateTime
-  )
-
   /** テーブル定義 */
   class Table(tag: Tag) extends BasicTable(tag, "user") {
-    def id        = column[Long]           ("uid",        O.AsciiChar8, O.PrimaryKey)
-    def name      = column[Option[String]] ("name",       O.AsciiChar8, O.PrimaryKey)
-    def email     = column[Option[String]] ("email",      O.AsciiChar8, O.PrimaryKey)
-    def updatedAt = column[DateTime]       ("updated_at", O.TsCurrent)
-    def createdAt = column[DateTime]       ("created_at", O.Ts)
-    def * = (id, name, email, updatedAt, createdAt) <> (Record.tupled, Record.unapply)
+    def id        = column[Long]     ("uid",        O.AsciiChar8, O.PrimaryKey)
+    def email     = column[String]   ("email",      O.AsciiChar8, O.PrimaryKey)
+    def updatedAt = column[DateTime] ("updated_at", O.TsCurrent)
+    def createdAt = column[DateTime] ("created_at", O.Ts)
+    def * = (id, email, updatedAt, createdAt) <> (UserRecord.tupled, UserRecord.unapply)
   }
 
   /** クエリー定義 */
   class Query extends BasicQuery(new Table(_))
   lazy val query = new Query
+
+  implicit val ToModelConv = new Converter[UserRecord, User] {
+    def convert(v: UserRecord): User = User(
+      id        = SomeId(v.id),
+      email     = v.email,
+      updatedAt = v.updatedAt,
+      createdAt = v.createdAt
+    )
+  }
 }

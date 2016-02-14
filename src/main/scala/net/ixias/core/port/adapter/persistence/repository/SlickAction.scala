@@ -21,7 +21,7 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
   val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_MASTER
 
   /** The action request. */
-  protected case class SlickActionRequest[T <: Table[Driver]](
+  protected case class SlickActionRequest[T <: Table[_, Driver]](
     val backend: Backend,
     val dsn:     DataSourceName,
     val table:   T
@@ -29,7 +29,7 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
 
 
   /** Run the supplied function with a database object by using pool database session. */
-  class DBAction[T <: Table[Driver]] extends Action[SlickActionRequest[T], (Database, T#Query)] {
+  class DBAction[T <: Table[_, Driver]] extends Action[SlickActionRequest[T], (Database, T#Query)] {
 
     /** Invoke the block. */
     def invokeBlock[A](request: SlickActionRequest[T], block: ((Database, T#Query)) => Future[A]): Future[A] =
@@ -44,7 +44,7 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
 
   object DBAction {
     /** Returns a future of a result */
-    def apply[T <: Table[Driver], A, B](table: T, keyDSN: String = DEFAULT_DSN_KEY)
+    def apply[T <: Table[_, Driver], A, B](table: T, keyDSN: String = DEFAULT_DSN_KEY)
       (block: ((Database, T#Query)) => Future[A])(implicit backend: Backend, conv: Converter[A, B]): Future[B] =
       for {
         dsn <- Future(table.dsn.get(keyDSN).get)
