@@ -26,7 +26,7 @@ trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile]
   val driver: P
 
   /** The back-end implementation for this profile */
-  val backend = new SlickBackend[P] { val driver = self.driver }
+  protected implicit lazy val backend = new SlickBackend[P] { val driver = self.driver }
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
