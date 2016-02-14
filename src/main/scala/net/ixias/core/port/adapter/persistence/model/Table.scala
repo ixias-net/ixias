@@ -11,7 +11,7 @@ package core.port.adapter.persistence.model
 import slick.driver.JdbcProfile
 import core.port.adapter.persistence.lifted._
 
-trait Table[R, P <: JdbcProfile] { self =>
+trait Table[P <: JdbcProfile] { self =>
 
   //-- [ Required properties ] -------------------------------------------------
   /** The configured driver. */
@@ -24,29 +24,21 @@ trait Table[R, P <: JdbcProfile] { self =>
   val query: slick.lifted.TableQuery[Table]
 
   //-- [ Table Manifest ] ------------------------------------------------------
+  /** The type of table row. */
+  type Record
+
   /** A Tag marks a specific row represented by an AbstractTable instance. */
   type Tag = slick.lifted.Tag
 
-  /** The type of table row. */
-  type TableRecord = R
-
   /** The type of all table row objects. */
-  type Table      <: driver.Table[TableRecord]
-  type BasicTable =  driver.Table[TableRecord]
+  type Table      <: driver.Table[Record]
+  type BasicTable =  driver.Table[Record]
 
   //-- [ Table Query ] ---------------------------------------------------------
   /** Represents a database table. Implementation class add extension methods to TableQuery
     * for operations that can be performed on tables but not on arbitrary queries. */
-  type TableQuery      <: slick.lifted.TableQuery[Table]
-  type BasicTableQuery =  slick.lifted.TableQuery[Table]
-
-  //-- [ Converter ] -----------------------------------------------------------
-  /** Provided a Converter implicit for its type is available,
-    * convert any object into a specified type. */
-  trait ConverterImplicits
-  val converte: ConverterImplicits = new ConverterImplicits{}
-
-  def convert[A, B](o: A)(implicit conv: Converter[A, B]): B = conv.convert(o)
+  type Query      <: slick.lifted.TableQuery[Table]
+  type BasicQuery =  slick.lifted.TableQuery[Table]
 
   //-- [ Utility Methods ] -----------------------------------------------------
   /** The API for using the utility methods with a single import statement.
