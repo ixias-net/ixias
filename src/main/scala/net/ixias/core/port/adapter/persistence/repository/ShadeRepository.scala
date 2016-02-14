@@ -26,15 +26,12 @@ abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
   // --[ Methods ]--------------------------------------------------------------
   protected val dsn: DataSourceName
 
-  /** Gets a cache client resource. */
-  def withDatabase[T](f: Database => Future[T])(implicit ctx: Context): Future[T]
-
   /** Gets expiry time. */
   def expiry(key: Id): Duration = Duration.Inf
 
   // --[ Methods ]--------------------------------------------------------------
   /** Fetches a value from the cache store. */
-  def get(key: Id)(implicit ctx: Context): Future[Option[V]] =
+  def get(key: Id): Future[Option[V]] =
     DBAction(dsn) { db =>
       (for {
         v <- db.get[V](key.get.toString)
@@ -45,7 +42,7 @@ abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
 
   // --[ Methods ]--------------------------------------------------------------
   /** Sets a (key, value) in the cache store. */
-  def store(value: V)(implicit ctx: Context): Future[Unit] =
+  def store(value: V): Future[Unit] =
     DBAction(dsn) { db =>
       for {
         _ <- db.set(value.id.get.toString, value, expiry(value.id))
@@ -53,7 +50,7 @@ abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
     }
 
   /** Update existing value expiry in the cache store. */
-  def updateExpiry(key: Id)(implicit ctx: Context): Future[Unit] =
+  def updateExpiry(key: Id): Future[Unit] =
     DBAction(dsn) { db =>
       (for {
         Some(v) <- db.get[V](key.get.toString)
@@ -65,7 +62,7 @@ abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
     }
 
   /** Deletes a key from the cache store. */
-  def remove(key: Id)(implicit ctx: Context): Future[Option[V]] =
+  def remove(key: Id): Future[Option[V]] =
     DBAction(dsn) { db =>
       for {
         old <- db.get[V](key.get.toString) recoverWith {
