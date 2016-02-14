@@ -14,26 +14,22 @@ import core.port.adapter.persistence.model.{ DataSourceName, Converter }
 import core.port.adapter.persistence.backend.BasicBackend
 import core.port.adapter.persistence.io.{ IOActionContext, EntityIOActionContext }
 
+/** A action request. */
+trait ActionRequest[T <: BasicBackend] {
+  val backend: T
+  val dsn:     DataSourceName
+}
+
 /** A builder for generic Actions that generalizes over the type of requests. */
-trait ActionFunction[T <: BasicBackend, +P] {
-
-  /** The type of backend object. */
-  type Backend = T
-
+trait ActionFunction[-R, +P] {
   /** Invoke the block.
     * This is the main method that an ActionBuilder has to implement,
     * any other actions, modify the request object or
     * potentially use a different class to represent the request. */
-  def invokeBlock[A](backend: Backend, dsn: DataSourceName, block: P => Future[A]): Future[A]
+  def invokeBlock[A](request: R, block: P => Future[A]): Future[A]
 
   /** Get the action context to run the request in. */
   protected implicit val IOActionContext = EntityIOActionContext.Implicits.global
 }
 
-trait Action[T <: BasicBackend, +P] extends ActionFunction[T, P] {
-
-  /** Returns a future of a result */
-  def apply[A](dsn: DataSourceName)
-    (block: P => Future[A])(implicit backend: Backend): Future[A] =
-    invokeBlock(backend, dsn, block)
-}
+trait Action[-R, +P] extends ActionFunction[R, P]

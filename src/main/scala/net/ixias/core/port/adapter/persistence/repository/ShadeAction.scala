@@ -16,16 +16,28 @@ import core.port.adapter.persistence.model.DataSourceName
 /** Provides actions */
 trait ShadeAction { self: ShadeProfile[_, _] =>
 
-  /** Run the supplied function with a database object by using pool database session. */
-  object DBAction extends Action[Backend, Database] {
+  /** The action request. */
+  protected case class ShadeActionRequest(
+    val backend: Backend,
+    val dsn:     DataSourceName
+  ) extends ActionRequest[Backend]
+
+
+  /** Run the supplied function with a database object. */
+  object DBAction extends Action[ShadeActionRequest, Database] {
 
     /** Invoke the block. */
-    def invokeBlock[A](backend: Backend, dsn: DataSourceName, block: Database => Future[A]): Future[A] =
+    def invokeBlock[A](request: ShadeActionRequest, block: Database => Future[A]): Future[A] =
       (for {
-        db <- backend.getDatabase(dsn)
+        db <- request.backend.getDatabase(request.dsn)
         v  <- block(db)
       } yield v) andThen {
-        case Failure(ex) => logger.error("The database action failed. dsn=" + dsn.toString, ex)
+        case Failure(ex) => logger.error(
+          "The database action failed. dsn=" + request.dsn.toString, ex)
       }
+
+    /** Returns a future of a result */
+    def apply[A](dsn: DataSourceName)(block: Database => Future[A])(implicit backend: Backend): Future[A] =
+      invokeBlock(ShadeActionRequest(backend, dsn), block)
   }
 }
