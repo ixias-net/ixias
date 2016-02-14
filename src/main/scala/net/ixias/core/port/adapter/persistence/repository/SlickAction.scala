@@ -28,6 +28,7 @@ trait SlickAction[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
     val table: T
   )
 
+  // --[ Slick Common Action ]--------------------------------------------------
   /** Run the supplied function with a database object by using pool database session. */
   class DBAction[T <: Table[_, Driver]]
       extends Action[DBActionRequest[T], (Database, T#Query)]

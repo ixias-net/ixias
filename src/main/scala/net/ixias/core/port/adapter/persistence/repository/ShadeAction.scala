@@ -19,6 +19,10 @@ trait ShadeAction { self: ShadeProfile[_, _] =>
   /** Run the supplied function with a database object. */
   object DBAction extends Action[DataSourceName, Database] {
 
+    /** Returns a future of a result */
+    def apply[A](dsn: DataSourceName)(block: Database => Future[A]): Future[A] =
+      invokeBlock(dsn, block)
+
     /** Invoke the block. */
     def invokeBlock[A](dsn: DataSourceName, block: Database => Future[A]): Future[A] =
       (for {
@@ -28,9 +32,5 @@ trait ShadeAction { self: ShadeProfile[_, _] =>
         case Failure(ex) => logger.error(
           "The database action failed. dsn=" + dsn.toString, ex)
       }
-
-    /** Returns a future of a result */
-    def apply[A](dsn: DataSourceName)(block: Database => Future[A]): Future[A] =
-      invokeBlock(dsn, block)
   }
 }
