@@ -8,27 +8,29 @@
 package net.ixias
 package core.port.adapter.persistence.backend
 
-import scala.util.{ Try, Success }
+import scala.concurrent.Future
 import scala.collection.mutable.Map
 import scala.concurrent.ExecutionContext.Implicits.global
 import shade.memcached.Memcached
+import core.port.adapter.persistence.model.DataSourceName
 
-trait ShadeBackend extends Backend with ShadeDataSource {
+trait ShadeBackend extends BasicBackend with ShadeDataSource {
 
   /** The type of database objects used by this backend. */
   type Database = Memcached
 
   /** The cache for Database */
-  protected var cache: Map[String, Memcached] = Map.empty
+  protected var cache: Map[Int, Memcached] = Map.empty
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: String)(implicit ctx: Context): Try[Memcached] = {
-    val insensitive = dsn.toLowerCase
-    cache.get(insensitive) match {
-      case Some(v) => Success(v)
+  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Memcached] = {
+    cache.get(dsn.hashCode) match {
+      case Some(v) => Future.successful(v)
       case None    => for {
-        ds <- DataSource.forDSN(insensitive)
-      } yield { val db = Memcached(ds); cache.update(insensitive, db); db }
+        ds <- DataSource.forDSN(dsn)
+        db <- Future(Memcached(ds))
+        _  <- Future(cache.update(dsn.hashCode, db))
+      } yield db
     }
   }
 }
