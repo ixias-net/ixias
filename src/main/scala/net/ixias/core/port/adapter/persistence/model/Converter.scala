@@ -11,12 +11,12 @@ package core.port.adapter.persistence.model
 import scala.reflect.ClassTag
 import core.domain.model.Identity
 
+/** The data converter. */
 trait Converter[-A, B] {
-
-  /** Convert the object into a table record */
   def convert(o: A): B
 }
 
+/** The factory object for converter. */
 object Converter extends TableDefaultConverter {
   def apply[A, B](f: A => B): Converter[A, B] = new Converter[A, B] {
     def convert(o: A): B = f(o)

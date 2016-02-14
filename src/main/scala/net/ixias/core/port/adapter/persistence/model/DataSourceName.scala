@@ -16,12 +16,7 @@ case class DataSourceName(
   val hostspec: String,
   val database: String
 ) {
-  override final def toString: String =
-    "%s://%s/%s".format(path, hostspec, database)
-
-  override final def hashCode: Int =
-    31 ^ 3 * path.## + 31 ^ 2 * hostspec.## + 31 ^ 1 * database.##
-
+  /** Compares two DSN structurally */
   override final def equals(other: Any): Boolean = other match {
     case that: DataSourceName => {
       (that _equal this) &&
@@ -32,6 +27,13 @@ case class DataSourceName(
     case _ => false
   }
   private def _equal(other: Any) = other.isInstanceOf[DataSourceName]
+
+  /** Returns the hash code for this `DataSourceName`. */
+  override final def hashCode: Int =
+    31 ^ 3 * path.## + 31 ^ 2 * hostspec.## + 31 ^ 1 * database.##
+
+  /** The String representation of the `DataSourceName` companion object. */
+  override final def toString: String = "%s://%s/%s".format(path, hostspec, database)
 }
 
 /** Conpanion object */
