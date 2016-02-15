@@ -24,7 +24,7 @@ abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
     extends ShadeProfile[K, V] with MemcachedCodecs {
 
   // --[ Methods ]--------------------------------------------------------------
-  protected val dsn: DataSourceName
+  val dsn: DataSourceName
 
   /** Gets expiry time. */
   def expiry(key: Id): Duration = Duration.Inf
