@@ -45,6 +45,8 @@ trait Table[R, P <: JdbcProfile] { self =>
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
   trait API extends driver.API
+      with Aliases
+      with ExtensionMethodConversions
       with SlickColumnOptionOps
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver

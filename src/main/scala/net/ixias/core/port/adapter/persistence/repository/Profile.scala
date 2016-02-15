@@ -16,7 +16,7 @@ import scala.util.Failure
 import core.util.Logger
 import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.io.EntityIOAction
-import core.port.adapter.persistence.lifted.ExtensionMethodConversions
+import core.port.adapter.persistence.lifted.{ Aliases, ExtensionMethodConversions }
 
 /**
  * The basic functionality that has to be implemented by all profiles.
@@ -52,6 +52,6 @@ trait Profile[K, E <: Entity[K]] extends EntityIOAction[K, E] {
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
-  trait API extends ExtensionMethodConversions
+  trait API extends Aliases with ExtensionMethodConversions
   val api: API
 }
