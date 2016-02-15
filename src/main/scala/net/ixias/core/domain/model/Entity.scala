@@ -12,8 +12,10 @@ import org.joda.time.DateTime
 
 trait Entity[K] extends Serializable {
 
+  type Id = Identity[K]
+
   /** The entity's identity. */
-  val id: Identity[K]
+  val id: Id
 
   /** The current version of the object. Used for optimistic concurrency versioning. */
   val version: Option[Long] = None

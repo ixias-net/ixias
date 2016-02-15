@@ -9,10 +9,10 @@ package net.ixias
 package core.port.adapter.persistence.model
 
 import scala.reflect.ClassTag
-import core.domain.model.Identity
+import core.port.adapter.persistence.lifted.Aliases
 
 /** The data converter. */
-trait Converter[-A, B] {
+trait Converter[-A, B] extends Aliases {
   def convert(o: A): B
 }
 
