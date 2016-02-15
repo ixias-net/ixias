@@ -140,9 +140,13 @@ object Identity {
   /** An implicit conversion that converts an identity to an iterable value */
   implicit def identity2Iterable[A](xo: Identity[A]): Iterable[A] = xo.toList
 
-  /** An Identity factory which creates SomeId(x)
-    * if the argument is not null, and None if it is null. */
+  /** An Identity factory which creates SomeId(x) if the argument is not null,
+    * and NoneId if it is null. */
   def apply[A](x: A): Identity[A] = if (x == null) NoneId else SomeId(x)
+
+  /** An Identity factory which creates SomeId(x) if the argument is `Some`,
+    * and NoneId if it is None. */
+  def apply[A](x: Option[A]): Identity[A] = x.map(SomeId(_)).getOrElse(NoneId)
 
   /** An Identity factory which returns `NoneId`
     * in a manner consistent with the collections hierarchy. */
