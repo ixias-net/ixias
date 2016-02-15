@@ -9,5 +9,8 @@ package net.ixias
 package core.port.adapter.persistence.lifted
 
 import scala.language.implicitConversions
+import core.port.adapter.persistence.model.Converter
 
-trait ExtensionMethodConversions extends FutureOps with ConverterOps
+trait ConverterOps {
+  implicit def convert[A, B](o: A)(implicit conv: Converter[A, B]): B = conv.convert(o)
+}
