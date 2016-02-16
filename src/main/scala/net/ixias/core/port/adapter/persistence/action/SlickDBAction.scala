@@ -6,7 +6,7 @@
  */
 
 package net.ixias
-package core.port.adapter.persistence.repository
+package core.port.adapter.persistence.action
 
 import scala.util.Failure
 import scala.concurrent.Future

@@ -12,12 +12,13 @@ import slick.driver.JdbcProfile
 import core.domain.model.Entity
 import core.port.adapter.persistence.lifted._
 import core.port.adapter.persistence.backend.SlickBackend
+import core.port.adapter.persistence.action.{ SlickDBAction, SlickRunDBAction }
 
 /**
  * The profile for persistence with using the Slick library.
  */
 trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile]
-    extends Profile[K, E] with SlickAction[P] with ExtensionMethodConversions { self =>
+    extends Profile[K, E] with ExtensionMethodConversions { self =>
 
   /** The type of slick driver */
   type Driver  = P
@@ -30,6 +31,11 @@ trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile]
 
   /** The back-end implementation for this profile */
   protected lazy val backend = SlickBackend[P]
+
+  /** Database Action Helpers */
+  val DBAction    = SlickDBAction
+  val RunDBAction = SlickRunDBAction
+
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
