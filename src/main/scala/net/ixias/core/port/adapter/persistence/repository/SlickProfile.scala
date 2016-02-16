@@ -39,9 +39,7 @@ trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile] extends Profile[K, E] { 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,
     * and commonly types and objects. */
-  trait API extends super.API with driver.API
-      with SlickColumnOptionOps
-      with SlickColumnTypeOps[Driver] {
+  trait API extends super.API with driver.API {
     lazy val driver = self.driver
   }
   val api: API = new API {}

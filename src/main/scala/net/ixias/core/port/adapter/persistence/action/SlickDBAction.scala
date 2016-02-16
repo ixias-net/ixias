@@ -32,10 +32,10 @@ class SlickDBAction[P <: JdbcProfile, T <: Table[_, P]](implicit driver: P)
   type BlockArgument = (SlickBackend[P]#Database, T#Query)
 
   /** The logger for profile */
-  protected lazy val logger  = Logger()
+  protected lazy val logger  = Logger.apply
 
   /** The back-end implementation for this profile */
-  protected lazy val backend = SlickBackend()
+  protected lazy val backend = SlickBackend[P]
 
   /** Invoke the block. */
   def invokeBlock[A](request: Request, block: BlockArgument => Future[A]): Future[A] =
@@ -65,6 +65,5 @@ object SlickDBAction {
       v1  <- (new SlickDBAction[P, T]).invokeBlock(SlickDBActionRequest[P, T](dsn, table), block)
       v2  <- Future(conv.convert(v1))
     } yield (v2)
-    ???
   }
 }

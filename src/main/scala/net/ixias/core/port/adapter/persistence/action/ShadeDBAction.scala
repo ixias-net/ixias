@@ -21,10 +21,10 @@ sealed case class ShadeDBAction()
     extends Action[DataSourceName, ShadeDBAction.Database] {
 
   /** The logger for profile */
-  protected lazy val logger  = Logger()
+  protected lazy val logger  = Logger.apply
 
   /** The back-end implementation for this profile */
-  protected lazy val backend = ShadeBackend()
+  protected lazy val backend = ShadeBackend.apply
 
   /** Invoke the block. */
   def invokeBlock[A](dsn: DataSourceName, block: ShadeDBAction.Database => Future[A]): Future[A] =
