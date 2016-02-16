@@ -17,8 +17,7 @@ import core.port.adapter.persistence.action.{ SlickDBAction, SlickRunDBAction }
 /**
  * The profile for persistence with using the Slick library.
  */
-trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile]
-    extends Profile[K, E] with ExtensionMethodConversions { self =>
+trait SlickProfile[K, E <: Entity[K], P <: JdbcProfile] extends Profile[K, E] { self =>
 
   /** The type of slick driver */
   type Driver  = P

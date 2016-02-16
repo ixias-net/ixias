@@ -42,6 +42,6 @@ final class Logger(val slf4jLogger: Slf4jLogger) {
 
 /** The logger's companion object */
 object Logger {
-  def apply[T](implicit ct: ClassTag[T]): Logger =
+  def apply[T]()(implicit ct: ClassTag[T]): Logger =
     new Logger(LoggerFactory.getLogger(ct.runtimeClass))
 }
