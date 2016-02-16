@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import shade.memcached.Memcached
 import core.port.adapter.persistence.model.DataSourceName
 
-trait ShadeBackend extends BasicBackend with ShadeDataSource {
+case class ShadeBackend() extends BasicBackend with ShadeDataSource {
 
   /** The type of database objects used by this backend. */
   type Database = Memcached

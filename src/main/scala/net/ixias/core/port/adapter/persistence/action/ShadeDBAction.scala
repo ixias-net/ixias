@@ -36,6 +36,7 @@ sealed case class ShadeDBAction()
     }
 }
 
+/** Factory Object */
 object ShadeDBAction {
 
   /** The back-end type required by this profile */
