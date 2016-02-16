@@ -17,8 +17,8 @@ import core.port.adapter.persistence.model.DataSourceName
 import core.port.adapter.persistence.backend.ShadeBackend
 
 /** Run the supplied function with a database object. */
-sealed case class ShadeDBAction()
-    extends Action[DataSourceName, ShadeDBAction.Database] {
+sealed class ShadeDBAction
+    extends Action[DataSourceName, ShadeBackend#Database] {
 
   /** The logger for profile */
   protected lazy val logger  = Logger.apply
@@ -27,7 +27,7 @@ sealed case class ShadeDBAction()
   protected lazy val backend = ShadeBackend.apply
 
   /** Invoke the block. */
-  def invokeBlock[A](dsn: DataSourceName, block: ShadeDBAction.Database => Future[A]): Future[A] =
+  def invokeBlock[A](dsn: DataSourceName, block: ShadeBackend#Database => Future[A]): Future[A] =
     (for {
       db <- backend.getDatabase(dsn)
       v  <- block(db)
@@ -36,15 +36,16 @@ sealed case class ShadeDBAction()
     }
 }
 
-/** Factory Object */
-object ShadeDBAction {
+trait ShadeDBActionProvider {
+  object ShadeDBAction {
 
-  /** The back-end type required by this profile */
-  type Backend  = ShadeBackend
-  /** The type of database objects. */
-  type Database = Backend#Database
+    /** The back-end type required by this profile */
+    type Backend  = ShadeBackend
+    /** The type of database objects. */
+    type Database = Backend#Database
 
-  /** Returns a future of a result */
-  def apply[A](dsn: DataSourceName)(block: Database => Future[A]): Future[A] =
-    ShadeDBAction().invokeBlock(dsn, block)
+    /** Returns a future of a result */
+    def apply[A](dsn: DataSourceName)(block: Database => Future[A]): Future[A] =
+      (new ShadeDBAction).invokeBlock(dsn, block)
+  }
 }

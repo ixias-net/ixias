@@ -10,12 +10,12 @@ package core.port.adapter.persistence.repository
 
 import core.domain.model.Entity
 import core.port.adapter.persistence.backend.ShadeBackend
-import core.port.adapter.persistence.action.ShadeDBAction
+import core.port.adapter.persistence.action.ShadeDBActionProvider
 
 /**
  * The profile for persistence with using the Shade library.
  */
-trait ShadeProfile[K, E <: Entity[K]] extends Profile[K, E] {
+trait ShadeProfile[K, E <: Entity[K]] extends Profile[K, E] with ShadeDBActionProvider {
 
   /** The back-end type required by this profile */
   type Backend = ShadeBackend

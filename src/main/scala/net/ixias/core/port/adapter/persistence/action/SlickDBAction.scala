@@ -25,7 +25,7 @@ sealed case class SlickDBActionRequest[P <: JdbcProfile, T <: Table[_, P]](
 
 /** Run the supplied function with a database object
   * by using pool database session. */
-class SlickDBAction[P <: JdbcProfile, T <: Table[_, P]](implicit driver: P)
+sealed class SlickDBAction[P <: JdbcProfile, T <: Table[_, P]](implicit driver: P)
     extends Action[SlickDBActionRequest[P, T], (SlickBackend[P]#Database, T#Query)]
 {
   type Request       =  SlickDBActionRequest[P, T]
@@ -48,22 +48,32 @@ class SlickDBAction[P <: JdbcProfile, T <: Table[_, P]](implicit driver: P)
     }
 }
 
-/** Factory Object */
-object SlickDBAction {
+trait SlickDBActionProvider[P <: JdbcProfile] {
 
-  /** The default using key of DSN map. */
-  val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_MASTER
+  object SlickDBAction {
+    /** The type of slick driver */
+    type Driver  = P
 
-  /** Returns a future of a result */
-  def apply[A, B, P <: JdbcProfile, T <: Table[_, P]]
-    (table: T, keyDSN: String = DEFAULT_DSN_KEY)
-    (block: ((SlickBackend[P]#Database, T#Query)) => Future[A])
-    (implicit driver: P, conv: Converter[A, B]): Future[B] =
-  {
-    for {
-      dsn <- Future(table.dsn.get(keyDSN).get)
-      v1  <- (new SlickDBAction[P, T]).invokeBlock(SlickDBActionRequest[P, T](dsn, table), block)
-      v2  <- Future(conv.convert(v1))
-    } yield (v2)
+    /** The back-end type required by this profile */
+    type Backend = SlickBackend[P]
+
+    /** The type of database objects. */
+    type Database = Backend#Database
+
+    /** The default using key of DSN map. */
+    val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_MASTER
+
+    /** Returns a future of a result */
+    def apply[A, B, T <: Table[_, Driver]]
+      (table: T, keyDSN: String = DEFAULT_DSN_KEY)
+      (block: ((Database, T#Query)) => Future[A])
+      (implicit driver: Driver, conv: Converter[A, B]): Future[B] =
+    {
+      for {
+        dsn <- Future(table.dsn.get(keyDSN).get)
+        v1  <- (new SlickDBAction[Driver, T]).invokeBlock(SlickDBActionRequest[Driver, T](dsn, table), block)
+        v2  <- Future(conv.convert(v1))
+      } yield (v2)
+    }
   }
 }
