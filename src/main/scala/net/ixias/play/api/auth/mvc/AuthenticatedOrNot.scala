@@ -21,7 +21,7 @@ class AuthenticatedOrNotBuilder(params: Attribute[_]*)(implicit auth: AuthProfil
   /** Proceed with the next advice or target method invocation */
   override def proceed[A](req: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = {
     implicit val ctx = createStackActionExecutionContext(req)
-    auth.restore(req) match {
+    auth.restore(req) flatMap {
       case (None,       updater) => super.proceed(req)(f).map(updater)
       case (Some(user), updater) => super.proceed(req.set(AuthProfile.UserKey, user))(f).map(updater)
     }

@@ -11,7 +11,9 @@ package play.api.auth
 import _root_.play.api.Play
 import _root_.play.api.mvc._
 import scala.util.{ Try, Success, Failure }
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import play.api.auth.mvc.StackRequest
 import play.api.auth.data.Container
@@ -43,17 +45,17 @@ trait AuthProfile extends AuthProfileLike with Results {
 
   // --[ Methods ]--------------------------------------------------------------
   /** Resolve user by specified user-id. */
-  def resolve(id: Id): Try[Option[User]]
+  def resolve(id: Id): Future[Option[User]]
 
   /** Verifies what user are authorized to do. */
-  def authorize(user: User, authority: Option[Authority]): Try[Boolean]
+  def authorize(user: User, authority: Option[Authority]): Future[Boolean]
 
   // --[ Methods ]--------------------------------------------------------------
   /** Invoke this method on login succeeded */
-  def loginSucceeded(id: Id)(implicit req: RequestHeader): Result
+  def loginSucceeded(id: Id)(implicit req: RequestHeader): Future[Result]
 
   /** Invoke this method on logout succeeded */
-  def logoutSucceeded(id: Id)(implicit req: RequestHeader): Result
+  def logoutSucceeded(id: Id)(implicit req: RequestHeader): Future[Result]
 
   /** Invoked if authentication failed with the credentials provided.
     * This should only be called where an authentication attempt has truly failed */
@@ -109,50 +111,56 @@ trait AuthProfileLike { self: AuthProfile =>
   // --[ Methods ]--------------------------------------------------------------
   /** Invoke this method on login succeeded */
   final protected[auth]
-  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit req: RequestHeader): Result =
-    datastore.open(id, sessionTimeout) match {
-      case Success(token) => tokenAccessor.put(token)(f(token))
-      case Failure(_)     => InternalServerError
-    }
+  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit req: RequestHeader): Future[Result] =
+    datastore.open(id, sessionTimeout).map { token =>
+      tokenAccessor.put(token)(f(token))
+    } recover { case _: Throwable => InternalServerError }
 
   /** Invoke this method on logout succeeded */
   final protected[auth]
-  def logoutSucceeded(id: Id)(f: => Result)(implicit req: RequestHeader): Result = {
-    tokenAccessor.extract(req) map { datastore.destroy }
-    tokenAccessor.discard(f)
+  def logoutSucceeded(id: Id)(f: => Result)(implicit req: RequestHeader): Future[Result] = {
+    tokenAccessor.extract(req) match {
+      case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(f))
+      case None        => Future.successful(tokenAccessor.discard(f))
+    }
   }
 
   // --[ Methods ]--------------------------------------------------------------
   /** Verifies what user are authenticated to do. */
   final protected[auth]
-  def authenticate(implicit req: RequestHeader) : Either[Result, (User, Result => Result)] =
-    restore match {
+  def authenticate(implicit req: RequestHeader) : Future[Either[Result, (User, Result => Result)]] =
+    restore.map( _ match {
       case (Some(user), updater) => Right(user -> updater)
       case _ => Left(authenticationFailed)
-    }
+    })
 
   /** Verifies what user are authorized to do. */
   final protected[auth]
-  def authorized(authority: Option[Authority])(implicit req: RequestHeader): Either[Result, (User, Result => Result)] =
-    authenticate.right flatMap {
-      case (user, updater) => authorize(user, authority) match {
-        case Success(_) => Right(user -> updater)
-        case Failure(_) => Left(authorizationFailed(user, authority))
+  def authorized(authority: Option[Authority])(implicit req: RequestHeader): Future[Either[Result, (User, Result => Result)]] =
+    for {
+      Some((user, updater)) <- authenticate.map(_.right.toOption)
+      authorized            <- authorize(user, authority)
+    } yield {
+      authorized match {
+        case true  => Right(user -> updater)
+        case false =>  Left(authorizationFailed(user, authority))
       }
     }
 
   /** Retrieve a user data by the session token in `RequestHeader`. */
   final protected[auth]
-  def restore(implicit req: RequestHeader) : (Option[User], Result => Result) =
+  def restore(implicit req: RequestHeader) : Future[(Option[User], Result => Result)] =
     extractToken match {
-      case None        => (None -> identity)
+      case None        => Future.successful(None -> identity)
       case Some(token) => (for {
         Some(uid)  <- datastore.read(token)
         Some(user) <- resolve(uid)
+        _          <- datastore.setTimeout(token, sessionTimeout)
       } yield {
-        datastore.setTimeout(token, sessionTimeout)
         Some(user) -> tokenAccessor.put(token) _
-      }).getOrElse(None -> identity)
+      }) recover {
+        case ex: Throwable => None -> identity
+      }
     }
 }
 
