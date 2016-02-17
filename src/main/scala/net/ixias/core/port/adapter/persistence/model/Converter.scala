@@ -28,9 +28,8 @@ trait TableDefaultConverter {
   import scala.language.implicitConversions
 
   /** Convert to Unit. */
-  implicit object AnyValToUnitConv extends Converter[AnyVal, Unit] {
-    def convert(o: AnyVal) = Unit
-  }
+  implicit object   UnitToUnitConv extends Converter[Unit.type, Unit] { def convert(o: Unit.type) = Unit }
+  implicit object AnyValToUnitConv extends Converter[AnyVal,    Unit] { def convert(o: AnyVal)    = Unit }
 
   /** Serializer for Seq[T] types. */
   implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]): Converter[Seq[A], Seq[B]] =

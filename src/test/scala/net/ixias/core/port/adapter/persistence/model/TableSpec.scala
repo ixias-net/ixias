@@ -42,8 +42,8 @@ case class UserTable[P <: JdbcProfile](val driver: P)
   }
 
   /** クエリー定義 */
-  class Query extends BasicQuery(new Table(_))
-  lazy val query = new Query
+  // class Query extends BasicQuery(new Table(_))
+  object query extends BasicQuery(new Table(_))
 
   implicit val ToModelConv = new Converter[UserRecord, User] {
     def convert(v: UserRecord): User = User(

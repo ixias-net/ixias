@@ -37,8 +37,8 @@ trait Table[R, P <: JdbcProfile] { self =>
   //-- [ Table Query ] ---------------------------------------------------------
   /** Represents a database table. Implementation class add extension methods to TableQuery
     * for operations that can be performed on tables but not on arbitrary queries. */
-  type Query      <: slick.lifted.TableQuery[Table]
-  type BasicQuery =  slick.lifted.TableQuery[Table]
+  type Query      = slick.lifted.TableQuery[Table]
+  type BasicQuery = slick.lifted.TableQuery[Table]
 
   //-- [ Utility Methods ] -----------------------------------------------------
   /** The API for using the utility methods with a single import statement.
