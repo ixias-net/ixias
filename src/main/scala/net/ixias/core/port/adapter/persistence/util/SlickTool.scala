@@ -23,7 +23,8 @@ case class SlickTool[P <: JdbcProfile](implicit val driver: P)
   def showCreateTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
     import driver.api._
     SlickDBAction(table) { case (_, slick) =>
-      slick.schema.create.statements.foreach(println)
+      slick.asInstanceOf[T#BasicQuery]
+        .schema.create.statements.foreach(println)
       Future.successful(Unit)
     }
   }
@@ -31,12 +32,16 @@ case class SlickTool[P <: JdbcProfile](implicit val driver: P)
   /** Create table. */
   def createTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
     import driver.api._
-    SlickRunDBAction(table)(_.schema.create)
+    SlickRunDBAction(table) { slick =>
+      slick.asInstanceOf[T#BasicQuery].schema.create
+    }
   }
 
   /** Drop table. */
   def dropTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
     import driver.api._
-    SlickRunDBAction(table)(_.schema.drop)
+    SlickRunDBAction(table) { slick =>
+      slick.asInstanceOf[T#BasicQuery].schema.drop
+    }
   }
 }
