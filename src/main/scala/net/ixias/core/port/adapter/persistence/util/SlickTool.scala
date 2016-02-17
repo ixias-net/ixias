@@ -16,7 +16,7 @@ import core.port.adapter.persistence.action.{ SlickDBActionProvider, SlickRunDBA
 /**
  * The utility tool to manage database with using Slick library.
  */
-case class SlickTool[P <: JdbcProfile](val driver: P)
+case class SlickTool[P <: JdbcProfile](implicit val driver: P)
     extends SlickDBActionProvider[P] with SlickRunDBActionProvider[P]
 {
   /** Show create table SQL statements. */
