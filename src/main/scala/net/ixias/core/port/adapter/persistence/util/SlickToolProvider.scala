@@ -15,10 +15,13 @@ import core.port.adapter.persistence.action.{ SlickDBActionProvider, SlickRunDBA
 
 /**
  * The utility tool to manage database with using Slick library.
- */
-case class SlickTool[P <: JdbcProfile](implicit val driver: P)
+  */
+trait SlickToolProvider[P <: JdbcProfile]
     extends SlickDBActionProvider[P] with SlickRunDBActionProvider[P]
 {
+  /** The configured driver. */
+  protected implicit val driver: P
+
   /** Show create table SQL statements. */
   def showCreateTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
     import driver.api._
