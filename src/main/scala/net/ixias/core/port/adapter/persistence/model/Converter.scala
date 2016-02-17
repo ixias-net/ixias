@@ -27,6 +27,8 @@ object Converter extends TableDefaultConverter {
 trait TableDefaultConverter {
   import scala.language.implicitConversions
 
+  val none = UnitToUnitConv
+
   /** Convert to Unit. */
   implicit object   UnitToUnitConv extends Converter[Unit.type, Unit] { def convert(o: Unit.type) = Unit }
   implicit object AnyValToUnitConv extends Converter[AnyVal,    Unit] { def convert(o: AnyVal)    = Unit }
