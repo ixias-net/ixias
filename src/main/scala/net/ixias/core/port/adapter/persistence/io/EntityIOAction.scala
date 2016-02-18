@@ -56,7 +56,7 @@ trait EntityIOAction[K, E <: Entity[K]] extends IOAction {
   /** Adds a new identity/entity-value pair to this repository.
     * If the map already contains a mapping for the identity,
     * it will be overridden by the new value */
-  def store(entity: E): Future[Unit]
+  def store(entity: E): Future[Id]
 
   /** Removes a identity from this map,
     * returning the value associated previously with that identity as an option. */
