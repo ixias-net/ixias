@@ -9,6 +9,7 @@ package net.ixias
 package core.port.adapter.persistence.model
 
 import scala.reflect.ClassTag
+import core.domain.model.Identity
 import core.port.adapter.persistence.lifted.Aliases
 
 /** The data converter. */
@@ -30,8 +31,8 @@ trait TableDefaultConverter {
   val none = UnitToUnitConv
 
   /** Convert to Unit. */
-  implicit object   UnitToUnitConv extends Converter[Unit.type, Unit] { def convert(o: Unit.type) = Unit }
-  implicit object AnyValToUnitConv extends Converter[AnyVal,    Unit] { def convert(o: AnyVal)    = Unit }
+  implicit object   UnitToUnitConv extends Converter[Unit.type, Unit] { def convert(v: Unit.type) = Unit }
+  implicit object AnyValToUnitConv extends Converter[AnyVal, Unit]    { def convert(v: AnyVal)    = Unit }
 
   /** Serializer for Seq[T] types. */
   implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]): Converter[Seq[A], Seq[B]] =
@@ -48,5 +49,11 @@ trait TableDefaultConverter {
         case Some(value) => Some(fmt.convert(value))
         case None        => None
       }
+    }
+
+  /** Serializer for Identity. */
+  implicit def IdentityConv[A]: Converter[Identity[A], Identity[A]] =
+    new Converter[Identity[A], Identity[A]] {
+      def convert(o: Identity[A]) = o
     }
 }
