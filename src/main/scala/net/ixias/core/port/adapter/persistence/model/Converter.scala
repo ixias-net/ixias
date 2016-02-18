@@ -38,14 +38,14 @@ trait TableDefaultConverter {
   implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]): Converter[Seq[A], Seq[B]] =
     new Converter[Seq[A], Seq[B]] {
       def convert(itr: Seq[A]) = itr.foldLeft(Seq.empty[B]){
-        (prev, o) => prev :+ fmt.convert(o)
+        (prev, v) => prev :+ fmt.convert(v)
       }
     }
 
   /** Serializer for Option. */
   implicit def OptionConv[A, B](implicit fmt: Converter[A, B]): Converter[Option[A], Option[B]] =
     new Converter[Option[A], Option[B]] {
-      def convert(o: Option[A]) = o match {
+      def convert(v: Option[A]) = v match {
         case Some(value) => Some(fmt.convert(value))
         case None        => None
       }
@@ -54,6 +54,6 @@ trait TableDefaultConverter {
   /** Serializer for Identity. */
   implicit def IdentityConv[A]: Converter[Identity[A], Identity[A]] =
     new Converter[Identity[A], Identity[A]] {
-      def convert(o: Identity[A]) = o
+      def convert(v: Identity[A]) = v
     }
 }
