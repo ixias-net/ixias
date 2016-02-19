@@ -92,10 +92,19 @@ trait AuthProfileLike { self: AuthProfile =>
   def loggedIn[A](f: User => Result)(implicit req: StackRequest[A]): Result =
     loggedIn.fold(authenticationFailed)(f)
 
+  /** Returns the result response. */
+  def loggedIn[A](f: User => Future[Result])(implicit req: StackRequest[A]): Future[Result] =
+    loggedIn.fold(Future(authenticationFailed))(f)
+
   /** Returns the result response of applying $f to user data
     * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`*/
   def loggedInOrNot[A](ifEmpty: => Result)(f: User => Result)(implicit req: StackRequest[A]): Result =
     loggedIn.fold(ifEmpty)(f)
+
+  /** Returns the result response of applying $f to user data
+    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`*/
+  def loggedInOrNot[A](ifEmpty: => Result)(f: User => Future[Result])(implicit req: StackRequest[A]): Future[Result] =
+    loggedIn.fold(Future(ifEmpty))(f)
 
   /** Extract a session token in `RequestHeader`. */
   def extractToken(implicit req: RequestHeader): Option[AuthenticityToken] =
