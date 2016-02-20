@@ -10,17 +10,21 @@ package core.port.adapter.persistence.repository
 
 import core.domain.model.Entity
 import core.port.adapter.persistence.backend.ShadeBackend
+import core.port.adapter.persistence.action.ShadeDBActionProvider
 
 /**
  * The profile for persistence with using the Shade library.
  */
-trait ShadeProfile[K, E <: Entity[K]] extends Profile[K, E] with ShadeAction {
+trait ShadeProfile[K, E <: Entity[K]] extends Profile[K, E] with ShadeDBActionProvider {
 
   /** The back-end type required by this profile */
   type Backend = ShadeBackend
 
   /** The back-end implementation for this profile */
-  protected lazy val backend = new ShadeBackend {}
+  protected lazy val backend = ShadeBackend()
+
+  /** Database Action Helpers */
+  val DBAction = ShadeDBAction
 
   /** The API for using the utility methods with a single import statement.
     * This provides the repository's implicits, the Database connections,

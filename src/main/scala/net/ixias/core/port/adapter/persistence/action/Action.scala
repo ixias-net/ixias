@@ -6,12 +6,9 @@
  */
 
 package net.ixias
-package core.port.adapter.persistence.repository
+package core.port.adapter.persistence.action
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
-import core.port.adapter.persistence.model.{ DataSourceName, Converter }
-import core.port.adapter.persistence.backend.BasicBackend
 import core.port.adapter.persistence.io.{ IOActionContext, EntityIOActionContext }
 
 /** A builder for generic Actions that generalizes over the type of requests. */

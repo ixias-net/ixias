@@ -42,11 +42,11 @@ abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
 
   // --[ Methods ]--------------------------------------------------------------
   /** Sets a (key, value) in the cache store. */
-  def store(value: V): Future[Unit] =
+  def store(value: V): Future[Id] =
     DBAction(dsn) { db =>
       for {
         _ <- db.set(value.id.get.toString, value, expiry(value.id))
-      } yield ()
+      } yield (value.id)
     }
 
   /** Update existing value expiry in the cache store. */

@@ -15,16 +15,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import slick.driver.JdbcProfile
 import core.port.adapter.persistence.model.DataSourceName
 
-trait SlickBackend[P <: JdbcProfile] extends BasicBackend with SlickDataSource {
-
-  /** The type of Slick Jdbc Driver. */
-  type Driver = P
+case class SlickBackend[P <: JdbcProfile](implicit val driver: P)
+    extends BasicBackend with SlickDataSource {
 
   /** The type of database objects used by this backend. */
   type Database = P#Backend#Database
-
-  /** The configured driver. */
-  val driver: P
 
   /** The cache for Database */
   protected var cache: Map[Int, Database] = Map.empty

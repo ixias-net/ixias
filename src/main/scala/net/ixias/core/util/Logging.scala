@@ -21,7 +21,7 @@ trait Logging {
 }
 
 /** The Logger is a convenient and performant logging library wrapping SLF4J. */
-final class Logger(val slf4jLogger: Slf4jLogger) {
+sealed class Logger(val slf4jLogger: Slf4jLogger) {
 
   @inline def isDebugEnabled = slf4jLogger.isDebugEnabled()
 
