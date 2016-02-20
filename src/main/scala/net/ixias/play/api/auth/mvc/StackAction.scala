@@ -13,7 +13,7 @@ import _root_.play.api.libs.concurrent.Execution
 
 import scala.collection.concurrent.TrieMap
 import scala.concurrent.{ Future, ExecutionContext }
-import scala.util.{ Success, Failure}
+import scala.util.{ Success, Failure }
 import scala.util.control.{ NonFatal, ControlThrowable }
 
 /** Wrap an existing request. Useful to extend a request. */
@@ -47,7 +47,7 @@ object StackRequest {
 import StackRequest._
 
 /** Custom action builders */
-class StackActionBuilder(params: StackRequest.Attribute[_]*) extends ActionBuilder[StackRequest] {
+class StackActionBuilder(val params: StackRequest.Attribute[_]*) extends ActionBuilder[StackRequest] {
   import StackRequest._
 
   /** Invoke the block. */
@@ -86,15 +86,34 @@ class StackActionBuilder(params: StackRequest.Attribute[_]*) extends ActionBuild
 /** The custom playframework action. */
 object StackAction {
 
+  type ActionBuilder         = StackActionBuilder
+  type BlockFunction[A]      = StackRequest[A] => Result
+  type AsyncBlockFunction[A] = StackRequest[A] => Future[Result]
+
   /** Constructs an `Action` with default content, and no request parameter. */
-  final def apply(f: StackRequest[AnyContent] => Result): Action[AnyContent] =
-    new StackActionBuilder().apply(f)
+  final def apply(block: BlockFunction[AnyContent]): Action[AnyContent] =
+    new ActionBuilder()(block)
 
   /** Constructs an `Action` with default content. */
-  final def apply(params: Attribute[_]*)(f: StackRequest[AnyContent] => Result): Action[AnyContent] =
-    new StackActionBuilder(params: _*).apply(f)
+  final def apply(params: Attribute[_]*)(block: BlockFunction[AnyContent]): Action[AnyContent] =
+    new ActionBuilder(params: _*)(block)
 
   /** Constructs an `Action` with default content. */
-  final def apply[A](p: BodyParser[A], params: Attribute[_]*)(f: StackRequest[A] => Result): Action[A] =
-    new StackActionBuilder(params: _*).apply(p)(f)
+  final def apply[A](p: BodyParser[A], params: Attribute[_]*)(block: BlockFunction[A]): Action[A] =
+    new ActionBuilder(params: _*)(p)(block)
+
+  /** Constructs an `Action` that returns a future of a result,
+    * with default content, and no request parameter. */
+  final def async(block: AsyncBlockFunction[AnyContent]): Action[AnyContent] =
+    new ActionBuilder().async(block)
+
+  /** Constructs an `Action` that returns a future of a result,
+    * with default content. */
+  final def async(params: Attribute[_]*)(block: AsyncBlockFunction[AnyContent]): Action[AnyContent] =
+    new ActionBuilder(params: _*).async(block)
+
+  /** Constructs an `Action` that returns a future of a result,
+    * with default content. */
+  final def async[A](p: BodyParser[A], params: Attribute[_]*)(block: AsyncBlockFunction[A]): Action[A] =
+    new ActionBuilder(params: _*).async(p)(block)
 }

@@ -10,9 +10,13 @@ package play.api.auth.token
 
 import _root_.play.api.libs.Crypto
 import _root_.play.api.mvc.{ RequestHeader, Result }
-import scala.util.{ Try, Random }
+
+import scala.util.Random
+import scala.concurrent.Future
+
 import java.security.SecureRandom
 import net.ixias.play.api.auth.data.Container
+import net.ixias.core.security.{ Token => SecurityToken }
 
 trait Token {
 
@@ -30,40 +34,32 @@ trait Token {
 // Companion object
 //~~~~~~~~~~~~~~~~~~
 object Token {
+  import scala.concurrent.ExecutionContext.Implicits.global
 
-  protected val table  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-  protected val random = new Random(new SecureRandom())
+  /** The token provider */
+  protected lazy val worker = SecurityToken(
+    table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+  )
 
   /** Generate a new token as string */
-  final def generate(implicit container: Container[_]): Try[AuthenticityToken] = {
-    val token = Iterator.continually(random.nextInt(table.size)).map(table).take(32).mkString
-    container.read(token) flatMap {
+  final def generate(implicit container: Container[_]): Future[AuthenticityToken] = {
+    val token = worker.generate(32)
+    container.read(token).flatMap {
       case Some(_) => generate
-      case None    => Try(token)
+      case None    => Future.successful(token)
+    }
+  }
+
+  /** Verifies a given HMAC on a piece of data */
+  final def verifyHMAC(token: SignedToken): Option[AuthenticityToken] = {
+    val (hmac, value) = token.splitAt(40)
+    worker.safeEquals(Crypto.sign(value), hmac) match {
+      case true  => Some(value)
+      case false => None
     }
   }
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   final def signWithHMAC(token: AuthenticityToken): SignedToken =
     Crypto.sign(token) + token
-
-  /** Verifies a given HMAC on a piece of data */
-  final def verifyHMAC(token: SignedToken): Option[AuthenticityToken] = {
-    val (hmac, value) = token.splitAt(40)
-    if (safeEquals(Crypto.sign(value), hmac)) Some(value) else None
-  }
-
-  /* Do not change this unless you understand the security issues behind timing attacks.
-   * This method intentionally runs in constant time if the two strings have the same length. */
-  final def safeEquals(a: String, b: String) = {
-    if (a.length != b.length) {
-      false
-    } else {
-      var equal = 0
-      for (i <- Array.range(0, a.length)) {
-        equal |= a(i) ^ b(i)
-      }
-      equal == 0
-    }
-  }
 }

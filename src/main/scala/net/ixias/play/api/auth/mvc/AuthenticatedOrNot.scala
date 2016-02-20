@@ -21,7 +21,7 @@ class AuthenticatedOrNotBuilder(params: Attribute[_]*)(implicit auth: AuthProfil
   /** Proceed with the next advice or target method invocation */
   override def proceed[A](req: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = {
     implicit val ctx = createStackActionExecutionContext(req)
-    auth.restore(req) match {
+    auth.restore(req) flatMap {
       case (None,       updater) => super.proceed(req)(f).map(updater)
       case (Some(user), updater) => super.proceed(req.set(AuthProfile.UserKey, user))(f).map(updater)
     }
@@ -31,15 +31,40 @@ class AuthenticatedOrNotBuilder(params: Attribute[_]*)(implicit auth: AuthProfil
 /** The custom playframework action. */
 object AuthenticatedOrNot {
 
+  type ActionBuilder         = AuthenticatedOrNotBuilder
+  type BlockFunction[A]      = StackRequest[A] => Result
+  type AsyncBlockFunction[A] = StackRequest[A] => Future[Result]
+
   /** Constructs an `Action` with default content, and no request parameter. */
-  final def apply(f: StackRequest[AnyContent] => Result)
-    (implicit auth: AuthProfile): Action[AnyContent] = new AuthenticatedOrNotBuilder().apply(f)
+  final def apply(block: BlockFunction[AnyContent])
+    (implicit auth: AuthProfile): Action[AnyContent] =
+    new ActionBuilder().apply(block)
 
   /** Constructs an `Action` with default content. */
-  final def apply(params: Attribute[_]*)(f: StackRequest[AnyContent] => Result)
-    (implicit auth: AuthProfile): Action[AnyContent] = new AuthenticatedOrNotBuilder(params: _*).apply(f)
+  final def apply(params: Attribute[_]*)(block: BlockFunction[AnyContent])
+    (implicit auth: AuthProfile): Action[AnyContent] =
+    new ActionBuilder(params: _*).apply(block)
 
   /** Constructs an `Action` with default content. */
-  final def apply[A](p: BodyParser[A], params: Attribute[_]*)(f: StackRequest[A] => Result)
-    (implicit auth: AuthProfile): Action[A] = new AuthenticatedOrNotBuilder(params: _*).apply(p)(f)
+  final def apply[A](p: BodyParser[A], params: Attribute[_]*)(block: BlockFunction[A])
+    (implicit auth: AuthProfile): Action[A] =
+    new ActionBuilder(params: _*).apply(p)(block)
+
+  /** Constructs an `Action` that returns a future of a result,
+    * with default content, and no request parameter. */
+  final def async(block: AsyncBlockFunction[AnyContent])
+    (implicit auth: AuthProfile): Action[AnyContent] =
+    new ActionBuilder().async(block)
+
+  /** Constructs an `Action` that returns a future of a result,
+    * with default content. */
+  final def async(params: Attribute[_]*)(block: AsyncBlockFunction[AnyContent])
+    (implicit auth: AuthProfile): Action[AnyContent] =
+    new ActionBuilder(params: _*).async(block)
+
+  /** Constructs an `Action` that returns a future of a result,
+    * with default content. */
+  final def async[A](p: BodyParser[A], params: Attribute[_]*)(block: AsyncBlockFunction[A])
+    (implicit auth: AuthProfile): Action[A] =
+    new ActionBuilder(params: _*).async(p)(block)
 }

@@ -10,8 +10,9 @@ package play.api.auth.data
 
 import _root_.play.api.Play._
 import _root_.play.api.cache.Cache
-import scala.util.Try
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import play.api.auth.token._
 import core.domain.model.Identity
@@ -24,7 +25,7 @@ case class CacheContainer[Id <: Identity[_]]() extends Container[Id] {
 
   /** It is the first callback function executed
     * when the session is started automatically or manually */
-  def open(uid: Id, expiry: Duration): Try[AuthenticityToken] =
+  def open(uid: Id, expiry: Duration): Future[AuthenticityToken] =
     Token.generate(this) map { token =>
       Cache.set(prefix + token, uid, expiry)
       token
@@ -32,14 +33,16 @@ case class CacheContainer[Id <: Identity[_]]() extends Container[Id] {
 
   /** The read callback must always return
     * a user identity or none if there is no data to read */
-  def read(token: AuthenticityToken): Try[Option[Id]] = Try {
-    Cache.get(prefix + token).map(_.asInstanceOf[Id])
-  }
+  def read(token: AuthenticityToken): Future[Option[Id]] =
+    Future(Cache.get(prefix + token).map(_.asInstanceOf[Id]))
 
   /** This callback is executed when a session is destroyed */
-  def destroy(token: AuthenticityToken): Unit = Cache.remove(prefix + token)
+  def destroy(token: AuthenticityToken): Future[Unit] =
+    Future(Cache.remove(prefix + token))
 
   /** Sets the timeout setting. */
-  def setTimeout(token: AuthenticityToken, expiry: Duration): Unit =
-    for { Some(uid) <- read(token) } yield { Cache.set(prefix + token, uid, expiry) }
+  def setTimeout(token: AuthenticityToken, expiry: Duration): Future[Unit] =
+    for {
+      Some(uid) <- read(token)
+    } yield Cache.set(prefix + token, uid, expiry)
 }
