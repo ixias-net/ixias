@@ -6,7 +6,7 @@
  */
 
 organization := "net.ixias"
-name         := "ixias-core"
+name         := "ixias"
 scalaVersion := "2.11.7"
 
 // build mode
@@ -30,14 +30,16 @@ libraryDependencies ++= Seq(
   "com.zaxxer"          % "HikariCP"        % "2.4.1",
   "com.bionicspirit"   %% "shade"           % "1.7.1",
   "org.slf4j"           % "slf4j-api"       % "1.7.13",
-  "ch.qos.logback"      % "logback-classic" % "1.1.3",
-
+  // --[ Play2Framework ]-----------------------------------
+  cache,
   // --[ UnitTest ]-----------------------------------------
+  "ch.qos.logback"      % "logback-classic" % "1.1.3" % Test,
   "mysql"               % "mysql-connector-java" % "latest.integration" % Test,
   "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
   "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test
 )
 
+// Scala compile options
 scalacOptions ++= Seq(
   "-deprecation",            // Emit warning and location for usages of deprecated APIs.
   "-feature",                // Emit warning and location for usages of features that should be imported explicitly.
@@ -51,7 +53,11 @@ scalacOptions ++= Seq(
   "-Ywarn-numeric-widen"     // Warn when numerics are widened.
 )
 
-// Release
+// Setting for project
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
+unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala"
+
+// Setting for publisher
 import ReleaseTransformations._
 publishTo := {
   val path = if (release) "releases" else "snapshots"
