@@ -62,6 +62,9 @@ trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig {
           hconf.setJdbcUrl(url)
           hconf.setPoolName(dsn.toString)
 
+          // NOTE. ForkJoinPool x pool size
+          hconf.setMaximumPoolSize(1)
+
           // Optional properties.
           getUserName(dsn)                  map hconf.setUsername
           getPassword(dsn)                  map hconf.setPassword
