@@ -27,7 +27,7 @@ libraryDependencies ++= Seq(
   "org.scalaz"         %% "scalaz-core"     % "7.1.3",
   "com.typesafe"        % "config"          % "1.3.0",
   "com.typesafe.slick" %% "slick"           % "3.1.1",
-  "com.zaxxer"          % "HikariCP"        % "2.4.1",
+  "com.zaxxer"          % "HikariCP"        % "2.4.3",
   "com.bionicspirit"   %% "shade"           % "1.7.1",
   "org.slf4j"           % "slf4j-api"       % "1.7.13",
   // --[ Play2Framework ]-----------------------------------

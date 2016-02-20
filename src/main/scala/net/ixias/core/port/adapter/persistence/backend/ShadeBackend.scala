@@ -9,8 +9,8 @@ package net.ixias
 package core.port.adapter.persistence.backend
 
 import scala.concurrent.Future
-import scala.collection.mutable.Map
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{ Success, Failure }
 import shade.memcached.Memcached
 import core.port.adapter.persistence.model.DataSourceName
 
@@ -19,18 +19,21 @@ case class ShadeBackend() extends BasicBackend with ShadeDataSource {
   /** The type of database objects used by this backend. */
   type Database = Memcached
 
-  /** The cache for Database */
-  protected var cache: Map[Int, Memcached] = Map.empty
-
   /** Get a Database instance from connection pool. */
   def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Memcached] = {
-    cache.get(dsn.hashCode) match {
-      case Some(v) => Future.successful(v)
-      case None    => for {
+    logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
+    ShadeBackendContainer.getOrElseUpdate(dsn) {
+      (for {
         ds <- DataSource.forDSN(dsn)
         db <- Future(Memcached(ds))
-        _  <- Future(cache.update(dsn.hashCode, db))
-      } yield db
+      } yield db) andThen {
+        case Success(_) => logger.info("Created a new data souce. dsn=%s".format(dsn.toString))
+        case Failure(_) => logger.info("Failed to create a data souce. dsn=%s".format(dsn.toString))
+      }
     }
   }
 }
+
+/** Manage data sources associated with  DSN */
+object ShadeBackendContainer
+    extends BasicBackendContainer[Memcached]
