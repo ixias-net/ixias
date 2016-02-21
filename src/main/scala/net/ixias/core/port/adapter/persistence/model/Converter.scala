@@ -34,12 +34,10 @@ trait TableDefaultConverter {
   implicit object   UnitToUnitConv extends Converter[Unit.type, Unit] { def convert(v: Unit.type) = Unit }
   implicit object AnyValToUnitConv extends Converter[AnyVal, Unit]    { def convert(v: AnyVal)    = Unit }
 
-  /** Serializer for Seq[T] types. */
-  implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]): Converter[Seq[A], Seq[B]] =
-    new Converter[Seq[A], Seq[B]] {
-      def convert(itr: Seq[A]) = itr.foldLeft(Seq.empty[B]){
-        (prev, v) => prev :+ fmt.convert(v)
-      }
+  /** Serializer for Identity. */
+  implicit def IdentityConv[A]: Converter[Identity[A], Identity[A]] =
+    new Converter[Identity[A], Identity[A]] {
+      def convert(v: Identity[A]) = v
     }
 
   /** Serializer for Option. */
@@ -51,9 +49,31 @@ trait TableDefaultConverter {
       }
     }
 
-  /** Serializer for Identity. */
-  implicit def IdentityConv[A]: Converter[Identity[A], Identity[A]] =
-    new Converter[Identity[A], Identity[A]] {
-      def convert(v: Identity[A]) = v
+  /** Serializer for Seq[T] types. */
+  implicit def SeqConv[A: ClassTag, B: ClassTag](implicit fmt: Converter[A, B]): Converter[Seq[A], Seq[B]] =
+    new Converter[Seq[A], Seq[B]] {
+      def convert(itr: Seq[A]) = itr.foldLeft(Seq.empty[B]){
+        (prev, v) => prev :+ fmt.convert(v)
+      }
+    }
+
+  /**
+   * Serializer for Map[String, T] types.
+   */
+  implicit def MapConv[A, B](implicit fmt: Converter[A, B]): Converter[Map[String, A], Map[String, B]] =
+    new Converter[Map[String, A], Map[String, B]] {
+      def convert(itr: Map[String, A]) = itr.foldLeft(Map.empty[String, B]){
+        case (prev, (k, v)) => prev + (k -> fmt.convert(v))
+      }
+    }
+
+  /**
+   * Serializer for Map[Identity[_], T] types.
+   */
+  implicit def MapWithIdentityConv[A, B](implicit fmt: Converter[A, B]): Converter[Map[Identity[_], A], Map[Identity[_], B]] =
+    new Converter[Map[Identity[_], A], Map[Identity[_], B]] {
+      def convert(itr: Map[Identity[_], A]) = itr.foldLeft(Map.empty[Identity[_], B]){
+        case (prev, (k, v)) => prev + (k -> fmt.convert(v))
+      }
     }
 }
