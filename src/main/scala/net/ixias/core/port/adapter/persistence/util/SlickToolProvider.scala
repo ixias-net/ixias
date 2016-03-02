@@ -8,8 +8,9 @@
 package net.ixias
 package core.port.adapter.persistence.util
 
-import slick.driver.JdbcProfile
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import slick.driver.JdbcProfile
 import core.port.adapter.persistence.model.{ Table, Converter }
 import core.port.adapter.persistence.action.{ SlickDBActionProvider, SlickRunDBActionProvider }
 
@@ -37,6 +38,8 @@ trait SlickToolProvider[P <: JdbcProfile]
     import driver.api._
     SlickRunDBAction(table) { slick =>
       slick.asInstanceOf[T#BasicQuery].schema.create
+    } recoverWith {
+      case _: slick.SlickException => Future.successful(Unit)
     }
   }
 
@@ -45,6 +48,8 @@ trait SlickToolProvider[P <: JdbcProfile]
     import driver.api._
     SlickRunDBAction(table) { slick =>
       slick.asInstanceOf[T#BasicQuery].schema.drop
+    } recoverWith {
+      case _: slick.SlickException => Future.successful(Unit)
     }
   }
 }
