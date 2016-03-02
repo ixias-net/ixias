@@ -10,6 +10,7 @@ package core.port.adapter.persistence.util
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import slick.jdbc.meta.MTable
 import slick.driver.JdbcProfile
 import core.port.adapter.persistence.model.{ Table, Converter }
 import core.port.adapter.persistence.action.{ SlickDBActionProvider, SlickRunDBActionProvider }
@@ -37,9 +38,13 @@ trait SlickToolProvider[P <: JdbcProfile]
   def createTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
     import driver.api._
     SlickRunDBAction(table) { slick =>
-      slick.asInstanceOf[T#BasicQuery].schema.create
-    } recoverWith {
-      case _: slick.SlickException => Future.successful(Unit)
+      for {
+        tables <- MTable.getTables
+        _      <- tables.exists(_.name.name == slick.baseTableRow.tableName) match {
+          case false => slick.asInstanceOf[T#BasicQuery].schema.create
+          case true  => DBIO.successful(Unit)
+        }
+      } yield ()
     }
   }
 
@@ -47,9 +52,13 @@ trait SlickToolProvider[P <: JdbcProfile]
   def dropTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
     import driver.api._
     SlickRunDBAction(table) { slick =>
-      slick.asInstanceOf[T#BasicQuery].schema.drop
-    } recoverWith {
-      case _: slick.SlickException => Future.successful(Unit)
+      for {
+        tables <- MTable.getTables
+        _      <- tables.exists(_.name.name == slick.baseTableRow.tableName) match {
+          case true  => slick.asInstanceOf[T#BasicQuery].schema.drop
+          case false => DBIO.successful(Unit)
+        }
+      } yield ()
     }
   }
 }
