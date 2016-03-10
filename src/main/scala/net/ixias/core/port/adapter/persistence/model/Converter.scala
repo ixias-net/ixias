@@ -9,6 +9,7 @@ package net.ixias
 package core.port.adapter.persistence.model
 
 import scala.reflect.ClassTag
+import collection.immutable.ListMap
 import core.domain.model.Identity
 import core.port.adapter.persistence.lifted.Aliases
 
@@ -62,7 +63,7 @@ trait TableDefaultConverter {
    */
   implicit def MapConv[A, B](implicit fmt: Converter[A, B]): Converter[Map[String, A], Map[String, B]] =
     new Converter[Map[String, A], Map[String, B]] {
-      def convert(itr: Map[String, A]) = itr.foldLeft(Map.empty[String, B]){
+      def convert(itr: Map[String, A]) = itr.foldLeft(ListMap.empty[String, B]){
         case (prev, (k, v)) => prev + (k -> fmt.convert(v))
       }
     }
