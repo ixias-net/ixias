@@ -10,9 +10,10 @@ package core.domain.model
 
 import org.joda.time.DateTime
 
-trait Entity[K] extends Serializable {
+trait Entity[K <: Identity[_]] extends Serializable {
 
-  type Id = Identity[K]
+  /** The type of entity id */
+  type Id = K
 
   /** The entity's identity. */
   val id: Id

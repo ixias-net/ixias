@@ -16,7 +16,7 @@ case class CookieToken(
   protected val cookiePathOption:     String         = "/",
   protected val cookieDomainOption:   Option[String] = None,
   protected val cookieSecureOption:   Boolean        = false,
-  protected val cookieHttpOnlyOption: Boolean        = true
+  protected val cookieHttpOnlyOption: Boolean        = false
 ) extends Token {
 
   /** Put a specified security token to storage */

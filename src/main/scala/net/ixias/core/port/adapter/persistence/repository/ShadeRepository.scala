@@ -14,13 +14,13 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 import shade.memcached.MemcachedCodecs
 
-import core.domain.model.Entity
+import core.domain.model.{ Identity, Entity }
 import core.port.adapter.persistence.model.DataSourceName
 
 /**
  * The base repository which is implemented basic feature methods.
  */
-abstract class ShadeRepository[K, V <: Entity[K]](implicit ttag: ClassTag[V])
+abstract class ShadeRepository[K <: Identity[_], V <: Entity[K]](implicit ttag: ClassTag[V])
     extends ShadeProfile[K, V] with MemcachedCodecs {
 
   // --[ Methods ]--------------------------------------------------------------

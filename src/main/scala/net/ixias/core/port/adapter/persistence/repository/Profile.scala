@@ -21,13 +21,9 @@ import core.port.adapter.persistence.lifted.{ Aliases, ExtensionMethodConversion
 /**
  * The basic functionality that has to be implemented by all profiles.
  */
-trait Profile[K, E <: Entity[K]] extends EntityIOAction[K, E] {
+trait Profile[K <: Identity[_], E <: Entity[K]] extends EntityIOAction[K, E] {
 
   // --[ TypeDefs ]-------------------------------------------------------------
-  /** The identity type of entity */
-  type Id       <: core.domain.model.Identity[_]
-  /** The entity type of managed by this profile */
-  type Entity   <: core.domain.model.Entity[_]
   /** The back-end type required by this profile */
   type Backend  <: core.port.adapter.persistence.backend.BasicBackend
   /** The type of database objects. */
