@@ -15,13 +15,13 @@ import core.domain.model.{ Identity, Entity }
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K, E <: Entity[K]] extends IOAction {
+trait EntityIOAction[K <: Identity[_], E <: Entity[K]] extends IOAction {
 
   /** The type of entity id */
-  type Id = Identity[K]
+  type Id     = K
 
   /** The type of entity */
-  type Entity  = E
+  type Entity = E
 
   // --[ Methods ]--------------------------------------------------------------
   /** Defines the default value computation for the map,
