@@ -23,7 +23,7 @@ class AuthenticatedBuilder(params: Attribute[_]*)(implicit auth: AuthProfile) ex
     implicit val ctx = createStackActionExecutionContext(req)
     auth.authenticate(req) flatMap {
       case Left(result) => Future.successful(result)
-      case Right((user, updater)) => super.proceed(req.set(AuthProfile.UserKey, user))(f).map(updater)
+      case Right((user, updater)) => super.proceed(req.set(auth.UserKey, user))(f).map(updater)
     }
   }
 }
