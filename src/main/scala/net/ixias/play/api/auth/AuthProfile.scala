@@ -30,6 +30,11 @@ trait AuthProfile extends AuthProfileLike with Results {
   /** The type of authority roles */
   type Authority >: Null
 
+  /** The key of attribute for containing required authority roles. */
+  case object UserKey      extends StackRequest.AttributeKey[User]
+  /** The key of attribute for containing user data. */
+  case object AuthorityKey extends StackRequest.AttributeKey[Authority]
+
   // --[ Properties ]-----------------------------------------------------------
   /** The cookie name */
   val cookieName: String = "sid"
@@ -70,15 +75,6 @@ trait AuthProfile extends AuthProfileLike with Results {
 
 }
 
-// Companion Object
-//~~~~~~~~~~~~~~~~~~
-object AuthProfile {
-  /** The key of attribute for containing required authority roles. */
-  case object UserKey      extends StackRequest.AttributeKey[AuthProfile#User]
-  /** The key of attribute for containing user data. */
-  case object AuthorityKey extends StackRequest.AttributeKey[AuthProfile#Authority]
-}
-
 // Feature Template
 //~~~~~~~~~~~~~~~~~~
 trait AuthProfileLike { self: AuthProfile =>
@@ -86,7 +82,7 @@ trait AuthProfileLike { self: AuthProfile =>
   // --[ Methods ]--------------------------------------------------------------
   /** Returns authorized user. */
   def loggedIn(implicit req: StackRequest[_]): Option[User] =
-    req.get(AuthProfile.UserKey).map(_.asInstanceOf[User])
+    req.get(UserKey).map(_.asInstanceOf[User])
 
   /** Returns the result response. */
   def loggedIn[A](f: User => Result)(implicit req: StackRequest[A]): Result =

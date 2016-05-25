@@ -23,7 +23,7 @@ class AuthenticatedOrNotBuilder(params: Attribute[_]*)(implicit auth: AuthProfil
     implicit val ctx = createStackActionExecutionContext(req)
     auth.restore(req) flatMap {
       case (None,       updater) => super.proceed(req)(f).map(updater)
-      case (Some(user), updater) => super.proceed(req.set(AuthProfile.UserKey, user))(f).map(updater)
+      case (Some(user), updater) => super.proceed(req.set(auth.UserKey, user))(f).map(updater)
     }
   }
 }

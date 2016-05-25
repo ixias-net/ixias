@@ -21,10 +21,10 @@ class AuthorizedBuilder(params: Attribute[_]*)(implicit auth: AuthProfile) exten
   /** Proceed with the next advice or target method invocation */
   override def proceed[A](req: StackRequest[A])(f: StackRequest[A] => Future[Result]): Future[Result] = {
     implicit val ctx = createStackActionExecutionContext(req)
-    val authority = req.get(AuthProfile.AuthorityKey).map(_.asInstanceOf[auth.Authority])
+    val authority = req.get(auth.AuthorityKey).map(_.asInstanceOf[auth.Authority])
     auth.authorized(authority)(req) flatMap {
       case Left(result) => Future.successful(result)
-      case Right((user, updater)) => super.proceed(req.set(AuthProfile.UserKey, user))(f).map(updater)
+      case Right((user, updater)) => super.proceed(req.set(auth.UserKey, user))(f).map(updater)
     }
   }
 }
