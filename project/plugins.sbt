@@ -5,9 +5,6 @@
  *  please view the LICENSE file that was distributed with this source code.
  */
 
-// Comment to get more information during initialization
-logLevel := Level.Warn
-
 // The Typesafe repository.
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 

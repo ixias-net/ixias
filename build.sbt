@@ -14,22 +14,17 @@ val branch  = "git branch".lines_!.find{_.head == '*'}.map{_.drop(2)}.getOrElse(
 val release = (branch == "master" || branch.startsWith("release"))
 
 // setting for resolvers
-resolvers += "Atlassian Releases"   at "https://maven.atlassian.com/public/"
-resolvers += "scalaz Release"       at "https://dl.bintray.com/scalaz/releases"
-resolvers += "Sonatype OSS Release" at "https://oss.sonatype.org/content/repositories/releases/"
-resolvers += Resolver.sonatypeRepo("snapshots")
+resolvers += Resolver.sonatypeRepo("releases")
 
 libraryDependencies ++= Seq(
+  cache,
   // --[ OSS Libraries ]------------------------------------
   "joda-time"           % "joda-time"       % "2.9.1",
-  // "org.joda"            % "joda-convert"    % "1.7",
   "com.typesafe"        % "config"          % "1.3.0",
   "com.typesafe.slick" %% "slick"           % "3.1.1",
   "com.zaxxer"          % "HikariCP"        % "2.4.3",
   "com.bionicspirit"   %% "shade"           % "1.7.1",
   "org.slf4j"           % "slf4j-api"       % "1.7.13",
-  // --[ Play2Framework ]-----------------------------------
-  cache,
   // --[ UnitTest ]-----------------------------------------
   "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
   "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test,
@@ -76,3 +71,16 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges
 )
+
+// Setting for prompt
+import com.scalapenos.sbt.prompt._
+val defaultTheme = PromptTheme(List(
+  text("[SBT] ", fg(green)),
+  text(state => { Project.extract(state).get(organization) + "@" }, fg(magenta)),
+  text(state => { Project.extract(state).get(name) },               fg(magenta)),
+  text(":", NoStyle),
+  gitBranch(clean = fg(green), dirty = fg(yellow)).padLeft("[").padRight("]"),
+  text(" > ", NoStyle)
+))
+promptTheme := defaultTheme
+shellPrompt := (implicit state => promptTheme.value.render(state))
