@@ -19,12 +19,12 @@ resolvers += Resolver.sonatypeRepo("releases")
 libraryDependencies ++= Seq(
   cache,
   // --[ OSS Libraries ]------------------------------------
-  "joda-time"           % "joda-time"       % "2.9.1",
   "com.typesafe"        % "config"          % "1.3.0",
   "com.typesafe.slick" %% "slick"           % "3.1.1",
   "com.zaxxer"          % "HikariCP"        % "2.4.3",
   "com.bionicspirit"   %% "shade"           % "1.7.1",
   "org.slf4j"           % "slf4j-api"       % "1.7.13",
+  "joda-time"           % "joda-time"       % "2.9.1",
   // --[ UnitTest ]-----------------------------------------
   "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
   "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test,
