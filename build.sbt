@@ -9,7 +9,7 @@ import ReleaseTransformations._
 
 lazy val commonSettings = Seq(
   organization := "net.ixias",
-  scalaVersion := "2.11.7",
+  scalaVersion := "2.11.8",
   resolvers ++= Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
@@ -61,12 +61,13 @@ lazy val ixias = (project in file("framework/ixias"))
     name := "ixias",
     libraryDependencies ++= Seq(
       // --[ OSS Libraries ]------------------------------------
-      "com.typesafe"        % "config"          % "1.3.0",
-      "com.typesafe.slick" %% "slick"           % "3.1.1",
-      "com.zaxxer"          % "HikariCP"        % "2.4.3",
-      "com.bionicspirit"   %% "shade"           % "1.7.1",
-      "org.slf4j"           % "slf4j-api"       % "1.7.13",
-      "joda-time"           % "joda-time"       % "2.9.1",
+      "com.typesafe"        % "config"          % "1.3.+",
+      "com.typesafe.slick" %% "slick"           % "3.1.+",
+      "com.zaxxer"          % "HikariCP"        % "2.4.+",
+      "com.bionicspirit"   %% "shade"           % "1.7.+",
+      "org.slf4j"           % "slf4j-api"       % "1.7.+",
+      "joda-time"           % "joda-time"       % "2.9.+",
+      "org.joda"            % "joda-convert"    % "1.+",
       // --[ UnitTest ]-----------------------------------------
       "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
       "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test,
