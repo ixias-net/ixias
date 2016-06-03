@@ -95,8 +95,8 @@ lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
 
 lazy val root = (project in file("."))
   .settings(commonSettings:    _*)
-  .settings(Seq(publish := (), publishLocal := ()))
-  .aggregate(
+  .settings(publisherSettings: _*)
+  .dependsOn(
     ixias,
     ixiasPlayAuth
   )
