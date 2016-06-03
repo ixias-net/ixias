@@ -103,3 +103,56 @@ trait StackActionBuilder[T <: StackAction] {
   final def async[A](p: BodyParser[A], params: Attribute[_]*)(block: ActionRequest[A] => Future[Result]): Action[A] =
     buildAction(params: _*).async(p)(block)
 }
+
+// Statck Action Builder for Authenticate
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+trait StackAuthActionBuilder[T <: StackAction] {
+
+  /**
+   * Build a custom action object.
+   */
+  def buildAction(params: Attribute[_]*)(implicit auth: AuthProfile): T
+
+  /**
+   * Constructs an `Action` with default content, and no request parameter.
+   */
+  final def apply(block: ActionRequest[AnyContent] => Result)(implicit auth: AuthProfile):
+      Action[AnyContent] = buildAction()(auth)(block)
+
+  /**
+   * Constructs an `Action` with default content.
+   */
+  final def apply(params: Attribute[_]*)
+    (block: ActionRequest[AnyContent] => Result)(implicit auth: AuthProfile):
+      Action[AnyContent] = buildAction(params: _*)(auth)(block)
+
+  /**
+   * Constructs an `Action` with default content.
+   */
+  final def apply[A](p: BodyParser[A], params: Attribute[_]*)
+    (block: ActionRequest[A] => Result)(implicit auth: AuthProfile):
+      Action[A] = buildAction(params: _*)(auth)(p)(block)
+
+  /**
+   * Constructs an `Action` that returns a future of a result,
+   * with default content, and no request parameter.
+   */
+  final def async(block: ActionRequest[AnyContent] => Future[Result])(implicit auth: AuthProfile):
+      Action[AnyContent] = buildAction()(auth).async(block)
+
+  /**
+   * Constructs an `Action` that returns a future of a result,
+   * with default content.
+   */
+  final def async(params: Attribute[_]*)
+    (block: ActionRequest[AnyContent] => Future[Result])(implicit auth: AuthProfile):
+      Action[AnyContent] = buildAction(params: _*)(auth).async(block)
+
+  /**
+   * Constructs an `Action` that returns a future of a result,
+   * with default content.
+   */
+  final def async[A](p: BodyParser[A], params: Attribute[_]*)
+    (block: ActionRequest[A] => Future[Result])(implicit auth: AuthProfile):
+      Action[A] = buildAction(params: _*)(auth).async(p)(block)
+}
