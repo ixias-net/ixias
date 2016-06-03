@@ -70,7 +70,7 @@ trait AuthProfile extends AuthProfileLike with Results
 }
 
 
-trait AuthProfileWithCookie { self: AuthProfile =>
+trait AuthProfileViaCookie { self: AuthProfile =>
 
   /** The cookie name */
   val cookieName: String = "sid"
@@ -82,10 +82,10 @@ trait AuthProfileWithCookie { self: AuthProfile =>
   override lazy val tokenAccessor = TokenViaCookie(cookieName, cookieMaxAge)
 }
 
-trait AuthProfileWithHttpHeader { self: AuthProfile =>
+trait AuthProfileViaHttpHeader { self: AuthProfile =>
 
   /** The header name */
-  val headerName: String = "X-NEXTBEAT-TOKEN"
+  val headerName: String = "X-IXIAS-TOKEN"
 
   /** The accessor for security token. */
   override lazy val tokenAccessor = TokenViaHttpHeader(headerName)
