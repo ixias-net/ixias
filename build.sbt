@@ -54,11 +54,11 @@ lazy val publisherSettings = Seq(
   )
 )
 
-lazy val ixias = (project in file("framework/ixias"))
+lazy val ixiasCore = (project in file("framework/ixias"))
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(
-    name := "ixias",
+    name := "ixias-core",
     libraryDependencies ++= Seq(
       // --[ OSS Libraries ]------------------------------------
       "com.typesafe"        % "config"          % "1.3.+",
@@ -77,8 +77,8 @@ lazy val ixias = (project in file("framework/ixias"))
   )
 
 lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
-  .dependsOn(ixias)
   .enablePlugins(PlayScala)
+  .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(
@@ -93,11 +93,16 @@ lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
     )
   )
 
-lazy val root = (project in file("."))
+lazy val ixias = (project in file("."))
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
+  .settings(name := "ixias")
+  .aggregate(
+    ixiasCore,
+    ixiasPlayAuth
+  )
   .dependsOn(
-    ixias,
+    ixiasCore,
     ixiasPlayAuth
   )
 
