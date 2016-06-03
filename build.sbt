@@ -69,9 +69,9 @@ lazy val ixias = (project in file("framework/ixias"))
       "joda-time"           % "joda-time"       % "2.9.+",
       "org.joda"            % "joda-convert"    % "1.+",
       // --[ UnitTest ]-----------------------------------------
-      "org.specs2"         %% "specs2-core"          % "3.6.4" % Test,
-      "org.specs2"         %% "specs2-matcher-extra" % "3.6.4" % Test,
-      "ch.qos.logback"      % "logback-classic"      % "1.1.3" % Test,
+      "org.specs2"         %% "specs2-core"          % "3.6.+" % Test,
+      "org.specs2"         %% "specs2-matcher-extra" % "3.6.+" % Test,
+      "ch.qos.logback"      % "logback-classic"      % "1.1.+" % Test,
       "mysql"               % "mysql-connector-java" % "latest.integration" % Test
     )
   )
@@ -86,9 +86,9 @@ lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
     unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala",
     libraryDependencies ++= Seq(
       cache,
-      "org.specs2"     %% "specs2-core"          % "3.6.4" % Test,
-      "org.specs2"     %% "specs2-matcher-extra" % "3.6.4" % Test,
-      "ch.qos.logback"  % "logback-classic"      % "1.1.3" % Test,
+      "org.specs2"     %% "specs2-core"          % "3.6.+" % Test,
+      "org.specs2"     %% "specs2-matcher-extra" % "3.6.+" % Test,
+      "ch.qos.logback"  % "logback-classic"      % "1.1.+" % Test,
       "mysql"           % "mysql-connector-java" % "latest.integration" % Test
     )
   )
