@@ -69,10 +69,10 @@ lazy val ixiasCore = (project in file("framework/ixias"))
       "joda-time"           % "joda-time"       % "2.9.4",
       "org.joda"            % "joda-convert"    % "1.8.1",
       // --[ UnitTest ]-----------------------------------------
-      "org.specs2"         %% "specs2-core"          % "3.8.3" % Test,
-      "org.specs2"         %% "specs2-matcher-extra" % "3.8.3" % Test,
-      "ch.qos.logback"      % "logback-classic"      % "1.1.3" % Test,
-      "mysql"               % "mysql-connector-java" % "latest.integration" % Test
+      "org.specs2"         %% "specs2-core"          % "3.8.3"  % Test,
+      "org.specs2"         %% "specs2-matcher-extra" % "3.8.3"  % Test,
+      "ch.qos.logback"      % "logback-classic"      % "1.1.3"  % Test,
+      "mysql"               % "mysql-connector-java" % "5.1.38" % Test
     )
   )
 
