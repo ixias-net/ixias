@@ -16,6 +16,7 @@ import play.api.Play
 import play.api.mvc._
 import ixias.model.{ Identity, Entity }
 import ixias.play.api.auth.token._
+import ixias.play.api.auth.container.Container
 
 trait AuthProfile extends AuthProfileLike with Results
 {
@@ -33,9 +34,6 @@ trait AuthProfile extends AuthProfileLike with Results
   case object AuthorityKey extends AttributeKey[Authority]
 
   // --[ Properties ]-----------------------------------------------------------
-  /** The cookie name */
-  val cookieName: String = "sid"
-
   /** The timeout value in `seconds` */
   val sessionTimeout: Duration = Duration.Inf
 
@@ -69,6 +67,28 @@ trait AuthProfile extends AuthProfileLike with Results
     * Authorization helps you to control access rights by granting or
     * denying specific permissions to an authenticated user. */
   def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
+}
+
+
+trait AuthProfileWithCookie { self: AuthProfile =>
+
+  /** The cookie name */
+  val cookieName: String = "sid"
+
+  /** Expiry and Max-Age for cookies */
+  val cookieMaxAge: Option[Int] = Some(24 * 3600 * 14) // 2weeks
+
+  /** The accessor for security token. */
+  override lazy val tokenAccessor = TokenViaCookie(cookieName, cookieMaxAge)
+}
+
+trait AuthProfileWithHttpHeader { self: AuthProfile =>
+
+  /** The header name */
+  val headerName: String = "X-NEXTBEAT-TOKEN"
+
+  /** The accessor for security token. */
+  override lazy val tokenAccessor = TokenViaHttpHeader(headerName)
 }
 
 // Feature Template
@@ -111,14 +131,12 @@ trait AuthProfileLike { self: AuthProfile =>
 
   // --[ Methods ]--------------------------------------------------------------
   /** Invoke this method on login succeeded */
-  final protected[auth]
   def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit req: RequestHeader): Future[Result] =
     datastore.open(id, sessionTimeout).map { token =>
       tokenAccessor.put(token)(f(token))
     } recover { case _: Throwable => InternalServerError }
 
   /** Invoke this method on logout succeeded */
-  final protected[auth]
   def logoutSucceeded(id: Id)(f: => Result)(implicit req: RequestHeader): Future[Result] = {
     tokenAccessor.extract(req) match {
       case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(f))

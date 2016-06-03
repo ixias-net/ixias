@@ -9,7 +9,7 @@ package ixias.play.api.auth.token
 
 import play.api.mvc.{ Result, RequestHeader, Cookie, DiscardingCookie }
 
-case class CookieToken(
+case class TokenViaCookie(
   protected val cookieName:           String,
   protected val cookieMaxAge:         Option[Int]    = None,
   protected val cookiePathOption:     String         = "/",

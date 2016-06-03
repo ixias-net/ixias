@@ -13,6 +13,7 @@ import java.security.SecureRandom
 import play.api.libs.Crypto
 import play.api.mvc.{ RequestHeader, Result }
 import ixias.security.{ Token => SecurityToken }
+import ixias.play.api.auth.container.Container
 
 // The security token
 //~~~~~~~~~~~~~~~~~~~~

@@ -5,7 +5,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.play.api.auth.token
+package ixias.play.api.auth.container
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Play._
 import play.api.cache.Cache
 import ixias.model.Identity
+import ixias.play.api.auth.token._
 
 /**
  * The datastore for user session with using `play.cache.Cache`.

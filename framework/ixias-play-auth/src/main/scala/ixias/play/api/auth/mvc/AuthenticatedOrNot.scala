@@ -13,14 +13,14 @@ import play.api.mvc.Result
 /**
  * Provides the custom action for authentication.
  */
-sealed class Authenticated(params: Attribute[_]*)(implicit val auth: AuthProfile) extends StackAction(params: _*)
+sealed class AuthenticatedOrNot(params: Attribute[_]*)(implicit auth: AuthProfile) extends StackAction(params: _*)
 {
   /** Proceed with the next advice or target method invocation */
   override def proceed[A](req: ActionRequest[A])(f: ActionRequest[A] => Future[Result]): Future[Result] = {
     implicit val ctx = getExecutionContext(req)
-    auth.authenticate(req) flatMap {
-      case Left(result)           => Future.successful(result)
-      case Right((user, updater)) => super.proceed(
+    auth.restore(req) flatMap {
+      case (None,       updater) => super.proceed(req)(f).map(updater)
+      case (Some(user), updater) => super.proceed(
         req.set(auth.UserKey, user)
       )(f).map(updater)
     }
@@ -30,8 +30,8 @@ sealed class Authenticated(params: Attribute[_]*)(implicit val auth: AuthProfile
 /**
  * Build a custom action object.
  */
-object Authenticated extends StackAuthActionBuilder[Authenticated]
+object AuthenticatedOrNot extends StackAuthActionBuilder[AuthenticatedOrNot]
 {
-  def build(params: Attribute[_]*)(implicit auth: AuthProfile): Authenticated =
-    new Authenticated(params: _*)
+  def build(params: Attribute[_]*)(implicit auth: AuthProfile): AuthenticatedOrNot =
+    new AuthenticatedOrNot(params: _*)
 }
