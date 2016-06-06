@@ -86,10 +86,10 @@ lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
     unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala",
     libraryDependencies ++= Seq(
       cache,
-      "org.specs2"     %% "specs2-core"          % "3.8.3" % Test,
-      "org.specs2"     %% "specs2-matcher-extra" % "3.8.3" % Test,
-      "ch.qos.logback"  % "logback-classic"      % "1.1.3" % Test,
-      "mysql"           % "mysql-connector-java" % "latest.integration" % Test
+      "org.specs2"     %% "specs2-core"          % "3.8.3"  % Test,
+      "org.specs2"     %% "specs2-matcher-extra" % "3.8.3"  % Test,
+      "ch.qos.logback"  % "logback-classic"      % "1.1.3"  % Test,
+      "mysql"           % "mysql-connector-java" % "5.1.38" % Test
     )
   )
 
