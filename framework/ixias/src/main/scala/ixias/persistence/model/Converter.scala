@@ -27,17 +27,10 @@ object Converter extends TableDefaultConverter {
 trait TableDefaultConverter {
   import scala.language.implicitConversions
 
-  val none = UnitToUnitConv
-
-  /** Convert to Unit. */
-  implicit object   UnitToUnitConv extends Converter[Unit.type, Unit] { def convert(v: Unit.type) = Unit }
-  implicit object AnyValToUnitConv extends Converter[AnyVal, Unit]    { def convert(v: AnyVal)    = Unit }
-
-  /** Serializer for Identity. */
-  implicit def IdentityConv[A]: Converter[Identity[A], Identity[A]] =
-    new Converter[Identity[A], Identity[A]] {
-      def convert(v: Identity[A]) = v
-    }
+  /** Convert to Same Type. */
+  implicit def SameTypeConv[A <: AnyVal]: Converter[A, A] = new Converter[A, A] {
+    def convert(v: A) = v
+  }
 
   /** Serializer for Option. */
   implicit def OptionConv[A, B](implicit fmt: Converter[A, B]): Converter[Option[A], Option[B]] =
@@ -64,6 +57,12 @@ trait TableDefaultConverter {
       def convert(itr: Map[String, A]) = itr.foldLeft(ListMap.empty[String, B]){
         case (prev, (k, v)) => prev + (k -> fmt.convert(v))
       }
+    }
+
+  /** Serializer for Identity. */
+  implicit def IdentityConv[A]: Converter[Identity[A], Identity[A]] =
+    new Converter[Identity[A], Identity[A]] {
+      def convert(v: Identity[A]) = v
     }
 
   /**
