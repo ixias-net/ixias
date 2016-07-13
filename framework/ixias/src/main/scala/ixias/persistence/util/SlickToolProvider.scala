@@ -32,7 +32,7 @@ trait SlickToolProvider[P <: JdbcProfile]
     SlickDBAction(table) { case (_, slick) =>
       slick.asInstanceOf[T#BasicQuery]
         .schema.create.statements.foreach(println)
-      Future.successful(Unit)
+      Future.successful(())
     }
   }
 

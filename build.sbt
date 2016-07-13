@@ -61,18 +61,18 @@ lazy val ixiasCore = (project in file("framework/ixias"))
     name := "ixias-core",
     libraryDependencies ++= Seq(
       // --[ OSS Libraries ]------------------------------------
-      "com.typesafe"        % "config"          % "1.3.+",
-      "com.typesafe.slick" %% "slick"           % "3.1.+",
-      "com.zaxxer"          % "HikariCP"        % "2.4.+",
-      "com.bionicspirit"   %% "shade"           % "1.7.+",
-      "org.slf4j"           % "slf4j-api"       % "1.7.+",
-      "joda-time"           % "joda-time"       % "2.9.+",
-      "org.joda"            % "joda-convert"    % "1.+",
+      "com.typesafe"        % "config"          % "1.3.0",
+      "com.typesafe.slick" %% "slick"           % "3.1.1",
+      "com.zaxxer"          % "HikariCP"        % "2.4.6",
+      "com.bionicspirit"   %% "shade"           % "1.7.3",
+      "org.slf4j"           % "slf4j-api"       % "1.7.21",
+      "joda-time"           % "joda-time"       % "2.9.4",
+      "org.joda"            % "joda-convert"    % "1.8.1",
       // --[ UnitTest ]-----------------------------------------
-      "org.specs2"         %% "specs2-core"          % "3.6.+" % Test,
-      "org.specs2"         %% "specs2-matcher-extra" % "3.6.+" % Test,
-      "ch.qos.logback"      % "logback-classic"      % "1.1.+" % Test,
-      "mysql"               % "mysql-connector-java" % "latest.integration" % Test
+      "org.specs2"         %% "specs2-core"          % "3.8.3"  % Test,
+      "org.specs2"         %% "specs2-matcher-extra" % "3.8.3"  % Test,
+      "ch.qos.logback"      % "logback-classic"      % "1.1.3"  % Test,
+      "mysql"               % "mysql-connector-java" % "5.1.38" % Test
     )
   )
 
@@ -86,10 +86,10 @@ lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
     unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala",
     libraryDependencies ++= Seq(
       cache,
-      "org.specs2"     %% "specs2-core"          % "3.6.+" % Test,
-      "org.specs2"     %% "specs2-matcher-extra" % "3.6.+" % Test,
-      "ch.qos.logback"  % "logback-classic"      % "1.1.+" % Test,
-      "mysql"           % "mysql-connector-java" % "latest.integration" % Test
+      "org.specs2"     %% "specs2-core"          % "3.8.3"  % Test,
+      "org.specs2"     %% "specs2-matcher-extra" % "3.8.3"  % Test,
+      "ch.qos.logback"  % "logback-classic"      % "1.1.3"  % Test,
+      "mysql"           % "mysql-connector-java" % "5.1.38" % Test
     )
   )
 
