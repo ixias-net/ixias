@@ -33,7 +33,7 @@ trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSourc
    * applications to prevent them from stepping over each other.
    */
   protected def getKeysPrefix(dsn: DataSourceName)(implicit ctx: Context): Option[String] =
-    getOptionalValue(dsn)(_.getString(CF_KEY_PREFIX))
+    getOptionalValue(dsn)(_.getString(CF_KEY_PREFIX)).orElse(Some(dsn.database + '#'))
 
   /**
    * Get the operation timeout; When the limit is reached,
