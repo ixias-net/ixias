@@ -10,8 +10,10 @@ package ixias.play.api.auth.token
 import scala.util.Random
 import scala.concurrent.Future
 import java.security.SecureRandom
+
 import play.api.libs.Crypto
 import play.api.mvc.{ RequestHeader, Result }
+
 import ixias.security.{ Token => SecurityToken }
 import ixias.play.api.auth.container.Container
 
@@ -61,4 +63,5 @@ object Token {
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   final def signWithHMAC(token: AuthenticityToken): SignedToken =
     Crypto.sign(token) + token
+
 }

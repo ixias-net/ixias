@@ -7,6 +7,7 @@
 
 package ixias.play.api.auth.mvc
 
+import play.api.Environment
 import play.api.mvc._
 import play.api.libs.concurrent.Execution
 
@@ -115,48 +116,54 @@ trait StackAuthActionBuilder[T <: StackAction] {
   /**
    * Build a custom action object.
    */
-  def build(params: Attribute[_]*)(implicit auth: AuthProfile): T
+  def build(params: Attribute[_]*)(implicit auth: AuthProfile, env: Environment): T
 
   /**
    * Constructs an `Action` with default content, and no request parameter.
    */
-  final def apply(block: ActionRequest[AnyContent] => Result)(implicit auth: AuthProfile):
-      Action[AnyContent] = build()(auth)(block)
+  final def apply(block: ActionRequest[AnyContent] => Result)
+    (implicit auth: AuthProfile, env: Environment):
+      Action[AnyContent] = build()(auth, env)(block)
 
   /**
    * Constructs an `Action` with default content.
    */
   final def apply(params: Attribute[_]*)
-    (block: ActionRequest[AnyContent] => Result)(implicit auth: AuthProfile):
-      Action[AnyContent] = build(params: _*)(auth)(block)
+    (block: ActionRequest[AnyContent] => Result)
+    (implicit auth: AuthProfile, env: Environment):
+      Action[AnyContent] = build(params: _*)(auth, env)(block)
 
   /**
    * Constructs an `Action` with default content.
    */
   final def apply[A](p: BodyParser[A], params: Attribute[_]*)
-    (block: ActionRequest[A] => Result)(implicit auth: AuthProfile):
-      Action[A] = build(params: _*)(auth)(p)(block)
+    (block: ActionRequest[A] => Result)
+    (implicit auth: AuthProfile, env: Environment):
+      Action[A] = build(params: _*)(auth, env)(p)(block)
 
   /**
    * Constructs an `Action` that returns a future of a result,
    * with default content, and no request parameter.
    */
-  final def async(block: ActionRequest[AnyContent] => Future[Result])(implicit auth: AuthProfile):
-      Action[AnyContent] = build()(auth).async(block)
+  final def async(block: ActionRequest[AnyContent] => Future[Result])
+    (implicit auth: AuthProfile, env: Environment):
+      Action[AnyContent] = build()(auth, env).async(block)
 
   /**
    * Constructs an `Action` that returns a future of a result,
    * with default content.
    */
   final def async(params: Attribute[_]*)
-    (block: ActionRequest[AnyContent] => Future[Result])(implicit auth: AuthProfile):
-      Action[AnyContent] = build(params: _*)(auth).async(block)
+    (block: ActionRequest[AnyContent] => Future[Result])
+    (implicit auth: AuthProfile, env: Environment):
+      Action[AnyContent] = build(params: _*)(auth, env).async(block)
 
   /**
    * Constructs an `Action` that returns a future of a result,
    * with default content.
    */
   final def async[A](p: BodyParser[A], params: Attribute[_]*)
-    (block: ActionRequest[A] => Future[Result])(implicit auth: AuthProfile):
-      Action[A] = build(params: _*)(auth).async(p)(block)
+    (block: ActionRequest[A] => Future[Result])
+    (implicit auth: AuthProfile, env: Environment):
+      Action[A] = build(params: _*)(auth, env).async(p)(block)
 }
