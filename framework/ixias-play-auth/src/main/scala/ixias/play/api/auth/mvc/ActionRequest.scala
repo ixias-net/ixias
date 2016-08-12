@@ -11,26 +11,13 @@ import scala.collection.concurrent.TrieMap
 import play.api.mvc.{ Request, WrappedRequest }
 
 /**
- * The attribute key of request.
- */
-trait AttributeKey[A] {
-  def ->(value: A): Attribute[A] = Attribute(this, value)
-}
-
-/**
- * The attribute of request.
- */
-case class Attribute[A](key: AttributeKey[A], value: A) {
-  def toTuple: (AttributeKey[A], A) = (key, value)
-}
-
-/**
  * Wrap an existing request. Useful to extend a request.
  */
 case class ActionRequest[A](
   underlying: Request[A],
-  attributes: TrieMap[AttributeKey[_], Any]
+  attributes: TrieMap[ActionRequest.AttributeKey[_], Any]
 ) extends WrappedRequest[A](underlying) {
+  import ActionRequest.AttributeKey
 
   /**
    * Retrieve an attribute by specific key.
@@ -47,3 +34,19 @@ case class ActionRequest[A](
   }
 }
 
+object ActionRequest {
+
+  /**
+   * The attribute of request.
+   */
+  case class Attribute[A](key: AttributeKey[A], value: A) {
+    def toTuple: (AttributeKey[A], A) = (key, value)
+  }
+
+  /**
+   * The attribute key of request.
+   */
+  trait AttributeKey[A] {
+    def ->(value: A): Attribute[A] = Attribute(this, value)
+  }
+}

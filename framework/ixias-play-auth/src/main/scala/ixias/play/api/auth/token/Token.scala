@@ -12,11 +12,13 @@ import scala.concurrent.Future
 import java.security.SecureRandom
 
 import play.api.mvc.{ RequestHeader, Result }
+import play.api.libs.iteratee.Execution.Implicits.trampoline
+
 import com.typesafe.config.ConfigFactory
+import org.apache.commons.codec.digest.DigestUtils
 import org.abstractj.kalium.encoders.Encoder
 import org.abstractj.kalium.keys.AuthenticationKey
 import org.abstractj.kalium.NaCl.Sodium.CRYPTO_AUTH_HMACSHA512256_BYTES
-import org.apache.commons.codec.digest.DigestUtils
 
 import ixias.security.{ Token => SecurityToken }
 import ixias.play.api.auth.container.Container
@@ -39,7 +41,6 @@ trait Token {
 // Companion object
 //~~~~~~~~~~~~~~~~~~
 object Token {
-  import play.api.libs.iteratee.Execution.Implicits.trampoline
 
   /** The token provider */
   protected lazy val worker = SecurityToken(

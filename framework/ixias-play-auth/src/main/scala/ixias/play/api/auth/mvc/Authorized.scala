@@ -7,19 +7,19 @@
 
 package ixias.play.api.auth.mvc
 
-import play.api.Environment
-import play.api.mvc.Result
 import scala.concurrent.Future
+import play.api.mvc.Result
+import ixias.play.api.auth.mvc.ActionRequest._
 
 /**
  * Provides the custom action for authentication.
  */
-sealed class Authorized(params: Attribute[_]*)(implicit auth: AuthProfile, env: Environment) extends StackAction(params: _*)
+sealed class Authorized(params: Attribute[_]*)(implicit auth: AuthProfile) extends StackAction(params: _*)
 {
   /** Proceed with the next advice or target method invocation */
   override def proceed[A](req: ActionRequest[A])(f: ActionRequest[A] => Future[Result]): Future[Result] = {
     implicit val ctx = getExecutionContext(req)
-    auth.authorized(req.get(auth.AuthorityKey))(req, env) flatMap {
+    auth.authorized(req.get(auth.AuthorityKey))(req) flatMap {
       case Left(result)           => Future.successful(result)
       case Right((user, updater)) => super.proceed(
         req.set(auth.UserKey, user)
@@ -33,6 +33,6 @@ sealed class Authorized(params: Attribute[_]*)(implicit auth: AuthProfile, env: 
  */
 object Authorized extends StackAuthActionBuilder[Authorized]
 {
-  def build(params: Attribute[_]*)(implicit auth: AuthProfile, env: Environment): Authorized =
+  def build(params: Attribute[_]*)(implicit auth: AuthProfile): Authorized =
     new Authorized(params: _*)
 }
