@@ -49,7 +49,7 @@ object Token {
   /** The object that provides some cryptographic operations */
   protected lazy val crypto: AuthenticationKey = {
     val config = ConfigFactory.load()
-    val secret = config.getString("play.crypto.secret")
+    val secret = config.getString("session.token.secret")
     new AuthenticationKey(DigestUtils.md5Hex(secret).getBytes("utf-8"))
   }
 
