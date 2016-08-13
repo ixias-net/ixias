@@ -25,48 +25,44 @@ abstract class ShadeRepository[K <: Identity[_], V <: Entity[K]](implicit ttag: 
   // --[ Methods ]--------------------------------------------------------------
   val dsn: DataSourceName
 
-  /** Gets expiry time. */
-  def expiry(key: Id): Duration = Duration.Inf
-
   // --[ Methods ]--------------------------------------------------------------
   /** Fetches a value from the cache store. */
   def get(key: Id): Future[Option[V]] =
     DBAction(dsn) { db =>
-      (for {
-        v <- db.get[V](key.get.toString)
-      } yield(v)) recoverWith {
-        case _: java.io.InvalidClassException => Future.successful(None)
-      }
+      db.get[V](key.get.toString)
+    } recoverWith {
+      case _: java.io.InvalidClassException => Future.successful(None)
     }
 
   // --[ Methods ]--------------------------------------------------------------
   /** Sets a (key, value) in the cache store. */
-  def store(value: V): Future[Id] =
+  def store(value: V, expiry: Duration = Duration.Inf): Future[Id] =
     DBAction(dsn) { db =>
       for {
-        _ <- db.set(value.id.get.toString, value, expiry(value.id))
+        _ <- db.set(value.id.get.toString, value, expiry)
       } yield (value.id)
     }
 
   /** Update existing value expiry in the cache store. */
-  def updateExpiry(key: Id): Future[Unit] =
+  def updateExpiry(key: Id, expiry: Duration = Duration.Inf): Future[Unit] =
     DBAction(dsn) { db =>
-      (for {
+      for {
         Some(v) <- db.get[V](key.get.toString)
-        _       <- db.set(key.get.toString, v, expiry(key))
-      } yield ()) recoverWith {
-        case _: NoSuchElementException
-           | _: java.io.InvalidClassException => Future.successful(Unit)
-      }
+        _       <- db.set(key.get.toString, v, expiry)
+      } yield ()
+    } recoverWith {
+      case _: NoSuchElementException
+         | _: java.io.InvalidClassException => Future.successful(Unit)
     }
 
   /** Deletes a key from the cache store. */
   def remove(key: Id): Future[Option[V]] =
     DBAction(dsn) { db =>
       for {
-        old <- db.get[V](key.get.toString) recoverWith {
-          case _: java.io.InvalidClassException => Future.successful(None) }
+        old <- db.get[V](key.get.toString)
         _   <- db.delete(key.get.toString)
       } yield old
+    } recoverWith {
+      case _: java.io.InvalidClassException => Future.successful(None)
     }
 }
