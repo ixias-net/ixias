@@ -10,8 +10,16 @@ package ixias.play.api.auth.token
 import scala.util.Random
 import scala.concurrent.Future
 import java.security.SecureRandom
-import play.api.libs.Crypto
+
 import play.api.mvc.{ RequestHeader, Result }
+import play.api.libs.iteratee.Execution.Implicits.trampoline
+
+import com.typesafe.config.ConfigFactory
+import org.apache.commons.codec.digest.DigestUtils
+import org.abstractj.kalium.encoders.Encoder
+import org.abstractj.kalium.keys.AuthenticationKey
+import org.abstractj.kalium.NaCl.Sodium.CRYPTO_AUTH_HMACSHA512256_BYTES
+
 import ixias.security.{ Token => SecurityToken }
 import ixias.play.api.auth.container.Container
 
@@ -33,12 +41,18 @@ trait Token {
 // Companion object
 //~~~~~~~~~~~~~~~~~~
 object Token {
-  import scala.concurrent.ExecutionContext.Implicits.global
 
   /** The token provider */
   protected lazy val worker = SecurityToken(
     table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
   )
+
+  /** The object that provides some cryptographic operations */
+  protected lazy val crypto: AuthenticationKey = {
+    val config = ConfigFactory.load()
+    val secret = config.getString("session.token.secret")
+    new AuthenticationKey(DigestUtils.md5Hex(secret).getBytes("utf-8"))
+  }
 
   /** Generate a new token as string */
   final def generate(implicit container: Container[_]): Future[AuthenticityToken] = {
@@ -51,8 +65,8 @@ object Token {
 
   /** Verifies a given HMAC on a piece of data */
   final def verifyHMAC(token: SignedToken): Option[AuthenticityToken] = {
-    val (hmac, value) = token.splitAt(40)
-    worker.safeEquals(Crypto.sign(value), hmac) match {
+    val (signature, value) = token.splitAt(CRYPTO_AUTH_HMACSHA512256_BYTES)
+    crypto.verify(value, signature, Encoder.RAW) match {
       case true  => Some(value)
       case false => None
     }
@@ -60,5 +74,5 @@ object Token {
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   final def signWithHMAC(token: AuthenticityToken): SignedToken =
-    Crypto.sign(token) + token
+    crypto.sign(token, Encoder.RAW) + token
 }

@@ -9,6 +9,7 @@ package ixias.play.api.auth.mvc
 
 import scala.concurrent.Future
 import play.api.mvc.Result
+import ixias.play.api.auth.mvc.ActionRequest._
 
 /**
  * Provides the custom action for authentication.
