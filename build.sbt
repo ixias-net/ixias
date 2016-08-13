@@ -5,8 +5,6 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-import ReleaseTransformations._
-
 lazy val commonSettings = Seq(
   organization := "net.ixias",
   scalaVersion := "2.11.8",
@@ -27,9 +25,26 @@ lazy val commonSettings = Seq(
     "-Ywarn-inaccessible",     // Warn about inaccessible types in method signatures.
     "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
     "-Ywarn-numeric-widen"     // Warn when numerics are widened.
+  ),
+  libraryDependencies ++= Seq(
+    "org.specs2"      %% "specs2-core"          % "3.8.3"  % Test,
+    "org.specs2"      %% "specs2-matcher-extra" % "3.8.3"  % Test,
+    "ch.qos.logback"   % "logback-classic"      % "1.1.3"  % Test,
+    "mysql"            % "mysql-connector-java" % "5.1.38" % Test
   )
 )
 
+lazy val playSettings = Seq(
+  unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala",
+  libraryDependencies ++= Seq(ws, cache,
+    "org.abstractj.kalium" % "kalium" % "0.5.0"
+  )
+)
+
+
+// Publisher Setting
+//~~~~~~~~~~~~~~~~~~~
+import ReleaseTransformations._
 lazy val publisherSettings = Seq(
   publishTo := {
     val branch  = "git branch".lines_!.find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
@@ -54,57 +69,59 @@ lazy val publisherSettings = Seq(
   )
 )
 
-lazy val ixiasCore = (project in file("framework/ixias"))
+// IxiaS Core Libraries
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lazy val ixiasCore = (project in file("framework/ixias-core"))
+  .settings(name := "ixias-core")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .settings(
-    name := "ixias-core",
-    libraryDependencies ++= Seq(
-      // --[ OSS Libraries ]------------------------------------
-      "com.typesafe"        % "config"          % "1.3.0",
-      "com.typesafe.slick" %% "slick"           % "3.1.1",
-      "com.zaxxer"          % "HikariCP"        % "2.4.6",
-      "com.bionicspirit"   %% "shade"           % "1.7.3",
-      "org.slf4j"           % "slf4j-api"       % "1.7.21",
-      "joda-time"           % "joda-time"       % "2.9.4",
-      "org.joda"            % "joda-convert"    % "1.8.1",
-      // --[ UnitTest ]-----------------------------------------
-      "org.specs2"         %% "specs2-core"          % "3.8.3"  % Test,
-      "org.specs2"         %% "specs2-matcher-extra" % "3.8.3"  % Test,
-      "ch.qos.logback"      % "logback-classic"      % "1.1.3"  % Test,
-      "mysql"               % "mysql-connector-java" % "5.1.38" % Test
-    )
-  )
+  .settings(libraryDependencies ++= Seq(
+    "com.typesafe"        % "config"          % "1.3.0",
+    "com.typesafe.slick" %% "slick"           % "3.1.1",
+    "com.zaxxer"          % "HikariCP"        % "2.4.6",
+    "com.bionicspirit"   %% "shade"           % "1.7.3",
+    "org.slf4j"           % "slf4j-api"       % "1.7.21",
+    "joda-time"           % "joda-time"       % "2.9.4",
+    "org.joda"            % "joda-convert"    % "1.8.1"
+  ))
 
-lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
+// IxiaS Play Libraries
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
+  .settings(name := "ixias-play-core")
   .enablePlugins(PlayScala)
   .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
+  .settings(playSettings:      _*)
   .settings(publisherSettings: _*)
-  .settings(
-    name := "ixias-play-auth",
-    unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala",
-    libraryDependencies ++= Seq(
-      cache,
-      "org.specs2"     %% "specs2-core"          % "3.8.3"  % Test,
-      "org.specs2"     %% "specs2-matcher-extra" % "3.8.3"  % Test,
-      "ch.qos.logback"  % "logback-classic"      % "1.1.3"  % Test,
-      "mysql"           % "mysql-connector-java" % "5.1.38" % Test
-    )
-  )
+  .settings(libraryDependencies ++= Seq(
+    "org.scala-lang"        % "scala-compiler" % scalaVersion.value,
+    "org.scalatra.scalate" %% "scalate-core"   % "1.7.1"
+  ))
 
+lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
+  .settings(name := "ixias-play-auth")
+  .enablePlugins(PlayScala)
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(playSettings:      _*)
+  .settings(publisherSettings: _*)
+
+// IxiaS Meta Packages
+//~~~~~~~~~~~~~~~~~~~~~
 lazy val ixias = (project in file("."))
+  .settings(name := "ixias")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .settings(name := "ixias")
-  .aggregate(
-    ixiasCore,
-    ixiasPlayAuth
-  )
-  .dependsOn(
-    ixiasCore,
-    ixiasPlayAuth
-  )
+  .aggregate(ixiasCore, ixiasPlay)
+  .dependsOn(ixiasCore, ixiasPlay)
+
+lazy val ixiasPlay = (project in file("target/ixias-play"))
+  .settings(name := "ixias-play")
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .aggregate(ixiasPlayCore, ixiasPlayAuth)
+  .dependsOn(ixiasPlayCore, ixiasPlayAuth)
 
 // Setting for prompt
 import com.scalapenos.sbt.prompt._

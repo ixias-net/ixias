@@ -7,13 +7,14 @@
 
 package ixias.play.api.auth.mvc
 
-import scala.concurrent.Future
 import play.api.mvc.Result
+import scala.concurrent.Future
+import ixias.play.api.auth.mvc.ActionRequest._
 
 /**
  * Provides the custom action for authentication.
  */
-sealed class Authenticated(params: Attribute[_]*)(implicit val auth: AuthProfile) extends StackAction(params: _*)
+sealed class Authenticated(params: Attribute[_]*)(implicit auth: AuthProfile) extends StackAction(params: _*)
 {
   /** Proceed with the next advice or target method invocation */
   override def proceed[A](req: ActionRequest[A])(f: ActionRequest[A] => Future[Result]): Future[Result] = {
