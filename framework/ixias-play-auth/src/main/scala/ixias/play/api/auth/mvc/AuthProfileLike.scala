@@ -9,9 +9,8 @@ package ixias.play.api.auth.mvc
 
 import scala.concurrent.Future
 
-import play.api.{ Environment, Mode }
+import play.api.Mode
 import play.api.mvc.{ RequestHeader, Result, Results }
-import play.api.libs.iteratee.Execution.Implicits.trampoline
 
 import ixias.play.api.auth.token._
 import ixias.play.api.auth.container.Container
@@ -19,8 +18,6 @@ import ixias.play.api.auth.container.Container
 // Feature Template
 //~~~~~~~~~~~~~~~~~~
 trait AuthProfileLike { self: AuthProfile =>
-
-  implicit val env: Environment
 
   // --[ Methods ]--------------------------------------------------------------
   /** Returns authorized user. */
