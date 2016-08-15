@@ -12,7 +12,7 @@ import scala.concurrent.duration._
 import java.util.concurrent.TimeUnit
 
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.io.EntityIOActionContext
+import ixias.persistence.dbio.EntityIOActionContext
 
 trait ShadeDataSource extends BasicDataSource with ShadeDataSourceConfig
 {

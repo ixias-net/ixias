@@ -12,7 +12,7 @@ import java.sql.Connection
 
 import slick.jdbc.JdbcDataSource
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.io.EntityIOActionContext
+import ixias.persistence.dbio.EntityIOActionContext
 
 trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig
 {

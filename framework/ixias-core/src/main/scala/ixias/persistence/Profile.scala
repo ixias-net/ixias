@@ -14,7 +14,7 @@ import com.typesafe.config.{ Config, ConfigFactory }
 
 import ixias.util.Logger
 import ixias.model.{ Identity, Entity }
-import ixias.persistence.io.EntityIOAction
+import ixias.persistence.dbio.EntityIOAction
 import ixias.persistence.lifted.{ Aliases, ExtensionMethodConversions }
 
 /**

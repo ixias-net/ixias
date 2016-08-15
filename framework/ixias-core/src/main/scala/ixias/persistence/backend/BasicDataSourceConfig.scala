@@ -13,7 +13,7 @@ import scala.language.implicitConversions
 import com.typesafe.config.Config
 
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.io.EntityIOActionContext
+import ixias.persistence.dbio.EntityIOActionContext
 
 trait BasicDataSourceConfig { self: BasicDataSource =>
 

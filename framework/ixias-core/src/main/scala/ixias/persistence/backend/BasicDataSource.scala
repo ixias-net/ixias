@@ -9,7 +9,7 @@ package ixias.persistence.backend
 
 import scala.concurrent.Future
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.io.EntityIOActionContext
+import ixias.persistence.dbio.EntityIOActionContext
 
 trait BasicDataSource
 {
