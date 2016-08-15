@@ -5,7 +5,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.persistence.backend
+package ixias.persistence.action
 
 import scala.util.Failure
 import scala.concurrent.Future
@@ -13,6 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import slick.driver.JdbcProfile
 import ixias.util.Logger
 import ixias.persistence.model.{ DataSourceName, Table, Converter }
+import ixias.persistence.backend.SlickBackend
 
 /**
  * The action request.

@@ -10,7 +10,8 @@ package ixias.persistence
 import slick.driver.JdbcProfile
 import ixias.model.{ Identity, Entity }
 import ixias.persistence.lifted._
-import ixias.persistence.backend.{ SlickBackend, SlickDBActionProvider, SlickRunDBActionProvider }
+import ixias.persistence.backend.SlickBackend
+import ixias.persistence.action.{ SlickDBActionProvider, SlickRunDBActionProvider }
 
 /**
  * The profile for persistence with using the Slick library.

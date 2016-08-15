@@ -8,7 +8,8 @@
 package ixias.persistence
 
 import ixias.model.{ Identity, Entity }
-import ixias.persistence.backend.{ ShadeBackend, ShadeDBActionProvider }
+import ixias.persistence.backend.ShadeBackend
+import ixias.persistence.action.ShadeDBActionProvider
 
 /**
  * The profile for persistence with using the Shade library.

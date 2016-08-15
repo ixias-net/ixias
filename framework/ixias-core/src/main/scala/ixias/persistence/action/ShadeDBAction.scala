@@ -5,7 +5,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.persistence.backend
+package ixias.persistence.action
 
 import scala.util.Failure
 import scala.concurrent.Future
@@ -13,6 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import ixias.util.Logger
 import ixias.persistence.model.DataSourceName
+import ixias.persistence.backend.ShadeBackend
 
 /**
  * Run the supplied function with a database object.

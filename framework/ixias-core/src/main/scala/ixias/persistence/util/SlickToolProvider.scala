@@ -13,7 +13,7 @@ import slick.jdbc.meta.MTable
 import slick.driver.JdbcProfile
 
 import ixias.persistence.model.{ Table, Converter }
-import ixias.persistence.backend.{ SlickDBActionProvider, SlickRunDBActionProvider }
+import ixias.persistence.action.{ SlickDBActionProvider, SlickRunDBActionProvider }
 
 /**
  * The utility tool to manage database with using Slick library.
