@@ -9,10 +9,10 @@ package ixias.persistence.backend
 
 import scala.util.{ Success, Failure }
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import shade.memcached.Memcached
 import ixias.persistence.model.DataSourceName
+import ixias.persistence.dbio.Execution.Implicits.trampoline
 
 case class ShadeBackend() extends BasicBackend with ShadeDataSource
 {
@@ -20,7 +20,7 @@ case class ShadeBackend() extends BasicBackend with ShadeDataSource
   type Database = Memcached
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Memcached] = {
+  def getDatabase(dsn: DataSourceName): Future[Memcached] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
     ShadeBackendContainer.getOrElseUpdate(dsn) {
       (for {

@@ -12,7 +12,6 @@ import java.sql.Connection
 
 import slick.jdbc.JdbcDataSource
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.dbio.EntityIOActionContext
 
 trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig
 {
@@ -22,9 +21,6 @@ trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig
 
   /** The type of the database souce config factory used by this backend. */
   type DataSourceFactory = HikariCPDataSourceFactory
-
-  /** The type of the context used for running repository Actions */
-  type Context = EntityIOActionContext
 
   // --[ Properties ]-----------------------------------------------------------
   /** The database factory */
@@ -54,7 +50,7 @@ trait SlickDataSource extends BasicDataSource with SlickDataSourceConfig
     import com.zaxxer.hikari._
 
     /** Create a JdbcDataSource from DSN (Database Souce Name) */
-    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Future[DataSource] =
+    def forDSN(dsn: DataSourceName): Future[DataSource] =
       Future.fromTry{
         for {
           driver <- getDriverClassName(dsn)

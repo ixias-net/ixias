@@ -11,7 +11,7 @@ import scala.util.Try
 import java.util.concurrent.TimeUnit
 import ixias.persistence.model.DataSourceName
 
-trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSource =>
+trait ShadeDataSourceConfig extends BasicDataSourceConfig {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
@@ -22,7 +22,7 @@ trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSourc
   /**
    * Get the list of server addresses, separated by space.
    */
-  protected def getAddresses(dsn: DataSourceName)(implicit ctx: Context): Try[String] =
+  protected def getAddresses(dsn: DataSourceName): Try[String] =
     for {
       hosts <- getHosts(dsn)
     } yield (hosts.mkString(","))
@@ -32,13 +32,13 @@ trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSourc
    * useful for having the same Memcached instances used by several
    * applications to prevent them from stepping over each other.
    */
-  protected def getKeysPrefix(dsn: DataSourceName)(implicit ctx: Context): Option[String] =
+  protected def getKeysPrefix(dsn: DataSourceName): Option[String] =
     getOptionalValue(dsn)(_.getString(CF_KEY_PREFIX)).orElse(Some(dsn.database + "#"))
 
   /**
    * Get the operation timeout; When the limit is reached,
    * the Future responses finish with Failure(TimeoutException)
    */
-  protected def getHostSpecIdleTimeout(dsn: DataSourceName)(implicit ctx: Context): Long =
+  protected def getHostSpecIdleTimeout(dsn: DataSourceName): Long =
     getOptionalValue(dsn)(_.getDuration(CF_OP_TIMEOUT, TimeUnit.MILLISECONDS)).getOrElse(30000)
 }

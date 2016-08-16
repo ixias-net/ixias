@@ -27,8 +27,6 @@ trait Profile[K <: Identity[_], E <: Entity[K]] extends EntityIOAction[K, E] {
   type Backend  <: ixias.persistence.backend.BasicBackend
   /** The type of database objects. */
   type Database  = Backend#Database
-  /** The type of the context used for running IOActions. */
-  type Context   = Backend#Context
 
   // --[ Properties ]-----------------------------------------------------------
   /** The back-end implementation for this profile */

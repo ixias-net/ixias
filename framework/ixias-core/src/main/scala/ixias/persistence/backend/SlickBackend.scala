@@ -9,11 +9,11 @@ package ixias.persistence.backend
 
 import scala.util.{ Success, Failure }
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import slick.jdbc.JdbcBackend
 import slick.driver.JdbcProfile
 import ixias.persistence.model.DataSourceName
+import ixias.persistence.dbio.Execution.Implicits.trampoline
 
 case class SlickBackend[P <: JdbcProfile](implicit val driver: P)
    extends BasicBackend with SlickDataSource
@@ -22,7 +22,7 @@ case class SlickBackend[P <: JdbcProfile](implicit val driver: P)
   type Database = P#Backend#Database
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Database] = {
+  def getDatabase(dsn: DataSourceName): Future[Database] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
     SlickBackendContainer.getOrElseUpdate(dsn) {
       (for {

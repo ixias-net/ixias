@@ -10,12 +10,11 @@ package ixias.persistence.backend
 import scala.util.Try
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
-import com.typesafe.config.Config
+import com.typesafe.config.{ Config, ConfigFactory }
 
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.dbio.EntityIOActionContext
 
-trait BasicDataSourceConfig { self: BasicDataSource =>
+trait BasicDataSourceConfig {
 
   /** The section format */
   protected val CF_SECTION_HOSTSPEC       = """hostspec.%s"""
@@ -28,36 +27,38 @@ trait BasicDataSourceConfig { self: BasicDataSource =>
   protected val CF_HOSTSPEC_DATABASE      = "database"
   protected val CF_HOSTSPEC_READONLY      = "readonly"
 
+  protected lazy val config = ConfigFactory.load()
+
   // --[ Methods ]--------------------------------------------------------------
   /** Get the username used for DataSource */
   protected def getUserName
-    (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
+    (dsn: DataSourceName): Option[String] =
     getOptionalValue(dsn)(_.getString(CF_USERNAME))
 
   /** Get the password used for DataSource */
   protected def getPassword
-    (dsn: DataSourceName)(implicit ctx: Context): Option[String] =
+    (dsn: DataSourceName): Option[String] =
     getOptionalValue(dsn)(_.getString(CF_PASSWORD))
 
   /** Get the flag for connection in read-only mode. */
   protected def getHostSpecReadOnly
-    (dsn: DataSourceName)(implicit ctx: Context): Option[Boolean] =
+    (dsn: DataSourceName): Option[Boolean] =
     getOptionalValue(dsn)(_.getBoolean(CF_HOSTSPEC_READONLY))
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the JDBC driver class name. */
   protected def getDriverClassName
-    (dsn: DataSourceName)(implicit ctx: Context): Try[String] =
+    (dsn: DataSourceName): Try[String] =
     getValue(dsn)(_.getString(CF_DRIVER_CLASS_NAME))
 
   /** Get the database name. */
   protected def getDatabaseName
-    (dsn: DataSourceName)(implicit ctx: Context): Try[String] =
+    (dsn: DataSourceName): Try[String] =
     getValue(dsn)(_.getString(CF_HOSTSPEC_DATABASE))
 
   /** Get host list to connect to database. */
   protected def getHosts
-    (dsn: DataSourceName)(implicit ctx: Context): Try[List[String]] =
+    (dsn: DataSourceName): Try[List[String]] =
     withConfig { cfg =>
       val path = dsn.path + '.' + dsn.database + '.' + CF_SECTION_HOSTSPEC.format(dsn.hostspec)
       Try(cfg.getConfig(path).getAnyRef(CF_HOSTSPEC_HOSTS)).map(_ match {
@@ -70,7 +71,7 @@ trait BasicDataSourceConfig { self: BasicDataSource =>
   // --[ Configuration ]--------------------------------------------------------
   /** Get a value by specified key. */
   final protected def getValue[A]
-    (dsn: DataSourceName)(f: (Config) => A)(implicit ctx: Context): Try[A] =
+    (dsn: DataSourceName)(f: (Config) => A): Try[A] =
     withConfig { cfg =>
       val haystack = Seq(
         dsn.path + "." + dsn.database + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
@@ -83,7 +84,7 @@ trait BasicDataSourceConfig { self: BasicDataSource =>
 
   /** Get a optional value by specified key. */
   final protected def getOptionalValue[A]
-    (dsn: DataSourceName)(f: (Config) => A)(implicit ctx: Context): Option[A] =
+    (dsn: DataSourceName)(f: (Config) => A): Option[A] =
     getValue(dsn)(f).toOption
 
   /** Get a value by specified key. */
@@ -95,5 +96,5 @@ trait BasicDataSourceConfig { self: BasicDataSource =>
     }
 
   /** Get a typesafe config accessor */
-  protected def withConfig[A](f: (Config) => A)(implicit ctx: Context) = f(ctx.config)
+  protected def withConfig[A](f: (Config) => A) = f(config)
 }

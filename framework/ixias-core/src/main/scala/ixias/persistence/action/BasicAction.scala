@@ -8,15 +8,11 @@
 package ixias.persistence.action
 
 import scala.concurrent.Future
-import ixias.persistence.dbio.{ IOActionContext, EntityIOActionContext }
 
 /**
  * A builder for generic DB Actions that generalizes over the type of requests.
  */
 trait BasicActionFunction[-R, +P] {
-
-  protected implicit val IOActionContext = EntityIOActionContext.Implicits.global
-
   /**
    * Invoke the block.
    * This is the main method that an ActionBuilder has to implement.
