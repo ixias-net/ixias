@@ -22,7 +22,6 @@ trait BasicActionFunction[-R, +P] {
    * This is the main method that an ActionBuilder has to implement.
    */
   def invokeBlock[A](request: R, block: P => Future[A]): Future[A]
-
 }
 
 trait BasicAction[-R, +P] extends BasicActionFunction[R, P]

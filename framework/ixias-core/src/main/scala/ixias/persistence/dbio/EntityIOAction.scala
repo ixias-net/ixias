@@ -8,7 +8,6 @@
 package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import ixias.model.{ Identity, Entity }
 
 /**

@@ -9,7 +9,6 @@ package ixias.persistence
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.reflect.ClassTag
 
 import shade.memcached.MemcachedCodecs
