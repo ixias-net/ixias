@@ -11,8 +11,7 @@ import scala.util.Try
 import scala.collection.JavaConversions._
 import scala.language.implicitConversions
 import com.typesafe.config.{ Config, ConfigFactory }
-
-import ixias.persistence.model.DataSourceName
+import ixias.persistence.model.{ DataSourceName, Configuration }
 
 trait BasicDataSourceConfig {
 
@@ -27,38 +26,32 @@ trait BasicDataSourceConfig {
   protected val CF_HOSTSPEC_DATABASE      = "database"
   protected val CF_HOSTSPEC_READONLY      = "readonly"
 
-  protected lazy val config = ConfigFactory.load()
+  val config = Configuration(ConfigFactory.load())
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the username used for DataSource */
-  protected def getUserName
-    (dsn: DataSourceName): Option[String] =
+  protected def getUserName(dsn: DataSourceName): Option[String] =
     getOptionalValue(dsn)(_.getString(CF_USERNAME))
 
   /** Get the password used for DataSource */
-  protected def getPassword
-    (dsn: DataSourceName): Option[String] =
+  protected def getPassword(dsn: DataSourceName): Option[String] =
     getOptionalValue(dsn)(_.getString(CF_PASSWORD))
 
   /** Get the flag for connection in read-only mode. */
-  protected def getHostSpecReadOnly
-    (dsn: DataSourceName): Option[Boolean] =
+  protected def getHostSpecReadOnly(dsn: DataSourceName): Option[Boolean] =
     getOptionalValue(dsn)(_.getBoolean(CF_HOSTSPEC_READONLY))
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the JDBC driver class name. */
-  protected def getDriverClassName
-    (dsn: DataSourceName): Try[String] =
+  protected def getDriverClassName(dsn: DataSourceName): Try[String] =
     getValue(dsn)(_.getString(CF_DRIVER_CLASS_NAME))
 
   /** Get the database name. */
-  protected def getDatabaseName
-    (dsn: DataSourceName): Try[String] =
+  protected def getDatabaseName(dsn: DataSourceName): Try[String] =
     getValue(dsn)(_.getString(CF_HOSTSPEC_DATABASE))
 
   /** Get host list to connect to database. */
-  protected def getHosts
-    (dsn: DataSourceName): Try[List[String]] =
+  protected def getHosts(dsn: DataSourceName): Try[List[String]] =
     withConfig { cfg =>
       val path = dsn.path + '.' + dsn.database + '.' + CF_SECTION_HOSTSPEC.format(dsn.hostspec)
       Try(cfg.getConfig(path).getAnyRef(CF_HOSTSPEC_HOSTS)).map(_ match {
@@ -69,9 +62,21 @@ trait BasicDataSourceConfig {
     }
 
   // --[ Configuration ]--------------------------------------------------------
+  /**
+   * Get a value by specified key.
+   */
+  final protected def readValue[A](dsn: DataSourceName)(f: Configuration => Option[A]): Option[A] =
+    Seq(
+      dsn.path + "." + dsn.database + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
+      dsn.path + "." + dsn.database,
+      dsn.path + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
+      dsn.path
+    ).foldLeft[Option[A]](None) {
+      case (prev, path) => prev.orElse(config.getConfig(path).flatMap(f))
+    }
+
   /** Get a value by specified key. */
-  final protected def getValue[A]
-    (dsn: DataSourceName)(f: (Config) => A): Try[A] =
+  final protected def getValue[A](dsn: DataSourceName)(f: Config => A): Try[A] =
     withConfig { cfg =>
       val haystack = Seq(
         dsn.path + "." + dsn.database + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
@@ -83,18 +88,16 @@ trait BasicDataSourceConfig {
     }
 
   /** Get a optional value by specified key. */
-  final protected def getOptionalValue[A]
-    (dsn: DataSourceName)(f: (Config) => A): Option[A] =
+  final protected def getOptionalValue[A](dsn: DataSourceName)(f: (Config) => A): Option[A] =
     getValue(dsn)(f).toOption
 
   /** Get a value by specified key. */
-  private def getValue[A]
-    (root: Config, haystack: Seq[String])(f: (Config) => A): Try[A] =
+  private def getValue[A](root: Config, haystack: Seq[String])(f: (Config) => A): Try[A] =
     haystack.size match {
       case 1 => Try(f(root.getConfig(haystack.head)))
       case _ => Try(f(root.getConfig(haystack.head))) orElse getValue(root, haystack.tail)(f)
     }
 
   /** Get a typesafe config accessor */
-  protected def withConfig[A](f: (Config) => A) = f(config)
+  protected def withConfig[A](f: (Config) => A) = f(ConfigFactory.load())
 }
