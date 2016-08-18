@@ -13,7 +13,7 @@ import java.sql.Connection
 import slick.jdbc.JdbcDataSource
 import ixias.persistence.model.DataSourceName
 
-trait SlickDataSource extends BasicDataSource with SlickConfig {
+trait SlickDataSource extends BasicDataSource with SlickDataConfig {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */

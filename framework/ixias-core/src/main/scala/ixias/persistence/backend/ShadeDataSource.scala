@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 
 import ixias.persistence.model.DataSourceName
 
-trait ShadeDataSource extends BasicDataSource with ShadeConfig {
+trait ShadeDataSource extends BasicDataSource with ShadeDataConfig {
 
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of database source config used by this backend. */

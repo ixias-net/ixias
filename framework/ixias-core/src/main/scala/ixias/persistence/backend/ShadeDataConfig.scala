@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 import ixias.persistence.model.DataSourceName
 
-trait ShadeConfig extends BasicConfig {
+trait ShadeDataConfig extends BasicDataConfig {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
