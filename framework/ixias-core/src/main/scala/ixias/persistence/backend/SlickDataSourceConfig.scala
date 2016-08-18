@@ -30,7 +30,7 @@ trait SlickDataSourceConfig extends BasicDataSourceConfig { self: SlickDataSourc
    * Driver tries to maintain in the pool, including both idle and in-use connections.
    */
   protected def getHostSpecMinIdle(dsn: DataSourceName): Option[Int] =
-    getOptionalValue(dsn)(_.getInt(CF_HOSTSPEC_MIN_IDLE))
+    readValue(dsn)(_.getInt(CF_HOSTSPEC_MIN_IDLE))
 
   /**
    * Get the property controls the maximum size that the pool is allowed to reach,
@@ -38,7 +38,7 @@ trait SlickDataSourceConfig extends BasicDataSourceConfig { self: SlickDataSourc
    * the maximum number of actual connections to the database backend.
    */
   protected def getHostSpecMaxPoolSize(dsn: DataSourceName): Option[Int] =
-    getOptionalValue(dsn)(_.getInt(CF_HOSTSPEC_MAX_POOL_SIZE))
+    readValue(dsn)(_.getInt(CF_HOSTSPEC_MAX_POOL_SIZE))
 
   /**
    * Get the maximum number of milliseconds that a client will wait for
@@ -46,7 +46,7 @@ trait SlickDataSourceConfig extends BasicDataSourceConfig { self: SlickDataSourc
    * a connection becoming available, a SQLException will be thrown from
    */
   protected def getHostSpecConnectionTimeout(dsn: DataSourceName): Option[Long] =
-    getOptionalValue(dsn)(_.getDuration(CF_HOSTSPEC_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS))
+    readValue(dsn)(_.getMilliseconds(CF_HOSTSPEC_CONNECTION_TIMEOUT))
 
   /**
    * This property controls the maximum amount of time (in milliseconds) that
@@ -57,7 +57,7 @@ trait SlickDataSourceConfig extends BasicDataSourceConfig { self: SlickDataSourc
    * A value of 0 means that idle connections are never removed from the pool.
    */
   protected def getHostSpecIdleTimeout(dsn: DataSourceName): Option[Long] =
-    getOptionalValue(dsn)(_.getDuration(CF_HOSTSPEC_IDLE_TIMEOUT, TimeUnit.MILLISECONDS))
+    readValue(dsn)(_.getMilliseconds(CF_HOSTSPEC_IDLE_TIMEOUT))
 
   /**
    * Get the JDBC Url

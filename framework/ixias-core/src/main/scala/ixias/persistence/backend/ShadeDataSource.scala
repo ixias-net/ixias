@@ -36,8 +36,8 @@ trait ShadeDataSource extends BasicDataSource with ShadeDataSourceConfig
         } yield {
           shade.memcached.Configuration(
             addresses        = addresses,
-            keysPrefix       = getKeysPrefix(dsn),
-            operationTimeout = FiniteDuration(getHostSpecIdleTimeout(dsn), TimeUnit.MILLISECONDS)
+            keysPrefix       = Some(getKeysPrefix(dsn)),
+            operationTimeout = getHostSpecIdleTimeout(dsn)
           )
         }
       )
