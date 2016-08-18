@@ -13,7 +13,7 @@ import scala.language.implicitConversions
 import com.typesafe.config.{ Config, ConfigFactory }
 import ixias.persistence.model.{ DataSourceName, Configuration }
 
-trait BasicDataSourceConfig {
+trait BasicConfig {
 
   /** The section format */
   protected val CF_SECTION_HOSTSPEC  = """hostspec.%s"""

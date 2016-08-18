@@ -11,7 +11,7 @@ import scala.util.Try
 import java.util.concurrent.TimeUnit
 import ixias.persistence.model.DataSourceName
 
-trait SlickDataSourceConfig extends BasicDataSourceConfig { self: SlickDataSource =>
+trait SlickConfig extends BasicConfig { self: SlickDataSource =>
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
