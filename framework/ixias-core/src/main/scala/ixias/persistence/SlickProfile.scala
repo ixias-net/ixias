@@ -11,14 +11,13 @@ import slick.driver.JdbcProfile
 import ixias.model.{ Identity, Entity }
 import ixias.persistence.lifted._
 import ixias.persistence.backend.SlickBackend
-import ixias.persistence.action.{ SlickDBActionProvider, SlickRunDBActionProvider }
+import ixias.persistence.action.SlickDBActionProvider
 
 /**
  * The profile for persistence with using the Slick library.
  */
-trait SlickProfile[K <: Identity[_], E <: Entity[K], P <: JdbcProfile] extends Profile[K, E]
-    with SlickDBActionProvider[P]
-    with SlickRunDBActionProvider[P]
+trait SlickProfile[K <: Identity[_], E <: Entity[K], P <: JdbcProfile]
+   extends Profile[K, E] with SlickDBActionProvider[P]
 { self =>
 
   /** The type of slick driver */

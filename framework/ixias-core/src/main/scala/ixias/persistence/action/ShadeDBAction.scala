@@ -9,48 +9,29 @@ package ixias.persistence.action
 
 import scala.util.Failure
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 
-import ixias.util.Logger
+import ixias.persistence.ShadeProfile
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.backend.ShadeBackend
-
-/**
- * Run the supplied function with a database object.
- */
-sealed class ShadeDBAction extends BasicAction[DataSourceName, ShadeBackend#Database]
-{
-  /** The logger for profile */
-  protected lazy val logger  = Logger.apply
-
-  /** The back-end implementation for this profile */
-  protected lazy val backend = ShadeBackend.apply
-
-  /** Invoke the block. */
-  def invokeBlock[A](dsn: DataSourceName, block: ShadeBackend#Database => Future[A]): Future[A] =
-    (for {
-      db <- backend.getDatabase(dsn)
-      v  <- block(db)
-    } yield v) andThen {
-      case Failure(ex) => logger.error("The database action failed. dsn=" + dsn.toString, ex)
-    }
-}
 
 /**
  * The provider for `ShadeDBAction`
  */
-trait ShadeDBActionProvider
-{
-  object ShadeDBAction
-  {
-    /** The back-end type required by this profile */
-    type Backend  = ShadeBackend
+trait ShadeDBActionProvider { self: ShadeProfile[_, _] =>
 
-    /** The type of database objects. */
-    type Database = Backend#Database
+  object ShadeDBAction extends BasicAction[DataSourceName, Database] {
 
     /** Returns a future of a result */
     def apply[A](dsn: DataSourceName)(block: Database => Future[A]): Future[A] =
-      (new ShadeDBAction).invokeBlock(dsn, block)
+      invokeBlock(dsn, block)
+
+    /** Invoke the block. */
+    def invokeBlock[A](dsn: DataSourceName, block: Database => Future[A]): Future[A] =
+      (for {
+        db    <- backend.getDatabase(dsn)
+        value <- block(db)
+      } yield value) andThen {
+        case Failure(ex) => logger.error(
+          "The database action failed. dsn=".format(dsn.toString), ex)
+      }
   }
 }
