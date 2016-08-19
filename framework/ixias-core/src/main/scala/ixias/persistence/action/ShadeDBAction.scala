@@ -16,7 +16,7 @@ import ixias.persistence.model.DataSourceName
 /**
  * The provider for `ShadeDBAction`
  */
-trait ShadeDBActionProvider { self: ShadeProfile[_, _] =>
+trait ShadeDBActionProvider { self: ShadeProfile =>
 
   object ShadeDBAction extends BasicAction[DataSourceName, Database] {
 

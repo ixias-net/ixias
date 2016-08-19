@@ -27,7 +27,7 @@ sealed case class SlickDBActionRequest[P <: JdbcProfile, T <: Table[_, P]](
 /**
  * The provider for `SlickDBAction`
  */
-trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[_, _, P] =>
+trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
 
   /** The default using key of DSN map. */
   val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_MASTER
