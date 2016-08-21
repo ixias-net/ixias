@@ -16,14 +16,6 @@ import slick.dbio.{ DBIOAction, NoStream }
 import ixias.persistence.SlickProfile
 import ixias.persistence.model.{ DataSourceName, Table, Converter }
 
-// /**
-//  * The action request.
-//  */
-// sealed case class SlickDBActionRequest[P <: JdbcProfile, T <: Table[_, P]](
-//   val dsn:   DataSourceName,
-//   val table: T
-// )
-
 trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
 
   /** The default using key of DSN map. */
