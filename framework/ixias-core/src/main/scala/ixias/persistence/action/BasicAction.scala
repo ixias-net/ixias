@@ -13,6 +13,7 @@ import scala.concurrent.Future
  * A builder for generic DB Actions that generalizes over the type of requests.
  */
 trait BasicActionFunction[-R, +P] {
+
   /**
    * Invoke the block.
    * This is the main method that an ActionBuilder has to implement.
