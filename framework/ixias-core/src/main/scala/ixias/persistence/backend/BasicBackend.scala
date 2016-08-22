@@ -8,12 +8,12 @@
 package ixias.persistence.backend
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.Map
 import scala.reflect.runtime.universe.TypeTag
 
 import ixias.util.Logger
 import ixias.persistence.model.DataSourceName
+import ixias.persistence.dbio.Execution.Implicits.trampoline
 
 /**
  * Backend for the basic database and session handling features.
@@ -27,7 +27,7 @@ trait BasicBackend extends BasicDataSource {
   type Database <: AnyRef
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName)(implicit ctx: Context): Future[Database]
+  def getDatabase(dsn: DataSourceName): Future[Database]
 
 }
 

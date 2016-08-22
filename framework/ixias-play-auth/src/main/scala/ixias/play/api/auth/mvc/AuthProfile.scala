@@ -7,9 +7,12 @@
 
 package ixias.play.api.auth.mvc
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration.Duration
+
+import play.api.Environment
 import play.api.mvc.{ RequestHeader, Result, Results }
+import play.api.libs.iteratee.Execution
 
 import ixias.model.{ Identity, Entity }
 import ixias.play.api.auth.token.Token
@@ -31,6 +34,12 @@ trait AuthProfile extends AuthProfileLike with Results
   case object AuthorityKey extends ActionRequest.AttributeKey[Authority]
 
   // --[ Properties ]-----------------------------------------------------------
+  /** The environment for the play application. */
+  implicit val env: Environment
+
+  /** Can execute program logic asynchronously */
+  implicit val ctx: ExecutionContext = Execution.Implicits.trampoline
+
   /** The timeout value in `seconds` */
   val sessionTimeout: Duration = Duration.Inf
 

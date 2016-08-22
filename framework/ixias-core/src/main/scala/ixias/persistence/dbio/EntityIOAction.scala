@@ -5,16 +5,17 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.persistence.io
+package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import ixias.model.{ Identity, Entity }
+import ixias.persistence.Repository
 
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K <: Identity[_], E <: Entity[K]] extends IOAction {
+trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
+    extends IOAction { self: Repository[K, E] =>
 
   /** The type of entity id */
   type Id     = K
