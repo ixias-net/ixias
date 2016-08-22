@@ -9,11 +9,13 @@ package ixias.persistence.dbio
 
 import scala.concurrent.Future
 import ixias.model.{ Identity, Entity }
+import ixias.persistence.Repository
 
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K <: Identity[_], E <: Entity[K]] extends IOAction {
+trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
+    extends IOAction { self: Repository[K, E] =>
 
   /** The type of entity id */
   type Id     = K

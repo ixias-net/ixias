@@ -8,7 +8,6 @@
 package ixias.persistence.util
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import slick.jdbc.meta.MTable
 import slick.driver.JdbcProfile
 

@@ -9,8 +9,8 @@ package ixias.persistence.lifted
 
 import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration.Duration
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.implicitConversions
+import ixias.persistence.dbio.Execution.Implicits.trampoline
 
 final case class FutureTransformer[A](val self: Future[A]) extends AnyVal {
   def await(): Unit = await(_ => Unit)
@@ -20,6 +20,6 @@ final case class FutureTransformer[A](val self: Future[A]) extends AnyVal {
 }
 
 trait FutureOps {
-  implicit def toUnit(a: Future[_]): Future[Unit]  = a.map(_ => Unit)
+  implicit def toUnit(a: Future[_]): Future[Unit]   = a.map(_ => Unit)
   implicit def toFutureTransformer[A](a: Future[A]) = FutureTransformer(a)
 }

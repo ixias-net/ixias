@@ -51,4 +51,4 @@ trait Profile {
 /**
  * The basic repository with IOAction
  */
-trait Repository[K <: Identity[_], E <: Entity[K]] extends EntityIOAction[K, E]
+trait Repository[K <: Identity[_], E <: Entity[K]] extends Profile with EntityIOAction[K, E]

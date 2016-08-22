@@ -8,23 +8,12 @@
 package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
+import ixias.persistence.Repository
 
 /**
  * A Persistence I/O Action that can be executed on a database.
  */
 trait IOAction {
-
-  implicit val defaultContext = sameThreadExecutionContext
-
-  /**
-   * An ExecutionContext used internally for executing plumbing operations
-   * during Action composition.
-   */
-  private[ixias] object sameThreadExecutionContext extends ExecutionContext {
-    override def execute(runnable: Runnable): Unit = runnable.run()
-    override def reportFailure(t: Throwable): Unit = throw t
-  }
 
   /** Construct a success validation value. */
   protected def successful[T](value: T): Future[T] =
