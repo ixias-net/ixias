@@ -9,7 +9,6 @@ package ixias.persistence.backend
 
 import scala.concurrent.Future
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.io.EntityIOActionContext
 
 trait BasicDataSource
 {
@@ -20,9 +19,6 @@ trait BasicDataSource
   /** The type of the database souce config factory used by this backend. */
   type DataSourceFactory <: DataSourceFactoryDef
 
-  /** The type of the context used for running Database Actions */
-  type Context <: EntityIOActionContext
-
   // --[ Properties ]-----------------------------------------------------------
   /** The database factory */
   val DataSource: DataSourceFactory
@@ -30,7 +26,7 @@ trait BasicDataSource
   /** The factory to create a database source config. */
   trait DataSourceFactoryDef {
     /** Load a configuration for persistent database. */
-    def forDSN(dsn: DataSourceName)(implicit ctx: Context): Future[DataSource]
+    def forDSN(dsn: DataSourceName): Future[DataSource]
   }
 }
 

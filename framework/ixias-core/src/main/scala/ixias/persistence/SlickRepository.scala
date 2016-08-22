@@ -10,14 +10,14 @@ package ixias.persistence
 import slick.driver.JdbcProfile
 import ixias.model.{ Identity, Entity }
 import ixias.persistence.lifted._
-import ixias.persistence.backend.{ SlickBackend, SlickDBActionProvider, SlickRunDBActionProvider }
+import ixias.persistence.backend.SlickBackend
+import ixias.persistence.action.SlickDBActionProvider
 
 /**
  * The profile for persistence with using the Slick library.
  */
-trait SlickProfile[K <: Identity[_], E <: Entity[K], P <: JdbcProfile] extends Profile[K, E]
+trait SlickProfile[P <: JdbcProfile] extends Profile
     with SlickDBActionProvider[P]
-    with SlickRunDBActionProvider[P]
 { self =>
 
   /** The type of slick driver */
@@ -33,8 +33,8 @@ trait SlickProfile[K <: Identity[_], E <: Entity[K], P <: JdbcProfile] extends P
   protected lazy val backend = SlickBackend[P]
 
   /** Database Action Helpers */
-  val DBAction    = SlickDBAction
-  val RunDBAction = SlickRunDBAction
+  protected val DBAction    = SlickDBAction
+  protected val RunDBAction = SlickRunDBAction
 
   /**
    * The API for using the utility methods with a single import statement.
@@ -46,3 +46,9 @@ trait SlickProfile[K <: Identity[_], E <: Entity[K], P <: JdbcProfile] extends P
   }
   val api: API = new API {}
 }
+
+/**
+ * The repository for persistence with using the Slick library.
+ */
+trait SlickRepository[K <: Identity[_], E <: Entity[K], P <: JdbcProfile]
+    extends Repository[K, E] with SlickProfile[P]

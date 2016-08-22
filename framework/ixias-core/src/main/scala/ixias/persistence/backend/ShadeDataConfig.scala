@@ -9,9 +9,10 @@ package ixias.persistence.backend
 
 import scala.util.Try
 import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
 import ixias.persistence.model.DataSourceName
 
-trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSource =>
+trait ShadeDataConfig extends BasicDataConfig {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
@@ -22,23 +23,22 @@ trait ShadeDataSourceConfig extends BasicDataSourceConfig { self: ShadeDataSourc
   /**
    * Get the list of server addresses, separated by space.
    */
-  protected def getAddresses(dsn: DataSourceName)(implicit ctx: Context): Try[String] =
-    for {
-      hosts <- getHosts(dsn)
-    } yield (hosts.mkString(","))
+  protected def getAddresses(dsn: DataSourceName): Try[String] =
+    getHosts(dsn).map(_.mkString(","))
 
   /**
    * Get the prefix to be added to used keys when storing/retrieving values
    * useful for having the same Memcached instances used by several
    * applications to prevent them from stepping over each other.
    */
-  protected def getKeysPrefix(dsn: DataSourceName)(implicit ctx: Context): Option[String] =
-    getOptionalValue(dsn)(_.getString(CF_KEY_PREFIX)).orElse(Some(dsn.database + "#"))
+  protected def getKeysPrefix(dsn: DataSourceName): String =
+    readValue(dsn)(_.getString(CF_KEY_PREFIX)).getOrElse(dsn.database + "#")
 
   /**
    * Get the operation timeout; When the limit is reached,
    * the Future responses finish with Failure(TimeoutException)
    */
-  protected def getHostSpecIdleTimeout(dsn: DataSourceName)(implicit ctx: Context): Long =
-    getOptionalValue(dsn)(_.getDuration(CF_OP_TIMEOUT, TimeUnit.MILLISECONDS)).getOrElse(30000)
+  protected def getHostSpecIdleTimeout(dsn: DataSourceName): FiniteDuration =
+    readValue(dsn)(_.getFiniteDuration(CF_OP_TIMEOUT))
+      .getOrElse(FiniteDuration(30000, TimeUnit.MILLISECONDS))
 }

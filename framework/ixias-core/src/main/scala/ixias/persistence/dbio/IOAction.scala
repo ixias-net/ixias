@@ -5,9 +5,10 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.persistence.io
+package ixias.persistence.dbio
 
-import scala.util.{ Try, Success, Failure }
+import scala.concurrent.Future
+import ixias.persistence.Repository
 
 /**
  * A Persistence I/O Action that can be executed on a database.
@@ -15,8 +16,10 @@ import scala.util.{ Try, Success, Failure }
 trait IOAction {
 
   /** Construct a success validation value. */
-  def success[T](value: T): Try[T] = Success(value)
+  protected def successful[T](value: T): Future[T] =
+    Future.successful(value)
 
   /** Construct a failure validation value. */
-  def failed[T](exception: Throwable): Try[T] = Failure(exception)
+  protected def failed[T](exception: Throwable): Future[T] =
+    Future.failed(exception)
 }

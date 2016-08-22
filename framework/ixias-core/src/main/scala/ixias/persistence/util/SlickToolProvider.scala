@@ -8,40 +8,36 @@
 package ixias.persistence.util
 
 import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import slick.jdbc.meta.MTable
 import slick.driver.JdbcProfile
 
+import ixias.persistence.SlickProfile
 import ixias.persistence.model.{ Table, Converter }
-import ixias.persistence.backend.{ SlickDBActionProvider, SlickRunDBActionProvider }
 
 /**
  * The utility tool to manage database with using Slick library.
   */
-trait SlickToolProvider[P <: JdbcProfile]
-    extends SlickDBActionProvider[P] with SlickRunDBActionProvider[P]
-{
-  /** The configured driver. */
-  protected implicit val driver: P
+trait SlickToolProvider[P <: JdbcProfile] extends SlickProfile[P] {
 
   /**
    * Show create table SQL statements.
    */
-  def showCreateTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
-    import driver.api._
+  def showCreateTable[T <: Table[_, P]]
+    (table: T)(implicit conv: Converter[_, _]): Future[Unit] =
     SlickDBAction(table) { case (_, slick) =>
+      import driver.api._
       slick.asInstanceOf[T#BasicQuery]
         .schema.create.statements.foreach(println)
       Future.successful(())
     }
-  }
 
   /**
    * Create database table by specified table schema.
    */
-  def createTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
-    import driver.api._
+  def createTable[T <: Table[_, P]]
+    (table: T)(implicit conv: Converter[_, _]): Future[Unit] =
     SlickRunDBAction(table) { slick =>
+      import driver.api._
       for {
         tables <- MTable.getTables
         _      <- tables.exists(_.name.name == slick.baseTableRow.tableName) match {
@@ -50,21 +46,20 @@ trait SlickToolProvider[P <: JdbcProfile]
         }
       } yield ()
     }
-  }
 
   /**
    * Drop database table by specified table schema.
    */
-  def dropTable[T <: Table[_, P]](table: T)(implicit conv: Converter[_, _]): Future[Unit] = {
-    import driver.api._
-    SlickRunDBAction(table) { slick =>
-      for {
-        tables <- MTable.getTables
-        _      <- tables.exists(_.name.name == slick.baseTableRow.tableName) match {
-          case true  => slick.asInstanceOf[T#BasicQuery].schema.drop
-          case false => DBIO.successful(Unit)
+    def dropTable[T <: Table[_, P]]
+      (table: T)(implicit conv: Converter[_, _]): Future[Unit] =
+      SlickRunDBAction(table) { slick =>
+        import driver.api._
+        for {
+          tables <- MTable.getTables
+          _      <- tables.exists(_.name.name == slick.baseTableRow.tableName) match {
+            case true  => slick.asInstanceOf[T#BasicQuery].schema.drop
+            case false => DBIO.successful(Unit)
         }
       } yield ()
     }
-  }
 }
