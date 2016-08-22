@@ -21,7 +21,7 @@ import ixias.persistence.dbio.Execution
 /**
  * The basic functionality that has to be implemented by all profiles.
  */
-trait Profile {
+private[persistence] trait Profile {
 
   /** The back-end type required by this profile */
   type Backend  <: ixias.persistence.backend.BasicBackend

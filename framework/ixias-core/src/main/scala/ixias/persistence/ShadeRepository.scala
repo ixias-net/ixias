@@ -20,8 +20,8 @@ import ixias.persistence.action.ShadeDBActionProvider
 /**
  * The profile for persistence with using the Shade library.
  */
-trait ShadeProfile extends Profile with ShadeDBActionProvider
-{
+private[persistence] trait ShadeProfile extends Profile with ShadeDBActionProvider {
+
   /** The back-end type required by this profile */
   type Backend = ShadeBackend
 
@@ -60,7 +60,8 @@ abstract class ShadeRepository[K <: Identity[_], E <: Entity[K]](implicit ttag: 
 
   // --[ Methods ]--------------------------------------------------------------
   /** Sets a (key, value) in the cache store. */
-  def store(value: E, expiry: Duration = Duration.Inf): Future[Id] =
+  def store(value: E): Future[Id] = store(value, Duration.Inf)
+  def store(value: E, expiry: Duration): Future[Id] =
     DBAction(dsn) { db =>
       for {
         _ <- db.set(value.id.get.toString, value, expiry)
