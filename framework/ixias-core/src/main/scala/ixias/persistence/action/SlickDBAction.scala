@@ -42,7 +42,7 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
         value <- block((db, req.table.query))
       } yield value) andThen {
         case Failure(ex) => logger.error(
-          "The database action failed. dsn=".format(req.dsn.toString), ex)
+          "The database action failed. dsn=%s".format(req.dsn.toString), ex)
       }
   }
 

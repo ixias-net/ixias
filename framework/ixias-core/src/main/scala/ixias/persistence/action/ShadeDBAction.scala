@@ -31,7 +31,7 @@ trait ShadeDBActionProvider { self: ShadeProfile =>
         value <- block(db)
       } yield value) andThen {
         case Failure(ex) => logger.error(
-          "The database action failed. dsn=".format(dsn.toString), ex)
+          "The database action failed. dsn=%s".format(dsn.toString), ex)
       }
   }
 }

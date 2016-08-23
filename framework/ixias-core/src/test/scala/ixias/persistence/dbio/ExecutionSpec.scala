@@ -7,8 +7,6 @@
 
 package ixias.persistence.dbio
 
-import scala.language.reflectiveCalls
-
 import org.specs2.mutable._
 import scala.concurrent.{ ExecutionContext, Future, Await }
 import scala.concurrent.duration.{ Duration, SECONDS }
