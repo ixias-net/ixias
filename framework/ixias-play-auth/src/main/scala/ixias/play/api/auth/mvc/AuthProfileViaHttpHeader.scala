@@ -7,14 +7,9 @@
 
 package ixias.play.api.auth.mvc
 
-import javax.inject.{ Inject, Singleton }
-import play.api.Environment
 import ixias.play.api.auth.token.TokenViaHttpHeader
 
-@Singleton
-abstract class AuthProfileViaHttpHeader @Inject() (
-  implicit val env: Environment
-) extends AuthProfile {
+trait AuthProfileViaHttpHeader extends AuthProfile {
 
   /** The header name */
   val headerName: String = "X-IXIAS-TOKEN"

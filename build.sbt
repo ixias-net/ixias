@@ -35,7 +35,9 @@ lazy val commonSettings = Seq(
 )
 
 lazy val playSettings = Seq(
-  unmanagedSourceDirectories in Compile += baseDirectory.value / "src" / "main" / "scala",
+  unmanagedSourceDirectories   in Compile += baseDirectory.value / "src" / "main" / "scala",
+  unmanagedSourceDirectories   in Test    += baseDirectory.value / "src" / "test" / "scala",
+  unmanagedResourceDirectories in Test    += baseDirectory.value / "src" / "test" / "resources",
   libraryDependencies ++= Seq(ws, cache,
     "org.abstractj.kalium" % "kalium" % "0.5.0"
   )

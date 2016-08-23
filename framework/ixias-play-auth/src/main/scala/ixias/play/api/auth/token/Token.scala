@@ -51,7 +51,7 @@ object Token {
   protected lazy val crypto: AuthenticationKey = {
     val config = ConfigFactory.load()
     val secret = config.getString("session.token.secret")
-    new AuthenticationKey(DigestUtils.md5Hex(secret).getBytes("utf-8"))
+    new AuthenticationKey(DigestUtils.md5Hex(secret), Encoder.RAW)
   }
 
   /** Generate a new token as string */
@@ -64,15 +64,17 @@ object Token {
   }
 
   /** Verifies a given HMAC on a piece of data */
-  final def verifyHMAC(token: SignedToken): Option[AuthenticityToken] = {
-    val (signature, value) = token.splitAt(CRYPTO_AUTH_HMACSHA512256_BYTES)
-    crypto.verify(value, signature, Encoder.RAW) match {
-      case true  => Some(value)
+  final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] = {
+    val (signature, token) = signedToken.splitAt(CRYPTO_AUTH_HMACSHA512256_BYTES * 2)
+    crypto.verify(Encoder.RAW.decode(token), Encoder.HEX.decode(signature)) match {
+      case true  => Some(token)
       case false => None
     }
   }
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
-  final def signWithHMAC(token: AuthenticityToken): SignedToken =
-    crypto.sign(token, Encoder.RAW) + token
+  final def signWithHMAC(token: AuthenticityToken): SignedToken = {
+    val signature = crypto.sign(Encoder.RAW.decode(token))
+    Encoder.HEX.encode(signature) + token
+  }
 }

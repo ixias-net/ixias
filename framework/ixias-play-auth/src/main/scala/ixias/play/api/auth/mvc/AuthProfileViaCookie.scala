@@ -7,14 +7,9 @@
 
 package ixias.play.api.auth.mvc
 
-import javax.inject.{ Inject, Singleton }
-import play.api.Environment
 import ixias.play.api.auth.token.TokenViaCookie
 
-@Singleton
-abstract class AuthProfileViaCookie @Inject() (
-  implicit val env: Environment
-) extends AuthProfile {
+trait AuthProfileViaCookie extends AuthProfile {
 
   /** The cookie name */
   val cookieName: String = "sid"
