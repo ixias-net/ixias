@@ -12,44 +12,34 @@ import java.util.Calendar
 import scala.language.reflectiveCalls
 import scala.language.implicitConversions
 
-import org.joda.time._
 import slick.driver.JdbcProfile
 import slick.jdbc.{ SetParameter, PositionedParameters, GetResult, PositionedResult }
 
-final case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
-{
-  val jodaDateTime = new JodaDateTimeJdbc
 
+sealed case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
+{
   /** org.joda.time.DateTime */
-  class JodaDateTimeJdbc {
-    type T1 = DateTime
+  object JodaDateTime {
+    type T1 = org.joda.time.DateTime
     type T2 = java.sql.Timestamp
 
-    protected def toT1(v: T2): T1 = if (v == null) null else new DateTime(v.getTime)
-    protected def toT2(v: T1): T2 = if (v == null) null else new Timestamp(v.getMillis)
+    protected def toT1(v: T2): T1 = if (v == null) null else new T1(v.getTime)
+    protected def toT2(v: T1): T2 = if (v == null) null else new T2(v.getMillis)
     protected def toCalendar(v: T1): Calendar = Calendar.getInstance(v.getZone().toTimeZone())
 
     object Type extends driver.DriverJdbcType[T1] {
+      def zero = new T1(0L)
       def sqlType = java.sql.Types.TIMESTAMP
-      def zero = new DateTime(0L)
-      def getValue(r: ResultSet, idx: Int): T1 = toT1(r.getTimestamp(idx))
-      def updateValue(v: T1, r: ResultSet, idx: Int): Unit = r.updateTimestamp(idx, toT2(v))
-      def setValue(v: T1, p: PreparedStatement, idx: Int): Unit = p.setTimestamp(idx, toT2(v), toCalendar(v))
+      def    getValue(       r: ResultSet,         idx: Int): T1   = toT1(r.getTimestamp(idx))
+      def updateValue(v: T1, r: ResultSet,         idx: Int): Unit = r.updateTimestamp(idx, toT2(v))
+      def    setValue(v: T1, p: PreparedStatement, idx: Int): Unit = p.setTimestamp(idx, toT2(v), toCalendar(v))
       override def valueToSQLLiteral(value: T1): String = "{ts '" + toT2(value).toString + "'}"
     }
-    object Get    extends GetResult[T1]            { def apply(rs: PositionedResult) = toT1(rs.nextTimestamp()) }
-    object GetOpt extends GetResult[Option[T1]]    { def apply(rs: PositionedResult) = rs.nextTimestampOption.map(toT1) }
-    object Set    extends SetParameter[T1]         { def apply(v: T1,         pp: PositionedParameters) = pp.setTimestamp(toT2(v)) }
-    object SetOpt extends SetParameter[Option[T1]] { def apply(v: Option[T1], pp: PositionedParameters) = pp.setTimestampOption(v.map(toT2)) }
   }
 }
 
 trait SlickColumnTypeOps[P <: JdbcProfile] {
   val driver: P
   val columnTypes = SlickColumnTypesExtension(driver)
-  implicit val jodaDateTimeColumnType      = columnTypes.jodaDateTime.Type
-  implicit val jodaDateTimeGetResult       = columnTypes.jodaDateTime.Get
-  implicit val jodaDateTimeGetResultOpt    = columnTypes.jodaDateTime.GetOpt
-  implicit val jodaDateTimeSetParameter    = columnTypes.jodaDateTime.Set
-  implicit val jodaDateTimeSetParameterOpt = columnTypes.jodaDateTime.SetOpt
+  implicit val jodaDateTimeColumnType = columnTypes.JodaDateTime.Type
 }
