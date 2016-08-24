@@ -14,13 +14,6 @@ import ixias.model.{ Entity, Identity }
 
 // ユーザ情報
 //~~~~~~~~~~~~
-// case class User(
-//   val id:        Identity[Long],            // ユーザID
-//   val email:     Option[String],            // E-Mail
-//   val updatedAt: DateTime = new DateTime(), // データ更新日
-//   val createdAt: DateTime = new DateTime()  // データ作成日
-// ) extends Entity[Identity[Long]]
-
 case class User(
   val id:        Option[Long],              // ユーザID
   val email:     Option[String],            // E-Mail
@@ -39,11 +32,11 @@ case class UserTable[P <: JdbcProfile](val driver: P)
   )
 
   class Query extends BasicQuery(new Table(_)) {
-    // def test01(id: Option[Long])   = this.filter(_.uid === id)
+    def test01(id: Option[Long]) = this.filter(_.uid === 0L)
     def test02(datetime: Option[DateTime]) = this.filter(_.createdAt < datetime)
   }
   class Table(tag: Tag) extends BasicTable(tag, "us er") {
-    def uid       = column[Option[Long]]   ("uid",        O.UInt64, O.PrimaryKey)
+    def uid       = column[Option[Long]] ("uid",        O.UInt64, O.PrimaryKey)
     def email     = column[Option[String]] ("email",      O.UInt64)
     def updatedAt = column[DateTime]       ("updated_at", O.TsCurrent)
     def createdAt = column[DateTime]       ("created_at", O.Ts)

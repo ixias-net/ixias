@@ -15,6 +15,7 @@ import scala.language.implicitConversions
 import slick.driver.JdbcProfile
 import slick.jdbc.{ SetParameter, PositionedParameters, GetResult, PositionedResult }
 
+
 sealed case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
 {
   /** org.joda.time.DateTime */
@@ -29,7 +30,6 @@ sealed case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
     object Type extends driver.DriverJdbcType[T1] {
       def zero = new T1(0L)
       def sqlType = java.sql.Types.TIMESTAMP
-
       def    getValue(       r: ResultSet,         idx: Int): T1   = toT1(r.getTimestamp(idx))
       def updateValue(v: T1, r: ResultSet,         idx: Int): Unit = r.updateTimestamp(idx, toT2(v))
       def    setValue(v: T1, p: PreparedStatement, idx: Int): Unit = p.setTimestamp(idx, toT2(v), toCalendar(v))
@@ -41,5 +41,5 @@ sealed case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
 trait SlickColumnTypeOps[P <: JdbcProfile] {
   val driver: P
   val columnTypes = SlickColumnTypesExtension(driver)
-  implicit val jodaDateTimeColumnType  = columnTypes.JodaDateTime.Type
+  implicit val jodaDateTimeColumnType = columnTypes.JodaDateTime.Type
 }
