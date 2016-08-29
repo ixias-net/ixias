@@ -27,7 +27,7 @@ trait BasicDataConfig {
   protected val CF_HOSTSPEC_READONLY = "readonly"
 
   /** The configuration */
-  protected val config = Configuration(ConfigFactory.load())
+  protected val config = Configuration()
 
   // --[ Configuration ]--------------------------------------------------------
   /**

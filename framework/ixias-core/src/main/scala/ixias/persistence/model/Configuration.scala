@@ -18,7 +18,7 @@ import com.typesafe.config.impl.ConfigImpl
 /**
  * A full configuration set.
  */
-case class Configuration(underlying: Config) {
+case class Configuration(underlying: Config = ConfigFactory.load()) {
 
   /**
    * Merge 2 configurations.
