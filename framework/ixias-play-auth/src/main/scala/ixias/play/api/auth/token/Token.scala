@@ -64,13 +64,12 @@ object Token {
   }
 
   /** Verifies a given HMAC on a piece of data */
-  final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] = {
-    val (signature, token) = signedToken.splitAt(CRYPTO_AUTH_HMACSHA512256_BYTES * 2)
-    crypto.verify(Encoder.RAW.decode(token), Encoder.HEX.decode(signature)) match {
-      case true  => Some(token)
-      case false => None
-    }
-  }
+  final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] =
+    try {
+      val (signature, token) = signedToken.splitAt(CRYPTO_AUTH_HMACSHA512256_BYTES * 2)
+      crypto.verify(Encoder.RAW.decode(token), Encoder.HEX.decode(signature))
+      Some(token)
+    } catch { case _: Exception => None }
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   final def signWithHMAC(token: AuthenticityToken): SignedToken = {
