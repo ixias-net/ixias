@@ -8,7 +8,7 @@
 package ixias.mail
 
 import scala.util.Try
-import ixias.persistence.model.Configuration
+import ixias.util.Configuration
 
 trait EmailConfig {
 

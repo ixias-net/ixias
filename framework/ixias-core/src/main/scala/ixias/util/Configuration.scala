@@ -5,7 +5,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.persistence.model
+package ixias.util
 
 import java.util.concurrent.TimeUnit
 import scala.collection.JavaConverters._

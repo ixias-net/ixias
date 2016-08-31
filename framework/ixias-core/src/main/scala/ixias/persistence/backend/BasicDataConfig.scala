@@ -11,7 +11,8 @@ import scala.util.Try
 import scala.collection.JavaConverters._
 import scala.language.implicitConversions
 import com.typesafe.config.{ Config, ConfigFactory }
-import ixias.persistence.model.{ DataSourceName, Configuration }
+import ixias.util.Configuration
+import ixias.persistence.model.DataSourceName
 
 trait BasicDataConfig {
 
