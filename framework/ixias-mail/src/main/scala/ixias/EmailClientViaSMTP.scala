@@ -19,11 +19,10 @@ class EmailClientViaSMTP extends EmailClient with EmailConfig {
   /**
    * Send an email with the provided data.
    */
-  def send[P, T <: EmailTemplate[P]]
-    (to: UserEmail, from: UserEmail, tpl: T, params: P)
+  def send(to: UserEmail, from: UserEmail, tpl: EmailTemplate[_])
     (implicit ctx: ExecutionContext): Future[String] =
   {
-    val email = createEmail(to, from, tpl, params)
+    val email = createEmail(to, from, tpl)
 
     // Sets SMTP options.
     email.setSmtpPort(getSmtpPort())
@@ -51,11 +50,9 @@ class EmailClientViaSMTP extends EmailClient with EmailConfig {
   /**
    * Create an appropriate email object based on the content type.
    */
-  private def createEmail[P, T <: EmailTemplate[P]]
-    (to: UserEmail, from: UserEmail, tpl: T, params: P): MultiPartEmail =
-  {
-    val bodyHtmlOpt = tpl.getBodyHtml(to, from, params).filter(_.trim.nonEmpty)
-    val bodyTextOpt = tpl.getBodyText(to, from, params).filter(_.trim.nonEmpty)
+  private def createEmail(to: UserEmail, from: UserEmail, tpl: EmailTemplate[_]): MultiPartEmail = {
+    val bodyHtmlOpt = tpl.getBodyHtml(to, from).filter(_.trim.nonEmpty)
+    val bodyTextOpt = tpl.getBodyText(to, from).filter(_.trim.nonEmpty)
     val email       = bodyHtmlOpt.isDefined match {
       case true  =>
         val email = new HtmlEmail()

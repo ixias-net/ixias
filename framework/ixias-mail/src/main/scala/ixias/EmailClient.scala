@@ -39,18 +39,16 @@ trait EmailClient {
   /**
    * Send an email with the provided data.
    */
-  def send[P, T <: EmailTemplate[P]]
-    (to: UserEmail, tpl: T, params: P)
+  def send(to: UserEmail, tpl: EmailTemplate[_])
     (implicit ctx: ExecutionContext): Future[String] =
     tpl.from match {
-      case Some(from) => send(to, from, tpl, params)
+      case Some(from) => send(to, from, tpl)
       case None       => Future.failed(new NoSuchElementException("The from adrress is empty."))
     }
 
   /**
    * Send an email with the provided data.
    */
-  def send[P, T <: EmailTemplate[P]]
-    (to: UserEmail, from: UserEmail, tpl: T, params: P)
+  def send(to: UserEmail, from: UserEmail, tpl: EmailTemplate[_])
     (implicit ctx: ExecutionContext): Future[String]
 }

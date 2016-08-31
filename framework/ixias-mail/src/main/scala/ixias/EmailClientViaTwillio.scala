@@ -25,20 +25,20 @@ class EmailClientViaTwillio extends EmailClient with EmailConfig {
   /**
    * Send an email with the provided data.
    */
-  override def send[P, T <: EmailTemplate[P]](to: UserEmail, tpl: T, params: P)
+  override def send(to: UserEmail, tpl: EmailTemplate[_])
     (implicit ctx: ExecutionContext): Future[String] =
     tpl.from match {
-      case Some(from) => send(to, from, tpl, params)
+      case Some(from) => send(to, from, tpl)
       case None       => for {
         from <- Future.fromTry(getTwillioFrom())
-        body <- send(to, UserEmail(from), tpl, params)
+        body <- send(to, UserEmail(from), tpl)
       } yield body
     }
 
   /**
    * Send an email with the provided data.
    */
-  override def send[P, T <: EmailTemplate[P]](to: UserEmail, from: UserEmail, tpl: T, params: P)
+  override def send(to: UserEmail, from: UserEmail, tpl: EmailTemplate[_])
     (implicit ctx: ExecutionContext): Future[String] =
     Future.fromTry(for {
       sid   <- getTwillioSid()
@@ -48,7 +48,7 @@ class EmailClientViaTwillio extends EmailClient with EmailConfig {
       val mParams = new ArrayList[NameValuePair]()
       mParams.add(new BasicNameValuePair("To",   to.address))
       mParams.add(new BasicNameValuePair("From", from.address))
-      mParams.add(new BasicNameValuePair("Body", tpl.getBodySMSText(to, from, params).get))
+      mParams.add(new BasicNameValuePair("Body", tpl.getBodySMSText(to, from).get))
       val message: Message = client.getAccount().getMessageFactory().create(mParams)
       message.getBody()
     }) andThen {

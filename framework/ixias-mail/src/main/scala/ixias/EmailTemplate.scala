@@ -42,9 +42,6 @@ case class AttachmentData(
 
 trait EmailTemplate[P] extends EmailConfig {
 
-  type Params = P
-
-  // --[ Properties ]-----------------------------------------------------------
   /** The E-mail's subject */
   val subject:     String
 
@@ -54,8 +51,11 @@ trait EmailTemplate[P] extends EmailConfig {
   /** The Email's headers */
   val headers:     Seq[(String, String)] = Seq.empty
 
-  /** The Email's attachment files*/
+  /** The Email's attachment files */
   val attachments: Seq[Attachment]       = Seq.empty
+
+  /** The Email's provided parameters */
+  val params:      P
 
   /** The flag to indicate whether email-client ignore errors */
   val silent:      Boolean               = false
@@ -71,15 +71,15 @@ trait EmailTemplate[P] extends EmailConfig {
   /**
    * Build a E-mail's body (PlainText) with using provided data.
    */
-  def getBodyText(to: UserEmail, from: UserEmail, params: Params): Option[String] = None
+  def getBodyText(to: UserEmail, from: UserEmail): Option[String] = None
 
   /**
    * Build a E-mail's body (HTML) with using provided data.
    */
-  def getBodyHtml(to: UserEmail, from: UserEmail, params: Params): Option[String] = None
+  def getBodyHtml(to: UserEmail, from: UserEmail): Option[String] = None
 
   /**
    * Build a SMS's short message body (PlainText) with using provided data.
    */
-  def getBodySMSText(to: UserEmail, from: UserEmail, params: Params): Option[String] = None
+  def getBodySMSText(to: UserEmail, from: UserEmail): Option[String] = None
 }
