@@ -87,6 +87,17 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
     "org.joda"            % "joda-convert"    % "1.8.1"
   ))
 
+lazy val ixiasMail = (project in file("framework/ixias-mail"))
+  .settings(name := "ixias-mail")
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    "com.google.inject"   % "guice"           % "4.1.0",
+    "com.twilio.sdk"      % "twilio-java-sdk" % "6.3.0",
+    "org.apache.commons"  % "commons-email"   % "1.4"
+  ))
+
 // IxiaS Play Libraries
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
@@ -115,8 +126,8 @@ lazy val ixias = (project in file("."))
   .settings(name := "ixias")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasCore, ixiasPlay)
-  .dependsOn(ixiasCore, ixiasPlay)
+  .aggregate(ixiasCore, ixiasMail, ixiasPlay)
+  .dependsOn(ixiasCore, ixiasMail)
 
 lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")
