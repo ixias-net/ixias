@@ -27,13 +27,10 @@ class EmailClientViaTwillio extends EmailClient with EmailConfig {
    */
   override def send(to: UserEmail, tpl: EmailTemplate[_])
     (implicit ctx: ExecutionContext): Future[String] =
-    tpl.from match {
-      case Some(from) => send(to, from, tpl)
-      case None       => for {
-        from <- Future.fromTry(getTwillioFrom())
-        body <- send(to, UserEmail(from), tpl)
-      } yield body
-    }
+    for {
+      from    <- Future.fromTry(getTwillioFrom())
+      message <- send(to, UserEmail(from), tpl)
+    } yield message
 
   /**
    * Send an email with the provided data.
