@@ -15,7 +15,7 @@ import slick.driver.JdbcProfile
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.dbio.Execution.Implicits.trampoline
 
-case class SlickBackend[P <: JdbcProfile](implicit val driver: P)
+case class SlickBackend[P <: JdbcProfile](val driver: P)
    extends BasicBackend with SlickDataSource
 {
   /** The type of database objects used by this backend. */
