@@ -54,28 +54,23 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
     /** Invoke DB action block. */
     def apply[A, T <: Table[_, P]]
       (table: T, hostspec: String = DEFAULT_DSN_KEY)
-      (block: ((Database, T#Query)) => Future[A])
-      (implicit driver: Driver): Future[A] =
-    {
+      (block: ((Database, T#Query)) => Future[A]): Future[A] =
       for {
         dsn   <- Future(table.dsn.get(hostspec).get)
         value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), block)
       } yield value
-    }
 
     /** Invoke DB action block with adaption convert. */
     def adapt[A, B, T <: Table[_, P]]
       (table: T, hostspec: String = DEFAULT_DSN_KEY)
       (block: ((Database, T#Query)) => Future[A])
-      (implicit driver: Driver, conv: Converter[A, B]): Future[B] =
-    {
+      (implicit conv: Converter[A, B]): Future[B] =
       for {
         dsn     <- Future(table.dsn.get(hostspec).get)
         value   <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), block)
         adapted <- Future(conv.convert(value))
       } yield adapted
     }
-  }
 
   /**
    * The Database Acion
@@ -85,23 +80,19 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
     /** Invoke DB action block with adaption convert. */
     def apply[A, T <: Table[_, P]]
       (table: T, hostspec: String = DEFAULT_DSN_KEY)
-      (action: T#Query => DBIOAction[A, NoStream, Nothing])
-      (implicit driver: Driver): Future[A] =
-    {
+      (action: T#Query => DBIOAction[A, NoStream, Nothing]): Future[A] =
       for {
         dsn   <- Future(table.dsn.get(hostspec).get)
         value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), {
           case (db, slick) => db.run(action(slick))
         })
       } yield value
-    }
 
     /** Invoke DB action block with adaption convert. */
     def adapt[A, B, T <: Table[_, P]]
       (table: T, hostspec: String = DEFAULT_DSN_KEY)
       (action: T#Query => DBIOAction[A, NoStream, Nothing])
-      (implicit driver: Driver, conv: Converter[A, B]): Future[B] =
-    {
+      (implicit conv: Converter[A, B]): Future[B] =
       for {
         dsn    <- Future(table.dsn.get(hostspec).get)
         value  <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), {
@@ -109,6 +100,5 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
         })
         adapted <- Future(conv.convert(value))
       } yield adapted
-    }
   }
 }

@@ -26,10 +26,10 @@ private[persistence] trait SlickProfile[P <: JdbcProfile]
   type Backend = SlickBackend[P]
 
   /** The configured driver. */
-  protected implicit val driver: Driver
+  protected val driver: Driver
 
   /** The back-end implementation for this profile */
-  protected lazy val backend = SlickBackend[P]
+  protected lazy val backend = SlickBackend(driver)
 
   /** Database Action Helpers */
   protected val DBAction    = SlickDBAction
