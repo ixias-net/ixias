@@ -8,12 +8,12 @@
 package ixias.persistence.model
 
 /**
- * Adatabase cursor is a control structure that enables
+ * A database cursor is a control structure that enables
  * traversal over the records in a database.
  */
 case class Cursor(
-  var offset: Long         = 0L,        // Select all elements except the first ones.
-  var limit:  Option[Long] = Some(10L)  // Select the first elements.
+  val offset: Long         = 0L,        // Select all elements except the first ones.
+  val limit:  Option[Long] = Some(10L)  // Select the first elements.
 ) extends CursorLike
 
 /**
@@ -22,7 +22,8 @@ case class Cursor(
 object Cursor {
 
   /** Create a new cursor object with a limit parameter */
-  def apply(n: Long) = new Cursor(limit = Some(n))
+  def apply(n: Long)         = new Cursor(limit = Some(n))
+  def apply(n: Option[Long]) = new Cursor(limit = n)
 }
 
 /**
@@ -30,22 +31,19 @@ object Cursor {
  */
 trait CursorLike { self: Cursor =>
 
-  /** Update position by specified value. */
+  /** Updates position by specified value. */
   def set(pos: Long): Cursor = {
-    offset = pos
-    this
+    this.copy(offset = pos)
   }
 
   /** Sets position of the next element. */
   def next: Cursor = {
-    limit.map(offset += _)
-    this
+    limit.fold(this)(v => this.copy(offset = offset + v))
   }
 
   /** Rewind the position. */
   def rewind: Cursor = {
-    offset = 0
-    this
+    this.copy(offset = 0)
   }
 }
 
