@@ -23,17 +23,21 @@ import scala.reflect._
  * }
  *
  */
-abstract class EnumOf[+V: ClassTag] { self =>
+abstract class EnumOf[+V](implicit ttag: ClassTag[V]) { self =>
   import runtime.universe._
 
-  // --[ Properties ]-----------------------------------------------------------
-  /** The list of values for Enumeration. */
+  // --[ Methods ]-------------------------------------------------------------=
+  /**
+   * The list of values for Enumeration.
+   */
   def values: List[V] = fields.getOrElse(getSelfFields).collect{ case v: V => v }
   lazy final val map1: Map[String, V] = values.map(v => v.toString -> v).toMap
   lazy final val map2: Map[String, V] = values.map(v => v.toString.toLowerCase -> v).toMap
 
-  /** The myself instance fields. */
-  protected lazy val fields: Option[List[Any]] = {
+  /**
+   * The myself instance fields.
+   */
+  private lazy val fields: Option[List[Any]] = {
     val mirror = runtimeMirror(self.getClass.getClassLoader)
     val symbol = mirror.classSymbol(self.getClass)
     if (symbol.isModuleClass) {
@@ -43,6 +47,15 @@ abstract class EnumOf[+V: ClassTag] { self =>
       None
     }
   }
+
+  private def getSelfFields: List[Any] = {
+    val mirror = runtimeMirror(self.getClass.getClassLoader)
+    val symbol = mirror.classSymbol(self.getClass)
+    sortedInnerModules(symbol).map(m => mirror.reflect(self).reflectModule(m.asModule).instance)
+  }
+
+  private def sortedInnerModules(symbol: ClassSymbol): List[Symbol] =
+    symbol.toType.members.sorted.filter(_.isModule)
 
   // --[ Methods ]-------------------------------------------------------------=
   /**
@@ -85,13 +98,4 @@ abstract class EnumOf[+V: ClassTag] { self =>
     withNameInsensitiveOption(name).getOrElse(
       throw new NoSuchElementException(s"$name is not a member of Enum $this"))
 
-  // --[ Methods ]-------------------------------------------------------------=
-  private def getSelfFields: List[Any] = {
-    val mirror = runtimeMirror(self.getClass.getClassLoader)
-    val symbol = mirror.classSymbol(self.getClass)
-    sortedInnerModules(symbol).map(m => mirror.reflect(self).reflectModule(m.asModule).instance)
-  }
-
-  private def sortedInnerModules(symbol: ClassSymbol): List[Symbol] =
-    symbol.toType.members.sorted.filter(_.isModule)
 }
