@@ -1,0 +1,24 @@
+/*
+ * This file is part of the IxiaS services.
+ *
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
+ */
+
+package ixias.persistence.lifted
+
+import slick.lifted.Query
+import ixias.persistence.model.Cursor
+import scala.language.implicitConversions
+
+final case class QueryTransformer[R, U](val self: Query[R, U, Seq]) extends AnyVal {
+  def seek(cursor: Cursor): Query[R, U, Seq] =
+    cursor.limit match {
+      case None        => self.drop(cursor.offset)
+      case Some(limit) => self.drop(cursor.offset).take(limit)
+    }
+}
+
+trait QueryOps {
+  implicit def toQueryTransformer[R, U](a: Query[R, U, Seq]) = QueryTransformer(a)
+}
