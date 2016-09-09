@@ -15,7 +15,8 @@ import scala.collection.concurrent.TrieMap
 
 import play.api.mvc._
 import play.api.Application
-import ixias.util.Logger
+import play.api.inject.Injector
+
 
 // Wrap an existing request. Useful to extend a request.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -133,24 +134,40 @@ object StackAction {
 }
 
 /**
- * A simple kind of ActionFunction which, given a request (of type R), may
+ * A builder for generic Actions that generalizes over the type of requests.
+ */
+trait StackActionFunction extends ActionFunction[StackActionRequest, StackActionRequest] {
+
+  /**
+   * Instantiate a authprofile object.
+   */
+  protected def getInjector(request: StackActionRequest[_]): Option[Injector] =
+    request.get(StackAction.ApplicationKey)
+      .map(_.asInstanceOf[Application].injector)
+}
+
+/**
+ * A simple kind of ActionFunction which, given a request, may
  * either immediately produce a Result (for example, an error), or call
- * its Action block with a parameter (of type P).
+ * its Action block with a parameter.
  * The critical (abstract) function is refine.
  */
-trait StackActionRefiner extends ActionRefiner[StackActionRequest, StackActionRequest]
+trait StackActionRefiner extends StackActionFunction
+    with ActionRefiner[StackActionRequest, StackActionRequest]
 
 /**
- * A simple kind of ActionRefiner which, given a request (of type R),
- * unconditionally transforms it to a new parameter type (P) to be passed to
+ * A simple kind of ActionRefiner which, given a request,
+ * unconditionally transforms it to a new parameter type to be passed to
  * its Action block.  The critical (abstract) function is transform.
  */
-trait StackActionTransformer extends ActionTransformer[StackActionRequest, StackActionRequest]
+trait StackActionTransformer extends StackActionFunction
+    with ActionTransformer[StackActionRequest, StackActionRequest]
 
 /**
- * A simple kind of ActionRefiner which, given a request (of type R), may
+ * A simple kind of ActionRefiner which, given a request, may
  * either immediately produce a Result (for example, an error), or
  * continue its Action block with the same request.
  * The critical (abstract) function is filter.
  */
-trait ActionFilter extends ActionRefiner[StackActionRequest, StackActionRequest]
+trait ActionFilter extends StackActionFunction
+    with ActionRefiner[StackActionRequest, StackActionRequest]

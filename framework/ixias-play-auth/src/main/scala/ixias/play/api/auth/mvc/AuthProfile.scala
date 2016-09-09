@@ -10,15 +10,16 @@ package ixias.play.api.auth.mvc
 import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration.Duration
 
-import play.api.Environment
+import play.api.{ Application, Mode }
 import play.api.mvc.{ RequestHeader, Result, Results }
 import play.api.libs.iteratee.Execution
 
 import ixias.model.{ Identity, Entity }
-import ixias.play.api.auth.token.Token
+import ixias.play.api.auth.token.{ Token, AuthenticityToken }
 import ixias.play.api.auth.container.Container
+import ixias.play.api.mvc.StackActionRequest._
 
-trait AuthProfile extends AuthProfileLike with Results
+trait AuthProfile extends Results
 {
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
@@ -29,13 +30,13 @@ trait AuthProfile extends AuthProfileLike with Results
   type Authority >: Null
 
   /** The key of attribute for containing required authority roles. */
-  case object UserKey      extends ActionRequest.AttributeKey[User]
+  case object UserKey      extends AttributeKey[User]
   /** The key of attribute for containing user data. */
-  case object AuthorityKey extends ActionRequest.AttributeKey[Authority]
+  case object AuthorityKey extends AttributeKey[Authority]
 
   // --[ Properties ]-----------------------------------------------------------
-  /** The environment for the play application. */
-  implicit val env: Environment
+  /** The current running application. */
+  implicit val app: Application
 
   /** Can execute program logic asynchronously */
   implicit val ctx: ExecutionContext = Execution.Implicits.trampoline
@@ -50,27 +51,94 @@ trait AuthProfile extends AuthProfileLike with Results
   val datastore: Container[Id]
 
   // --[ Methods ]--------------------------------------------------------------
-  /** Resolve user by specified user-id. */
-  def resolve(id: Id): Future[Option[User]]
+  /**
+   * Resolve user by specified user-id.
+   */
+  protected def resolve(id: Id): Future[Option[User]]
 
-  /** Verifies what user are authorized to do. */
-  def authorize(user: User, authority: Option[Authority]): Future[Boolean]
+  /**
+   * Verifies what user are authorized to do.
+   */
+  protected def authorize(user: User, authority: Option[Authority]): Future[Boolean]
+
+  /**
+   * Invoked if authentication failed with the credentials provided.
+   * This should only be called where an authentication attempt has truly failed
+   */
+  protected def authenticationFailed(implicit req: RequestHeader): Result
+
+  /**
+   * Invoked if authorization failed.
+   * Authorization is the process of allowing an authenticated users to
+   * access the resources by checking whether the user has access rights to the system.
+   * Authorization helps you to control access rights by granting or
+   * denying specific permissions to an authenticated user.
+   */
+  protected def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
 
   // --[ Methods ]--------------------------------------------------------------
-  /** Invoke this method on login succeeded */
-  def loginSucceeded(id: Id)(implicit req: RequestHeader): Future[Result]
+  /**
+   * Invoke this method on login succeeded.
+   */
+  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
+    datastore.open(id, sessionTimeout).map { token =>
+      tokenAccessor.put(token)(f(token))
+    } recover { case _: Throwable => InternalServerError }
 
-  /** Invoke this method on logout succeeded */
-  def logoutSucceeded(id: Id)(implicit req: RequestHeader): Future[Result]
+  /**
+   * Invoke this method on logout succeeded.
+   */
+  def logoutSucceeded(id: Id)(f: => Result)(implicit request: RequestHeader): Future[Result] =
+    tokenAccessor.extract(request) match {
+      case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(f))
+      case None        => Future.successful(tokenAccessor.discard(f))
+    }
 
-  /** Invoked if authentication failed with the credentials provided.
-    * This should only be called where an authentication attempt has truly failed */
-  def authenticationFailed(implicit req: RequestHeader): Result
+  // --[ Methods ]--------------------------------------------------------------
+  /**
+   * Extract a session token in `RequestHeader`.
+   */
+  final def extractAuthToken(implicit request: RequestHeader): Option[AuthenticityToken] =
+    (app.mode match {
+      case Mode.Prod => None
+      case _         => request.headers.get("TEST_AUTH_TOKEN")
+    }) orElse tokenAccessor.extract(request)
 
-  /** Invoked if authorization failed.
-    * Authorization is the process of allowing an authenticated users to
-    * access the resources by checking whether the user has access rights to the system.
-    * Authorization helps you to control access rights by granting or
-    * denying specific permissions to an authenticated user. */
-  def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
+  /**
+   * Restore a user data by the session token in `RequestHeader`.
+   */
+  final def restore(implicit request: RequestHeader) : Future[(Option[User], Result => Result)] =
+    extractAuthToken match {
+      case None        => Future.successful(None -> identity)
+      case Some(token) => (for {
+        Some(uid)  <- datastore.read(token)
+        Some(user) <- resolve(uid)
+        _          <- datastore.setTimeout(token, sessionTimeout)
+      } yield {
+        Some(user) -> tokenAccessor.put(token) _
+      }) recover {
+        case ex: Throwable => None -> identity
+      }
+    }
+
+  /**
+   * Verifies what user are authenticated to do.
+   */
+  final def authenticate(implicit request: RequestHeader): Future[Either[Result, (User, Result => Result)]] =
+    restore map {
+      case (Some(user), updater) => Right(user -> updater)
+      case _                     =>  Left(authenticationFailed)
+    }
+
+  /**
+   * Verifies what user are authorized to do.
+   */
+  final def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (User, Result => Result)]] =
+    for {
+      Some((user, updater)) <- authenticate.map(_.right.toOption)
+      authorized            <- authorize(user, authority)
+    } yield authorized match {
+      case true  => Right(user -> updater)
+      case false => Left(authorizationFailed(user, authority))
+    }
 }

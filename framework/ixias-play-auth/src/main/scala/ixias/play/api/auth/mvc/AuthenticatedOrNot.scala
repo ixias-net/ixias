@@ -7,32 +7,30 @@
 
 package ixias.play.api.auth.mvc
 
+import play.api.Application
+import play.api.mvc.{ Result, Results }
+
 import scala.concurrent.Future
-import play.api.mvc.Result
-import ixias.play.api.auth.mvc.ActionRequest._
+import ixias.play.api.mvc.{ StackAction, StackActionFunction, StackActionRequest }
 
 /**
  * Provides the custom action for authentication.
  */
-sealed class AuthenticatedOrNot(params: Attribute[_]*)(implicit auth: AuthProfile) extends StackAction(params: _*)
-{
-  /** Proceed with the next advice or target method invocation */
-  override def proceed[A](req: ActionRequest[A])(f: ActionRequest[A] => Future[Result]): Future[Result] = {
-    implicit val ctx = getExecutionContext(req)
-    auth.restore(req) flatMap {
-      case (None,       updater) => super.proceed(req)(f).map(updater)
-      case (Some(user), updater) => super.proceed(
-        req.set(auth.UserKey, user)
-      )(f).map(updater)
-    }
-  }
-}
+object AuthenticatedOrNot extends StackActionFunction with Results {
 
-/**
- * Build a custom action object.
- */
-object AuthenticatedOrNot extends StackAuthActionBuilder[AuthenticatedOrNot]
-{
-  def build(params: Attribute[_]*)(implicit auth: AuthProfile): AuthenticatedOrNot =
-    new AuthenticatedOrNot(params: _*)
+  implicit val ctx = executionContext
+
+  /**
+   * Authenticate user's session.
+   */
+  def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] =
+    getInjector(request).map(_.instanceOf(classOf[AuthProfile])) match {
+      case None       => Future.successful(InternalServerError)
+      case Some(auth) => auth.restore(request) flatMap {
+        case (None,       updater) => block(request).map(updater)
+        case (Some(user), updater) => block {
+           request.set(auth.UserKey, user)
+        } map(updater)
+      }
+    }
 }

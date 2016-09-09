@@ -7,32 +7,29 @@
 
 package ixias.play.api.auth.mvc
 
+import play.api.Application
+import play.api.mvc.{ Result, Results }
+
 import scala.concurrent.Future
-import play.api.mvc.Result
-import ixias.play.api.auth.mvc.ActionRequest._
+import ixias.play.api.mvc.{ StackAction, StackActionFunction, StackActionRequest }
 
 /**
- * Provides the custom action for authentication.
+ * Provides the custom action for authorization.
  */
-sealed class Authorized(params: Attribute[_]*)(implicit auth: AuthProfile) extends StackAction(params: _*)
-{
-  /** Proceed with the next advice or target method invocation */
-  override def proceed[A](req: ActionRequest[A])(f: ActionRequest[A] => Future[Result]): Future[Result] = {
-    implicit val ctx = getExecutionContext(req)
-    auth.authorized(req.get(auth.AuthorityKey))(req) flatMap {
-      case Left(result)           => Future.successful(result)
-      case Right((user, updater)) => super.proceed(
-        req.set(auth.UserKey, user)
-      )(f).map(updater)
+object Authorized extends StackActionFunction with Results {
+  implicit val ctx = executionContext
+
+  /**
+   * Authorize user's session.
+   */
+  def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] =
+    getInjector(request).map(_.instanceOf(classOf[AuthProfile])) match {
+      case None       => Future.successful(InternalServerError)
+      case Some(auth) => auth.authorize(request.get(auth.AuthorityKey))(request) flatMap {
+        case Left(result)           => Future.successful(result)
+        case Right((user, updater)) => block {
+          request.set(auth.UserKey, user)
+        } map(updater)
+      }
     }
-  }
-}
-
-/**
- * Build a custom action object.
- */
-object Authorized extends StackAuthActionBuilder[Authorized]
-{
-  def build(params: Attribute[_]*)(implicit auth: AuthProfile): Authorized =
-    new Authorized(params: _*)
 }
