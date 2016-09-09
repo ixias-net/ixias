@@ -169,5 +169,5 @@ trait StackActionTransformer extends StackActionFunction
  * continue its Action block with the same request.
  * The critical (abstract) function is filter.
  */
-trait ActionFilter extends StackActionFunction
+trait StackActionFilter extends StackActionFunction
     with ActionRefiner[StackActionRequest, StackActionRequest]
