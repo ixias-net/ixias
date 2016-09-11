@@ -85,7 +85,7 @@ trait AuthProfile extends Results
    * Returns authorized user.
    */
   def loggedIn(implicit request: StackActionRequest[_]): Option[User] =
-    request.get(UserKey).map(_.asInstanceOf[User])
+    request.get(UserKey)
 
   /**
    * Returns the result response.
