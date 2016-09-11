@@ -17,22 +17,25 @@ import play.api.libs.iteratee.Execution
 import ixias.model.{ Identity, Entity }
 import ixias.play.api.auth.token.{ Token, AuthenticityToken }
 import ixias.play.api.auth.container.Container
-import ixias.play.api.mvc.StackActionRequest._
+import ixias.play.api.mvc.StackActionRequest
 
 trait AuthProfile extends Results
 {
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
   type Id   <: Identity[_]
+
   /** The type of user entity */
   type User <: Entity[_]
+
   /** The type of authority roles */
   type Authority >: Null
 
   /** The key of attribute for containing required authority roles. */
-  case object UserKey      extends AttributeKey[User]
+  case object UserKey      extends StackActionRequest.AttributeKey[User]
+
   /** The key of attribute for containing user data. */
-  case object AuthorityKey extends AttributeKey[Authority]
+  case object AuthorityKey extends StackActionRequest.AttributeKey[Authority]
 
   // --[ Properties ]-----------------------------------------------------------
   /** The current running application. */
@@ -65,7 +68,7 @@ trait AuthProfile extends Results
    * Invoked if authentication failed with the credentials provided.
    * This should only be called where an authentication attempt has truly failed
    */
-  protected def authenticationFailed(implicit req: RequestHeader): Result
+  protected def authenticationFailed(implicit request: RequestHeader): Result
 
   /**
    * Invoked if authorization failed.
@@ -75,6 +78,44 @@ trait AuthProfile extends Results
    * denying specific permissions to an authenticated user.
    */
   protected def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
+
+
+  // --[ Methods ]--------------------------------------------------------------
+  /**
+   * Returns authorized user.
+   */
+  def loggedIn(implicit request: StackActionRequest[_]): Option[User] =
+    request.get(UserKey).map(_.asInstanceOf[User])
+
+  /**
+   * Returns the result response.
+   */
+  def loggedIn[A](f: User => Result)
+    (implicit request: StackActionRequest[A]): Result =
+    loggedIn.fold(authenticationFailed)(f)
+
+  /**
+   * Returns the result response.
+   */
+  def loggedIn[A](f: User => Future[Result])
+    (implicit request: StackActionRequest[A]): Future[Result] =
+    loggedIn.fold(Future(authenticationFailed))(f)
+
+  /**
+   * Returns the result response of applying $f to user data
+   * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
+   */
+  def loggedInOrNot[A](ifEmpty: => Result)(f: User => Result)
+    (implicit request: StackActionRequest[A]): Result =
+    loggedIn.fold(ifEmpty)(f)
+
+  /**
+   * Returns the result response of applying $f to user data
+   * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
+   */
+  def loggedInOrNot[A](ifEmpty: => Result)(f: User => Future[Result])
+    (implicit request: StackActionRequest[A]): Future[Result] =
+    loggedIn.fold(Future(ifEmpty))(f)
 
   // --[ Methods ]--------------------------------------------------------------
   /**
