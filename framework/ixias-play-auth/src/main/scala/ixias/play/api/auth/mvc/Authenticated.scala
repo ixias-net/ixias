@@ -11,12 +11,12 @@ import play.api.Application
 import play.api.mvc.{ Result, Results }
 
 import scala.concurrent.Future
-import ixias.play.api.mvc.{ StackAction, StackActionFunction, StackActionRequest }
+import ixias.play.api.mvc.{ StackActionBuilder, StackActionRequest }
 
 /**
  * Provides the custom action for authentication.
  */
-object Authenticated extends StackActionFunction with Results {
+object Authenticated extends StackActionBuilder with Results {
 
   implicit val ctx = executionContext
 

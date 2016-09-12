@@ -12,6 +12,7 @@ import scala.util.{ Success, Failure }
 import scala.util.control.{ NonFatal, ControlThrowable }
 import scala.concurrent.{ Future, ExecutionContext }
 import scala.collection.concurrent.TrieMap
+import scala.language.higherKinds
 
 import play.api.mvc._
 import play.api.Application
@@ -23,7 +24,7 @@ import play.api.inject.Injector
 import StackActionRequest._
 case class StackActionRequest[A](
   underlying: Request[A],
-  attributes: TrieMap[AttributeKey[_], Any]
+  attributes: TrieMap[AttributeKey[_], Any] = TrieMap.empty
 ) extends WrappedRequest[A](underlying) {
 
   /**
@@ -60,90 +61,160 @@ object StackActionRequest {
   }
 }
 
-
-// Statck Action
-//~~~~~~~~~~~~~~~~
-object StackAction {
-
-  /** The key of attribute for containing the current running application. */
-  case object ApplicationKey extends AttributeKey[Application]
-
-  // --[ Methods ] -------------------------------------------------------------
-  /**
-   * Constructs an `Action`.
-   */
-  final def apply[A](p: BodyParser[A], params: Attribute[_]*)
-    (block: StackActionRequest[A] => Result)
-    (implicit app: Application): Action[A] =
-    createActionBuilder(params: _*).apply(p)(block)
-
-  /**
-   * Constructs an `Action` with default content.
-   */
-  final def apply(params: Attribute[_]*)
-    (block: StackActionRequest[AnyContent] => Result)
-    (implicit app: Application): Action[AnyContent] =
-    createActionBuilder(params: _*).apply(block)
-
-  /**
-   * Constructs an `Action` with default content, and no request parameter.
-   */
-  final def apply(block: StackActionRequest[AnyContent] => Result)
-    (implicit app: Application): Action[AnyContent] =
-    createActionBuilder().apply(block)
-
-  // --[ Methods ] -------------------------------------------------------------
-  /**
-   * Constructs an `Action` that returns a future of a result, with default content.
-   */
-  final def async[A](p: BodyParser[A], params: Attribute[_]*)
-    (block: StackActionRequest[A] => Future[Result])
-    (implicit app: Application): Action[A] =
-    createActionBuilder(params: _*).async(p)(block)
-
-  /**
-   * Constructs an `Action` that returns a future of a result, with default content.
-   */
-  final def async(params: Attribute[_]*)
-    (block: StackActionRequest[AnyContent] => Future[Result])
-    (implicit app: Application): Action[AnyContent] =
-    createActionBuilder(params: _*).async(block)
-
-  /**
-   * Constructs an `Action` that returns a future of a result,
-   * with default content, and no request parameter.
-   */
-  final def async(block: StackActionRequest[AnyContent] => Future[Result])
-    (implicit app: Application): Action[AnyContent] =
-    createActionBuilder().async(block)
-
-  // --[ Methods ] -------------------------------------------------------------
-  /**
-   * Create a new Action Builder
-   */
-  def createActionBuilder(params: Attribute[_]*)(implicit app: Application) =
-    new ActionBuilder[StackActionRequest] {
-      final def invokeBlock[A](request: Request[A], block: StackActionRequest[A] => Future[Result]): Future[Result] = {
-        block(StackActionRequest(request, (
-          new TrieMap[AttributeKey[_], Any]
-            ++= params.map(_.toTuple)
-            +=  (ApplicationKey -> app).toTuple
-        )))
-      }
-    }
-}
-
+// Statck Action Function
+//~~~~~~~~~~~~~~~~~~~~~~~~~
 /**
  * A builder for generic Actions that generalizes over the type of requests.
  */
 trait StackActionFunction extends ActionFunction[StackActionRequest, StackActionRequest] {
 
   /**
+   * The key of attribute for containing the current running application.
+   */
+  case object ApplicationKey extends AttributeKey[Application]
+
+  /**
    * Instantiate a authprofile object.
    */
   protected def getInjector(request: StackActionRequest[_]): Option[Injector] =
-    request.get(StackAction.ApplicationKey)
-      .map(_.asInstanceOf[Application].injector)
+    request.get(ApplicationKey).map(_.asInstanceOf[Application].injector)
+}
+
+/**
+ * Provides helpers for creating `Action` values.
+ */
+trait StackActionBuilder extends StackActionFunction {
+  self =>
+
+  // --[ Methods ] -------------------------------------------------------------
+  /**
+   * Constructs an `Action` with default content, and no request parameter.
+   */
+  final def apply
+    (block: => Result)
+    (implicit app: Application): Action[AnyContent] =
+    apply(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
+
+  /**
+   * Constructs an `Action` with default content.
+   */
+  final def apply
+    (params: Attribute[_]*)
+    (block: => Result)
+    (implicit app: Application): Action[AnyContent] =
+    apply(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent), params: _*)(_ => block)
+
+  /**
+   * Constructs an `Action` with default content
+   */
+  final def apply
+    (block: StackActionRequest[AnyContent] => Result)
+    (implicit app: Application): Action[AnyContent] =
+    apply(BodyParsers.parse.default)(block)
+
+  /**
+   * Constructs an `Action` with default content.
+   */
+  final def apply
+    (params: Attribute[_]*)
+    (block: StackActionRequest[AnyContent] => Result)
+    (implicit app: Application): Action[AnyContent] =
+    apply(BodyParsers.parse.default, params: _*)(block)
+
+  /**
+   * Constructs an `Action`.
+   */
+  final def apply[A]
+    (bodyParser: BodyParser[A], params: Attribute[_]*)
+    (block: StackActionRequest[A] => Result)
+    (implicit app: Application): Action[A] =
+    async(bodyParser, params: _*) { request: StackActionRequest[A] =>
+      Future.successful(block(request))
+    }
+
+  // --[ Methods ] -------------------------------------------------------------
+  /**
+   * Constructs an `Action` that returns a future of a result,
+   * with default content, and no request parameter.
+   */
+  final def async
+    (block: => Future[Result])
+    (implicit app: Application): Action[AnyContent] =
+    async(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
+
+  /**
+   * Constructs an `Action` that returns a future of a result,
+   * with default content, and no request parameter.
+   */
+  final def async
+    (params: Attribute[_]*)
+    (block: => Future[Result])
+    (implicit app: Application): Action[AnyContent] =
+    async(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent), params: _*)(_ => block)
+
+  /**
+   * Constructs an `Action` that returns a future of a result, with default content
+   */
+  final def async
+    (block: StackActionRequest[AnyContent] => Future[Result])
+    (implicit app: Application): Action[AnyContent] =
+    async(BodyParsers.parse.default)(block)
+
+  /**
+   * Constructs an `Action` that returns a future of a result, with default content.
+   */
+  final def async
+    (params: Attribute[_]*)
+    (block: StackActionRequest[AnyContent] => Future[Result])
+    (implicit app: Application): Action[AnyContent] =
+    async(BodyParsers.parse.default, params: _*)(block)
+
+  /**
+   * Constructs an `Action` that returns a future of a result, with default content.
+   */
+  final def async[A]
+    (bodyParser: BodyParser[A], params: Attribute[_]*)
+    (block: StackActionRequest[A] => Future[Result])
+    (implicit app: Application): Action[A] = composeAction(new Action[A] {
+      def parser = composeParser(bodyParser)
+      def apply(request: Request[A]) = try {
+        invokeBlock(StackActionRequest(request, (
+          new TrieMap[AttributeKey[_], Any]
+            ++= params.map(_.toTuple)
+            +=  (ApplicationKey -> app).toTuple
+        )), block)
+      } catch {
+        // NotImplementedError is not caught by NonFatal, wrap it
+        case e: NotImplementedError => throw new RuntimeException(e)
+        // LinkageError is similarly harmless in Play Framework, since automatic reloading could easily trigger it
+        case e: LinkageError => throw new RuntimeException(e)
+      }
+      override def executionContext = StackActionBuilder.this.executionContext
+    })
+
+
+  /**
+   * Compose the parser.  This allows the action builder to potentially intercept requests before they are parsed.
+   *
+   * @param bodyParser The body parser to compose
+   * @return The composed body parser
+   */
+  protected def composeParser[A](bodyParser: BodyParser[A]): BodyParser[A] = bodyParser
+
+  /**
+   * Compose the action with other actions.  This allows mixing in of various actions together.
+   *
+   * @param action The action to compose
+   * @return The composed action
+   */
+  protected def composeAction[A](action: Action[A]): Action[A] = action
+
+  override def andThen[Q[_]](other: ActionFunction[StackActionRequest, Q]): ActionBuilder[Q] = new ActionBuilder[Q] {
+    def invokeBlock[A](request: Request[A], block: Q[A] => Future[Result]) =
+      self.invokeBlock[A](StackActionRequest(request), other.invokeBlock[A](_, block))
+    override protected def composeParser[A](bodyParser: BodyParser[A]): BodyParser[A] = self.composeParser(bodyParser)
+    override protected def composeAction[A](action: Action[A]): Action[A] = self.composeAction(action)
+  }
 }
 
 /**
