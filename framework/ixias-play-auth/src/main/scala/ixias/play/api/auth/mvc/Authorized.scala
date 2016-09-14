@@ -23,9 +23,10 @@ object Authorized extends StackActionBuilder with Results {
    * Authorize user's session.
    */
   def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] =
-    getInjector(request).map(_.instanceOf(classOf[AuthProfile])) match {
-      case None       => Future.successful(InternalServerError)
-      case Some(auth) => auth.authorize(request.get(auth.AuthorityKey))(request) flatMap {
+    withApplication(request) { implicit app =>
+      implicit val ctx = executionContext
+      val auth = app.injector.instanceOf(classOf[AuthProfile])
+      auth.authorize(request.get(auth.AuthorityKey))(request) flatMap {
         case Left(result)           => Future.successful(result)
         case Right((user, updater)) => block {
           request.set(auth.UserKey, user)

@@ -74,10 +74,15 @@ trait StackActionFunction extends ActionFunction[StackActionRequest, StackAction
   case object ApplicationKey extends AttributeKey[Application]
 
   /**
-   * Instantiate a authprofile object.
+   * Invokes a block process with the current running application.
    */
-  protected def getInjector(request: StackActionRequest[_]): Option[Injector] =
-    request.get(ApplicationKey).map(_.asInstanceOf[Application].injector)
+  def withApplication(request: StackActionRequest[_])(block: Application => Future[Result]): Future[Result] = {
+    implicit val ctx = executionContext
+    for {
+      app    <- Future(request.get(ApplicationKey).map(_.asInstanceOf[Application]).get)
+      result <- block(app)
+    } yield result
+  }
 }
 
 /**

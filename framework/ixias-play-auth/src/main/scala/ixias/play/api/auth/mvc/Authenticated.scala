@@ -18,15 +18,14 @@ import ixias.play.api.mvc.{ StackActionBuilder, StackActionRequest }
  */
 object Authenticated extends StackActionBuilder with Results {
 
-  implicit val ctx = executionContext
-
   /**
    * Authenticate user's session.
    */
   def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] =
-    getInjector(request).map(_.instanceOf(classOf[AuthProfile])) match {
-      case None       => Future.successful(InternalServerError)
-      case Some(auth) => auth.authenticate(request) flatMap {
+    withApplication(request) { implicit app =>
+      implicit val ctx = executionContext
+      val auth = app.injector.instanceOf(classOf[AuthProfile])
+      auth.authenticate(request) flatMap {
         case Left(result)           => Future.successful(result)
         case Right((user, updater)) => block {
           request.set(auth.UserKey, user)
