@@ -10,7 +10,7 @@ package ixias.play.api.auth.mvc
 import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration.Duration
 
-import play.api.{ Application, Mode }
+import play.api.{ Environment, Mode }
 import play.api.mvc.{ RequestHeader, Result, Results }
 import play.api.libs.iteratee.Execution
 
@@ -38,8 +38,8 @@ trait AuthProfile extends Results
   case object AuthorityKey extends StackActionRequest.AttributeKey[Authority]
 
   // --[ Properties ]-----------------------------------------------------------
-  /** The current running application. */
-  implicit val app: Application
+  /** The enviroment. */
+  implicit val env: Environment
 
   /** Can execute program logic asynchronously */
   implicit val ctx: ExecutionContext = Execution.Implicits.trampoline
@@ -140,7 +140,7 @@ trait AuthProfile extends Results
    * Extract a session token in `RequestHeader`.
    */
   final def extractAuthToken(implicit request: RequestHeader): Option[AuthenticityToken] =
-    (app.mode match {
+    (env.mode match {
       case Mode.Prod => None
       case _         => request.headers.get("TEST_AUTH_TOKEN")
     }) orElse tokenAccessor.extract(request)

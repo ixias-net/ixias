@@ -15,8 +15,8 @@ import scala.collection.concurrent.TrieMap
 import scala.language.higherKinds
 
 import play.api.mvc._
-import play.api.Application
-import play.api.inject.Injector
+import play.api.{ Play, Application }
+import play.api.inject.{ Injector, BindingKey }
 
 
 // Wrap an existing request. Useful to extend a request.
@@ -69,20 +69,28 @@ object StackActionRequest {
 trait StackActionFunction extends ActionFunction[StackActionRequest, StackActionRequest] {
 
   /**
-   * The key of attribute for containing the current running application.
+   * Get an instance of the given class from the injector.
    */
-  case object ApplicationKey extends AttributeKey[Application]
+  def instanceOf[T: ClassTag]: Future[T] =
+    Future(Play.routesCompilerMaybeApplication.map(
+      _.injector.instanceOf[T]
+    ).get)(executionContext)
 
   /**
-   * Invokes a block process with the current running application.
+   * Get an instance of the given class from the injector.
    */
-  def withApplication(request: StackActionRequest[_])(block: Application => Future[Result]): Future[Result] = {
-    implicit val ctx = executionContext
-    for {
-      app    <- Future(request.get(ApplicationKey).map(_.asInstanceOf[Application]).get)
-      result <- block(app)
-    } yield result
-  }
+  def instanceOf[T](clazz: Class[T]): Future[T] =
+    Future(Play.routesCompilerMaybeApplication.map(
+      _.injector.instanceOf[T](clazz)
+    ).get)(executionContext)
+
+  /**
+   * Get an instance bound to the given binding key.
+   */
+  def instanceOf[T](key: BindingKey[T]): Future[T] =
+    Future(Play.routesCompilerMaybeApplication.map(
+      _.injector.instanceOf[T](key)
+    ).get)(executionContext)
 }
 
 /**
@@ -95,44 +103,31 @@ trait StackActionBuilder extends StackActionFunction {
   /**
    * Constructs an `Action` with default content, and no request parameter.
    */
-  final def apply
-    (block: => Result)
-    (implicit app: Application): Action[AnyContent] =
+  final def apply(block: => Result): Action[AnyContent] =
     apply(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
 
   /**
    * Constructs an `Action` with default content.
    */
-  final def apply
-    (params: Attribute[_]*)
-    (block: => Result)
-    (implicit app: Application): Action[AnyContent] =
+  final def apply(params: Attribute[_]*)(block: => Result): Action[AnyContent] =
     apply(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent), params: _*)(_ => block)
 
   /**
    * Constructs an `Action` with default content
    */
-  final def apply
-    (block: StackActionRequest[AnyContent] => Result)
-    (implicit app: Application): Action[AnyContent] =
+  final def apply(block: StackActionRequest[AnyContent] => Result): Action[AnyContent] =
     apply(BodyParsers.parse.default)(block)
 
   /**
    * Constructs an `Action` with default content.
    */
-  final def apply
-    (params: Attribute[_]*)
-    (block: StackActionRequest[AnyContent] => Result)
-    (implicit app: Application): Action[AnyContent] =
+  final def apply(params: Attribute[_]*)(block: StackActionRequest[AnyContent] => Result): Action[AnyContent] =
     apply(BodyParsers.parse.default, params: _*)(block)
 
   /**
    * Constructs an `Action`.
    */
-  final def apply[A]
-    (bodyParser: BodyParser[A], params: Attribute[_]*)
-    (block: StackActionRequest[A] => Result)
-    (implicit app: Application): Action[A] =
+  final def apply[A](bodyParser: BodyParser[A], params: Attribute[_]*)(block: StackActionRequest[A] => Result): Action[A] =
     async(bodyParser, params: _*) { request: StackActionRequest[A] =>
       Future.successful(block(request))
     }
@@ -142,52 +137,37 @@ trait StackActionBuilder extends StackActionFunction {
    * Constructs an `Action` that returns a future of a result,
    * with default content, and no request parameter.
    */
-  final def async
-    (block: => Future[Result])
-    (implicit app: Application): Action[AnyContent] =
+  final def async(block: => Future[Result]): Action[AnyContent] =
     async(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
 
   /**
    * Constructs an `Action` that returns a future of a result,
    * with default content, and no request parameter.
    */
-  final def async
-    (params: Attribute[_]*)
-    (block: => Future[Result])
-    (implicit app: Application): Action[AnyContent] =
+  final def async(params: Attribute[_]*)(block: => Future[Result]): Action[AnyContent] =
     async(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent), params: _*)(_ => block)
 
   /**
    * Constructs an `Action` that returns a future of a result, with default content
    */
-  final def async
-    (block: StackActionRequest[AnyContent] => Future[Result])
-    (implicit app: Application): Action[AnyContent] =
+  final def async(block: StackActionRequest[AnyContent] => Future[Result]): Action[AnyContent] =
     async(BodyParsers.parse.default)(block)
 
   /**
    * Constructs an `Action` that returns a future of a result, with default content.
    */
-  final def async
-    (params: Attribute[_]*)
-    (block: StackActionRequest[AnyContent] => Future[Result])
-    (implicit app: Application): Action[AnyContent] =
+  final def async(params: Attribute[_]*)(block: StackActionRequest[AnyContent] => Future[Result]): Action[AnyContent] =
     async(BodyParsers.parse.default, params: _*)(block)
 
   /**
    * Constructs an `Action` that returns a future of a result, with default content.
    */
-  final def async[A]
-    (bodyParser: BodyParser[A], params: Attribute[_]*)
-    (block: StackActionRequest[A] => Future[Result])
-    (implicit app: Application): Action[A] = composeAction(new Action[A] {
+  final def async[A](bodyParser: BodyParser[A], params: Attribute[_]*)(block: StackActionRequest[A] => Future[Result]): Action[A] =
+    composeAction(new Action[A] {
       def parser = composeParser(bodyParser)
       def apply(request: Request[A]) = try {
-        invokeBlock(StackActionRequest(request, (
-          new TrieMap[AttributeKey[_], Any]
-            ++= params.map(_.toTuple)
-            +=  (ApplicationKey -> app).toTuple
-        )), block)
+        val attrs = new TrieMap[AttributeKey[_], Any] ++= params.map(_.toTuple)
+        invokeBlock(StackActionRequest(request, attrs), block)
       } catch {
         // NotImplementedError is not caught by NonFatal, wrap it
         case e: NotImplementedError => throw new RuntimeException(e)
