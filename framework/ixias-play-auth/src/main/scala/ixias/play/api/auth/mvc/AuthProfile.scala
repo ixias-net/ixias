@@ -68,7 +68,7 @@ trait AuthProfile extends Results
    * Invoked if authentication failed with the credentials provided.
    * This should only be called where an authentication attempt has truly failed
    */
-  protected def authenticationFailed(implicit request: RequestHeader): Result
+  def authenticationFailed(implicit request: RequestHeader): Result
 
   /**
    * Invoked if authorization failed.
@@ -77,7 +77,7 @@ trait AuthProfile extends Results
    * Authorization helps you to control access rights by granting or
    * denying specific permissions to an authenticated user.
    */
-  protected def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
+  def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
 
 
   // --[ Methods ]--------------------------------------------------------------
