@@ -126,9 +126,9 @@ trait AuthProfile extends Results
   /**
    * Invoke this method on login succeeded.
    */
-  def loginSucceeded(uid: Id)(f: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
+  def loginSucceeded(uid: Id, block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
     datastore.open(uid, sessionTimeout).map { token =>
-      tokenAccessor.put(token)(f(token))
+      tokenAccessor.put(token)(block(token))
     } recover { case _: Throwable => InternalServerError }
 
   /**
@@ -139,10 +139,10 @@ trait AuthProfile extends Results
   /**
    * Invoke this method on logout succeeded.
    */
-  def logoutSucceeded(uid: Id)(f: => Result)(implicit request: RequestHeader): Future[Result] =
+  def logoutSucceeded(uid: Id, block: => Result)(implicit request: RequestHeader): Future[Result] =
     tokenAccessor.extract(request) match {
-      case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(f))
-      case None        => Future.successful(tokenAccessor.discard(f))
+      case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(block))
+      case None        => Future.successful(tokenAccessor.discard(block))
     }
 
   // --[ Methods ]--------------------------------------------------------------
