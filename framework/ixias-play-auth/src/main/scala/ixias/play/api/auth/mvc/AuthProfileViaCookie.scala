@@ -9,7 +9,7 @@ package ixias.play.api.auth.mvc
 
 import ixias.play.api.auth.token.TokenViaCookie
 
-trait AuthProfileViaCookie extends AuthProfile {
+trait AuthProfileViaCookie { self: AuthProfile =>
 
   /** The cookie name */
   val cookieName: String = "sid"

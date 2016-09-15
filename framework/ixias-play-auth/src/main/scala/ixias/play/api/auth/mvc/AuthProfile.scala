@@ -57,7 +57,7 @@ trait AuthProfile extends Results
   /**
    * Resolve user by specified user-id.
    */
-  protected def resolve(id: Id): Future[Option[User]]
+  protected def resolve(uid: Id): Future[Option[User]]
 
   /**
    * Verifies what user are authorized to do.
@@ -68,7 +68,7 @@ trait AuthProfile extends Results
    * Invoked if authentication failed with the credentials provided.
    * This should only be called where an authentication attempt has truly failed
    */
-  protected def authenticationFailed(implicit request: RequestHeader): Result
+  def authenticationFailed(implicit request: RequestHeader): Result
 
   /**
    * Invoked if authorization failed.
@@ -77,7 +77,7 @@ trait AuthProfile extends Results
    * Authorization helps you to control access rights by granting or
    * denying specific permissions to an authenticated user.
    */
-  protected def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
+  def authorizationFailed(user: User, authority: Option[Authority])(implicit request: RequestHeader): Result
 
 
   // --[ Methods ]--------------------------------------------------------------
@@ -121,28 +121,28 @@ trait AuthProfile extends Results
   /**
    * Invoke this method on login succeeded.
    */
-  def loginSucceeded(uid: Id)(implicit req: RequestHeader): Future[Result]
+  def loginSucceeded(uid: Id)(implicit request: RequestHeader): Future[Result]
 
   /**
    * Invoke this method on login succeeded.
    */
-  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
-    datastore.open(id, sessionTimeout).map { token =>
-      tokenAccessor.put(token)(f(token))
+  def loginSucceeded(uid: Id, block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
+    datastore.open(uid, sessionTimeout).map { token =>
+      tokenAccessor.put(token)(block(token))
     } recover { case _: Throwable => InternalServerError }
 
   /**
    * Invoke this method on logout succeeded.
    */
-  def logoutSucceeded(id: Id)(implicit req: RequestHeader): Future[Result]
+  def logoutSucceeded(uid: Id)(implicit request: RequestHeader): Future[Result]
 
   /**
    * Invoke this method on logout succeeded.
    */
-  def logoutSucceeded(id: Id)(f: => Result)(implicit request: RequestHeader): Future[Result] =
+  def logoutSucceeded(uid: Id, block: => Result)(implicit request: RequestHeader): Future[Result] =
     tokenAccessor.extract(request) match {
-      case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(f))
-      case None        => Future.successful(tokenAccessor.discard(f))
+      case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(block))
+      case None        => Future.successful(tokenAccessor.discard(block))
     }
 
   // --[ Methods ]--------------------------------------------------------------
