@@ -15,7 +15,7 @@ import play.api.mvc.{ RequestHeader, Result, Results }
 import play.api.libs.iteratee.Execution
 
 import ixias.model.{ Identity, Entity }
-import ixias.play.api.auth.token.{ Token, AuthenticityToken }
+import ixias.play.api.auth.token.{ Token, AuthenticityToken, SignedToken }
 import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.StackActionRequest
 
@@ -154,6 +154,12 @@ trait AuthProfile extends Results
       case Mode.Prod => None
       case _         => request.headers.get("TEST_AUTH_TOKEN")
     }) orElse tokenAccessor.extract(request)
+
+  /**
+   * Extract a signed session token in `RequestHeader`.
+   */
+  def extractSignedToken(implicit request: RequestHeader): Option[SignedToken] =
+    extractAuthToken.map(Token.signWithHMAC)
 
   /**
    * Restore a user data by the session token in `RequestHeader`.
