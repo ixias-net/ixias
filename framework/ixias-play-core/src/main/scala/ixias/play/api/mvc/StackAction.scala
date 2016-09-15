@@ -18,7 +18,6 @@ import play.api.mvc._
 import play.api.{ Play, Application }
 import play.api.inject.{ Injector, BindingKey }
 
-
 // Wrap an existing request. Useful to extend a request.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import StackActionRequest._

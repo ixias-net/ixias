@@ -24,13 +24,13 @@ object Authenticated extends StackActionBuilder with Results {
   def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] = {
     implicit val ctx = executionContext
     for {
-      auth <- instanceOf(classOf[AuthProfile])
-      v    <- auth.authenticate(request) flatMap {
+      auth    <- instanceOf(classOf[AuthProfile])
+      proceed <- auth.authenticate(request) flatMap {
         case Left(result)           => Future.successful(result)
         case Right((user, updater)) => block {
           request.set(auth.UserKey, user)
         } map(updater)
       }
-    } yield v
+    } yield proceed
   }
 }
