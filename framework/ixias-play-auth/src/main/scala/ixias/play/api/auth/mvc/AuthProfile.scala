@@ -57,7 +57,7 @@ trait AuthProfile extends Results
   /**
    * Resolve user by specified user-id.
    */
-  protected def resolve(id: Id): Future[Option[User]]
+  protected def resolve(uid: Id): Future[Option[User]]
 
   /**
    * Verifies what user are authorized to do.
@@ -77,7 +77,7 @@ trait AuthProfile extends Results
    * Authorization helps you to control access rights by granting or
    * denying specific permissions to an authenticated user.
    */
-  def authorizationFailed(user: User, authority: Option[Authority])(implicit req: RequestHeader): Result
+  def authorizationFailed(user: User, authority: Option[Authority])(implicit request: RequestHeader): Result
 
 
   // --[ Methods ]--------------------------------------------------------------
@@ -121,25 +121,25 @@ trait AuthProfile extends Results
   /**
    * Invoke this method on login succeeded.
    */
-  def loginSucceeded(uid: Id)(implicit req: RequestHeader): Future[Result]
+  def loginSucceeded(uid: Id)(implicit request: RequestHeader): Future[Result]
 
   /**
    * Invoke this method on login succeeded.
    */
-  def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
-    datastore.open(id, sessionTimeout).map { token =>
+  def loginSucceeded(uid: Id)(f: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
+    datastore.open(uid, sessionTimeout).map { token =>
       tokenAccessor.put(token)(f(token))
     } recover { case _: Throwable => InternalServerError }
 
   /**
    * Invoke this method on logout succeeded.
    */
-  def logoutSucceeded(id: Id)(implicit req: RequestHeader): Future[Result]
+  def logoutSucceeded(uid: Id)(implicit request: RequestHeader): Future[Result]
 
   /**
    * Invoke this method on logout succeeded.
    */
-  def logoutSucceeded(id: Id)(f: => Result)(implicit request: RequestHeader): Future[Result] =
+  def logoutSucceeded(uid: Id)(f: => Result)(implicit request: RequestHeader): Future[Result] =
     tokenAccessor.extract(request) match {
       case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(f))
       case None        => Future.successful(tokenAccessor.discard(f))
