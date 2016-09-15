@@ -121,10 +121,20 @@ trait AuthProfile extends Results
   /**
    * Invoke this method on login succeeded.
    */
+  def loginSucceeded(uid: Id)(implicit req: RequestHeader): Future[Result]
+
+  /**
+   * Invoke this method on login succeeded.
+   */
   def loginSucceeded(id: Id)(f: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
     datastore.open(id, sessionTimeout).map { token =>
       tokenAccessor.put(token)(f(token))
     } recover { case _: Throwable => InternalServerError }
+
+  /**
+   * Invoke this method on logout succeeded.
+   */
+  def logoutSucceeded(id: Id)(implicit req: RequestHeader): Future[Result]
 
   /**
    * Invoke this method on logout succeeded.
