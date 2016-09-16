@@ -11,26 +11,25 @@ import play.api.Application
 import play.api.mvc.{ Result, Results }
 
 import scala.concurrent.Future
-import ixias.play.api.mvc.{ StackActionBuilder, StackActionRequest }
+import ixias.play.api.mvc.StackActionRequest
 
 /**
  * Provides the custom action for authorization.
  */
-object Authorized extends StackActionBuilder with Results {
+object Authorized extends AuthActionBuilder with Results {
 
   /**
    * Authorize user's session.
    */
   def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] = {
-    implicit val ctx = executionContext
-    for {
-      auth <- instanceOf(classOf[AuthProfile])
-      v    <- auth.authorize(request.get(auth.AuthorityKey))(request) flatMap {
+    withAuthProfile(request, {
+      implicit val ctx = executionContext
+      auth => auth.authorize(request.get(auth.AuthorityKey))(request) flatMap {
         case Left(result)           => Future.successful(result)
         case Right((user, updater)) => block {
           request.set(auth.UserKey, user)
         } map(updater)
       }
-    } yield v
+    })
   }
 }

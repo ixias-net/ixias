@@ -11,26 +11,24 @@ import play.api.Application
 import play.api.mvc.{ Result, Results }
 
 import scala.concurrent.Future
-import ixias.play.api.mvc.{ StackActionBuilder, StackActionRequest }
+import ixias.play.api.mvc.StackActionRequest
 
 /**
  * Provides the custom action for authentication.
  */
-object Authenticated extends StackActionBuilder with Results {
+object Authenticated extends AuthActionBuilder with Results {
 
   /**
    * Authenticate user's session.
    */
-  def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] = {
-    implicit val ctx = executionContext
-    for {
-      auth    <- instanceOf(classOf[AuthProfile])
-      proceed <- auth.authenticate(request) flatMap {
+  def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] =
+    withAuthProfile(request, {
+      implicit val ctx = executionContext
+      auth => auth.authenticate(request) flatMap {
         case Left(result)           => Future.successful(result)
         case Right((user, updater)) => block {
           request.set(auth.UserKey, user)
         } map(updater)
       }
-    } yield proceed
-  }
+    })
 }
