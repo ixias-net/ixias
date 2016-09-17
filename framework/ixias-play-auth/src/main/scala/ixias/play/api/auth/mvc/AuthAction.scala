@@ -34,13 +34,13 @@ trait AuthActionBuilder extends StackActionBuilder {
   /**
    * Constructs an `Action` with default content, and no request parameter.
    */
-  final def apply(auth: AuthProfile, block: => Result): Action[AnyContent] =
+  final def apply(auth: AuthProfile)(block: => Result): Action[AnyContent] =
     apply(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent), AuthProfileKey -> auth)(_ => block)
 
   /**
    * Constructs an `Action` with default content
    */
-  final def apply(auth: AuthProfile, block: StackActionRequest[AnyContent] => Result): Action[AnyContent] =
+  final def apply(auth: AuthProfile)(block: StackActionRequest[AnyContent] => Result): Action[AnyContent] =
     apply(BodyParsers.parse.default, AuthProfileKey -> auth)(block)
 
   // --[ Methods ] -------------------------------------------------------------
@@ -48,12 +48,12 @@ trait AuthActionBuilder extends StackActionBuilder {
    * Constructs an `Action` that returns a future of a result,
    * with default content, and no request parameter.
    */
-  final def async(auth: AuthProfile, block: => Future[Result]): Action[AnyContent] =
+  final def async(auth: AuthProfile)(block: => Future[Result]): Action[AnyContent] =
     async(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent), AuthProfileKey -> auth)(_ => block)
 
   /**
    * Constructs an `Action` that returns a future of a result, with default content
    */
-  final def async(auth: AuthProfile, block: StackActionRequest[AnyContent] => Future[Result]): Action[AnyContent] =
+  final def async(auth: AuthProfile)(block: StackActionRequest[AnyContent] => Future[Result]): Action[AnyContent] =
     async(BodyParsers.parse.default, AuthProfileKey -> auth)(block)
 }
