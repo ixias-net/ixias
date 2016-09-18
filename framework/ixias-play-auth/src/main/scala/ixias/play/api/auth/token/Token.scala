@@ -20,7 +20,7 @@ import org.abstractj.kalium.encoders.Encoder
 import org.abstractj.kalium.keys.AuthenticationKey
 import org.abstractj.kalium.NaCl.Sodium.CRYPTO_AUTH_HMACSHA512256_BYTES
 
-import ixias.security.{ Token => SecurityToken }
+import ixias.security.RandomStringToken
 import ixias.play.api.auth.container.Container
 
 // The security token
@@ -42,11 +42,6 @@ trait Token {
 //~~~~~~~~~~~~~~~~~~
 object Token {
 
-  /** The token provider */
-  protected lazy val worker = SecurityToken(
-    table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-  )
-
   /** The object that provides some cryptographic operations */
   protected lazy val crypto: AuthenticationKey = {
     val config = ConfigFactory.load()
@@ -56,7 +51,7 @@ object Token {
 
   /** Generate a new token as string */
   final def generate(implicit container: Container[_]): Future[AuthenticityToken] = {
-    val token = worker.generate(32)
+    val token = RandomStringToken.next(32)
     container.read(token).flatMap {
       case Some(_) => generate
       case None    => Future.successful(token)
