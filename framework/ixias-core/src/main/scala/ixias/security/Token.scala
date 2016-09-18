@@ -51,20 +51,12 @@ trait HasPIN {
   protected lazy val worker = Token(table = "1234567890")
 
   /** The generated pin code */
-  private var _pin = worker.generate(4)
+  val pin = worker.generate(4)
 
   // --[ Methods ]--------------------------------------------------------------
-  /** Get a PIN code */
-  final def pin = _pin
-
   /** Verify a given PIN code **/
-  final def verifyPIN(pin: String): Boolean = worker.safeEquals(_pin, pin)
-
-  /** Override a PIN code by given value */
-  final def copyPIN[T <: HasPIN](pin: String): T = {
-    _pin = pin
-    this.asInstanceOf[T]
-  }
+  final def verifyPIN(pin: String): Boolean =
+    worker.safeEquals(this.pin, pin)
 }
 
 /**
@@ -74,22 +66,13 @@ trait HasToken {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The token provider */
-  protected lazy val worker = Token(
-    table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-  )
+  protected lazy val worker = Token(table = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+
   /** The generated token */
-  private var _token = worker.generate(32)
+  val token: String = worker.generate(32)
 
   // --[ Methods ]--------------------------------------------------------------
-  /** Get a token */
-  final def token = _token
-
   /** Verify a given token **/
-  final def verifyToken(token: String): Boolean = worker.safeEquals(_token, token)
-
-  /** Override a token by given value */
-  final def copyToken[T <: HasToken](token: String): T = {
-    _token = token
-    this.asInstanceOf[T]
-  }
+  final def verifyToken(token: String): Boolean =
+    worker.safeEquals(this.token, token)
 }
