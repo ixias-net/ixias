@@ -7,9 +7,9 @@
 
 package ixias.play.api.mvc
 
-/** Aliases for lifted embedding features. This trait can be mixed into aliasing
-  * objects which simplify the use of the lifted embedding. */
-trait Aliases {
+import scala.concurrent.ExecutionContext
+
+trait BaseExtensionMethods {
 
   /** DDD Model */
   val SomeId   = ixias.model.SomeId
@@ -20,4 +20,15 @@ trait Aliases {
   val Json     = ixias.play.api.mvc.Json
   val Jade     = ixias.play.api.mvc.Jade
   val Form     = ixias.play.api.mvc.FormAction
+
+  /**
+   * The execution context to run this action in
+   */
+  def executionContext: ExecutionContext =
+    play.api.libs.concurrent.Execution.defaultContext
+
+  object Implicits {
+    implicit def defaultContext: ExecutionContext =
+      play.api.libs.concurrent.Execution.defaultContext
+  }
 }
