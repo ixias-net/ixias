@@ -30,7 +30,7 @@ lazy val commonSettings = Seq(
     "org.specs2"      %% "specs2-core"          % "3.8.3"  % Test,
     "org.specs2"      %% "specs2-matcher-extra" % "3.8.3"  % Test,
     "ch.qos.logback"   % "logback-classic"      % "1.1.3"  % Test,
-    "mysql"            % "mysql-connector-java" % "5.1.38" % Test
+    "mysql"            % "mysql-connector-java" % "5.1.39" % Test
   )
 )
 
@@ -80,7 +80,7 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
   .settings(libraryDependencies ++= Seq(
     "com.typesafe"        % "config"          % "1.3.0",
     "com.typesafe.slick" %% "slick"           % "3.1.1",
-    "com.zaxxer"          % "HikariCP"        % "2.4.6",
+    "com.zaxxer"          % "HikariCP"        % "2.5.0",
     "com.bionicspirit"   %% "shade"           % "1.7.3",
     "org.slf4j"           % "slf4j-api"       % "1.7.21",
     "joda-time"           % "joda-time"       % "2.9.4",
