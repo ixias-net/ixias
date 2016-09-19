@@ -7,69 +7,19 @@
 
 package ixias.play.api.mvc
 
-import scala.reflect.ClassTag
-import scala.util.{ Success, Failure }
-import scala.util.control.{ NonFatal, ControlThrowable }
-import scala.concurrent.{ Future, ExecutionContext }
-import scala.collection.concurrent.TrieMap
-import scala.language.higherKinds
-
 import play.api.mvc._
 import play.api.{ Play, Application }
 import play.api.inject.{ Injector, BindingKey }
 
-// Wrap an existing request. Useful to extend a request.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-import StackActionRequest._
-case class StackActionRequest[A](
-  underlying: Request[A],
-  attributes: TrieMap[AttributeKey[_], Any] = TrieMap.empty
-) extends WrappedRequest[A](underlying) {
+import scala.reflect.ClassTag
+import scala.collection.concurrent.TrieMap
+import scala.concurrent.{ Future, ExecutionContext }
+import scala.language.higherKinds
 
-  /**
-   * Retrieve an attribute by specific key.
-   */
-  def get[B](key: AttributeKey[B]): Option[B] =
-    attributes.get(key).asInstanceOf[Option[B]]
-
-  /**
-   * Store an attribute under the specific key.
-   */
-  def set[B](key: AttributeKey[B], value: B): StackActionRequest[A] = {
-    attributes.put(key, value)
-    this
-  }
-
-  /**
-   * Store an attributes
-   */
-  def ++=[B](tail: TrieMap[AttributeKey[_], Any]): StackActionRequest[A] = {
-    attributes ++= tail
-    this
-  }
-}
-
-// The declaration for request's attribute.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-object StackActionRequest {
-
-  /**
-   * The attribute key of request.
-   */
-  trait AttributeKey[A] {
-    def ->(value: A): Attribute[A] = Attribute(this, value)
-  }
-
-  /**
-   * The attribute of request.
-   */
-  case class Attribute[A](key: AttributeKey[A], value: A) {
-    def toTuple: (AttributeKey[A], A) = (key, value)
-  }
-}
-
+// The injector
+//~~~~~~~~~~~~~~~
 /**
- * A builder for generic Actions that generalizes over the type of requests.
+ * An injector, capable of providing components.
  */
 sealed trait StackActionInjector {
 
@@ -103,8 +53,8 @@ sealed trait StackActionInjector {
 /**
  * Provides helpers for creating `Action` values.
  */
-trait StackActionBuilder[+R[_]] extends ActionFunction[StackActionRequest, R] with StackActionInjector {
-  self =>
+trait StackActionBuilder[+R[_]] extends ActionFunction[StackActionRequest, R] with StackActionInjector { self =>
+  import StackActionRequest._
 
   // --[ Methods ] -------------------------------------------------------------
   /**
@@ -197,6 +147,7 @@ trait StackActionBuilder[+R[_]] extends ActionFunction[StackActionRequest, R] wi
 // Statck Action Function
 //~~~~~~~~~~~~~~~~~~~~~~~~~
 sealed trait StackActionFunctionHelper extends ActionFunction[StackActionRequest, StackActionRequest] with StackActionInjector { self =>
+  import StackActionRequest._
   final def apply(params: Attribute[_]*): ActionFunction[StackActionRequest, StackActionRequest] =
     new ActionFunction[StackActionRequest, StackActionRequest] {
       def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]) = {
