@@ -10,7 +10,7 @@ package ixias.play.api.mvc
 import play.api.mvc._
 import scala.concurrent.Future
 import scala.collection.concurrent.TrieMap
-
+import ixias.play.api.mvc.Errors._
 
 // Wrap an existing request. Useful to extend a request.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,7 +72,7 @@ object StackAction {
     (block: (T1) => Future[Result])(implicit r: StackActionRequest[_]): Future[Result] =
     r.get(a1) match {
       case Some(v1) => block(v1)
-      case _ => Future.successful(Results.BadRequest)
+      case _ => Future.successful(E_NOT_FOUND)
     }
 
   /** case Tuple2 */
@@ -81,7 +81,7 @@ object StackAction {
     (block: ((T1, T2)) => Future[Result])(implicit r: StackActionRequest[_]): Future[Result] =
     (r.get(a1), r.get(a2)) match {
       case (Some(v1), Some(v2)) => block((v1, v2))
-      case _ => Future.successful(Results.BadRequest)
+      case _ => Future.successful(E_NOT_FOUND)
     }
 
   /** case Tuple3 */
@@ -90,7 +90,7 @@ object StackAction {
     (block: ((T1, T2, T3)) => Future[Result])(implicit r: StackActionRequest[_]): Future[Result] =
     (r.get(a1), r.get(a2), r.get(a3)) match {
       case (Some(v1), Some(v2), Some(v3)) => block((v1, v2, v3))
-      case _ => Future.successful(Results.BadRequest)
+      case _ => Future.successful(E_NOT_FOUND)
     }
 
   /** case Tuple4 */
@@ -99,7 +99,7 @@ object StackAction {
     (block: ((T1, T2, T3, T4)) => Future[Result])(implicit r: StackActionRequest[_]): Future[Result] =
     (r.get(a1), r.get(a2), r.get(a3), r.get(a4)) match {
       case (Some(v1), Some(v2), Some(v3), Some(v4)) => block((v1, v2, v3, v4))
-      case _ => Future.successful(Results.BadRequest)
+      case _ => Future.successful(E_NOT_FOUND)
     }
 
   /** case Tuple5 */
@@ -108,7 +108,7 @@ object StackAction {
     (block: ((T1, T2, T3, T4, T5)) => Future[Result])(implicit r: StackActionRequest[_]): Future[Result] =
     (r.get(a1), r.get(a2), r.get(a3), r.get(a4), r.get(a5)) match {
       case (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5)) => block((v1, v2, v3, v4, v5))
-      case _ => Future.successful(Results.BadRequest)
+      case _ => Future.successful(E_NOT_FOUND)
     }
 
   /** case Tuple5 */
@@ -117,7 +117,7 @@ object StackAction {
     (block: ((T1, T2, T3, T4, T5, T6)) => Future[Result])(implicit r: StackActionRequest[_]): Future[Result] =
     (r.get(a1), r.get(a2), r.get(a3), r.get(a4), r.get(a5), r.get(a6)) match {
       case (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6)) => block((v1, v2, v3, v4, v5, v6))
-      case _ => Future.successful(Results.BadRequest)
+      case _ => Future.successful(E_NOT_FOUND)
     }
 
   /** case Tuple5 */
@@ -126,6 +126,6 @@ object StackAction {
     (block: ((T1, T2, T3, T4, T5, T6, T7)) => Future[Result])(implicit r: StackActionRequest[_]): Future[Result] =
     (r.get(a1), r.get(a2), r.get(a3), r.get(a4), r.get(a5), r.get(a6), r.get(a7)) match {
       case (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6), Some(v7)) => block((v1, v2, v3, v4, v5, v6, v7))
-      case _ => Future.successful(Results.BadRequest)
+      case _ => Future.successful(E_NOT_FOUND)
     }
 }
