@@ -60,6 +60,7 @@ trait SlickDataSource extends BasicDataSource with SlickDataConfig {
           hconf.setDriverClassName(driver)
           hconf.setJdbcUrl(url)
           hconf.setPoolName(dsn.toString)
+          hconf.addDataSourceProperty("useSSL", false)
 
           // Optional properties.
           getUserName(dsn)                  map hconf.setUsername

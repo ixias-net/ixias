@@ -18,6 +18,7 @@ import ixias.model.{ Identity, Entity }
 import ixias.play.api.auth.token.{ Token, AuthenticityToken, SignedToken }
 import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.StackActionRequest
+import ixias.play.api.mvc.Errors._
 
 trait AuthProfile extends Results
 {
@@ -68,7 +69,8 @@ trait AuthProfile extends Results
    * Invoked if authentication failed with the credentials provided.
    * This should only be called where an authentication attempt has truly failed
    */
-  def authenticationFailed(implicit request: RequestHeader): Result
+  def authenticationFailed(implicit request: RequestHeader): Result =
+    E_AUTHENTICATION
 
   /**
    * Invoked if authorization failed.
@@ -77,8 +79,8 @@ trait AuthProfile extends Results
    * Authorization helps you to control access rights by granting or
    * denying specific permissions to an authenticated user.
    */
-  def authorizationFailed(user: User, authority: Option[Authority])(implicit request: RequestHeader): Result
-
+  def authorizationFailed(user: User, authority: Option[Authority])(implicit request: RequestHeader): Result =
+    E_AUTHRIZATION
 
   // --[ Methods ]--------------------------------------------------------------
   /**
