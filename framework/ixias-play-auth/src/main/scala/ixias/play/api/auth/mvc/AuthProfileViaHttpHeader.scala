@@ -7,7 +7,7 @@
 
 package ixias.play.api.auth.mvc
 
-import ixias.play.api.auth.token.TokenViaHttpHeader
+import ixias.play.api.auth.token.{ Token, TokenViaHttpHeader }
 
 trait AuthProfileViaHttpHeader { self: AuthProfile =>
 
@@ -15,5 +15,5 @@ trait AuthProfileViaHttpHeader { self: AuthProfile =>
   val headerName: String = "X-IXIAS-TOKEN"
 
   /** The accessor for security token. */
-  override lazy val tokenAccessor = TokenViaHttpHeader(headerName)
+  override lazy val tokenAccessor: Token = TokenViaHttpHeader(headerName)
 }

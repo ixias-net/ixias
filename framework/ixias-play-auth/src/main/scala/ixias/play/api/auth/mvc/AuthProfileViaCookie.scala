@@ -7,7 +7,7 @@
 
 package ixias.play.api.auth.mvc
 
-import ixias.play.api.auth.token.TokenViaCookie
+import ixias.play.api.auth.token.{ Token, TokenViaCookie }
 
 trait AuthProfileViaCookie { self: AuthProfile =>
 
@@ -18,5 +18,5 @@ trait AuthProfileViaCookie { self: AuthProfile =>
   val cookieMaxAge: Option[Int] = Some(24 * 3600 * 14) // 2weeks
 
   /** The accessor for security token. */
-  override lazy val tokenAccessor = TokenViaCookie(cookieName, cookieMaxAge)
+  override lazy val tokenAccessor: Token = TokenViaCookie(cookieName, cookieMaxAge)
 }
