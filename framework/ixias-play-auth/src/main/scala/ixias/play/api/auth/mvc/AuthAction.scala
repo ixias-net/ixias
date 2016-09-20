@@ -17,9 +17,6 @@ import ixias.play.api.mvc.{ StackActionRequest, StackActionBuilder }
 trait AuthActionBuilder extends StackActionBuilder[StackActionRequest] {
   self =>
 
-  /** The key of attribute for containing required authority roles. */
-  case object AuthProfileKey extends StackActionRequest.AttributeKey[AuthProfile]
-
   // // --[ Methods ] -------------------------------------------------------------
   final def apply(auth: AuthProfile): StackActionBuilder[StackActionRequest] =
     apply(AuthProfileKey -> auth)
