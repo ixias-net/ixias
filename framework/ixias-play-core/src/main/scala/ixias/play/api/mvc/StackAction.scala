@@ -26,26 +26,26 @@ sealed trait StackActionInjector {
   /**
    * Get an instance of the given class from the injector.
    */
-  def instanceOf[T: ClassTag]: Future[T] =
-    Future(Play.routesCompilerMaybeApplication.map(
+  def instanceOf[T: ClassTag]: Option[T] =
+    Play.routesCompilerMaybeApplication.map(
       _.injector.instanceOf[T]
-    ).get)(play.api.libs.iteratee.Execution.trampoline)
+    )
 
   /**
    * Get an instance of the given class from the injector.
    */
-  def instanceOf[T](clazz: Class[T]): Future[T] =
-    Future(Play.routesCompilerMaybeApplication.map(
+  def instanceOf[T](clazz: Class[T]): Option[T] =
+    Play.routesCompilerMaybeApplication.map(
       _.injector.instanceOf[T](clazz)
-    ).get)(play.api.libs.iteratee.Execution.trampoline)
+    )
 
   /**
    * Get an instance bound to the given binding key.
    */
-  def instanceOf[T](key: BindingKey[T]): Future[T] =
-    Future(Play.routesCompilerMaybeApplication.map(
+  def instanceOf[T](key: BindingKey[T]): Option[T] =
+    Play.routesCompilerMaybeApplication.map(
       _.injector.instanceOf[T](key)
-    ).get)(play.api.libs.iteratee.Execution.trampoline)
+    )
 }
 
 // Statck Action Function
