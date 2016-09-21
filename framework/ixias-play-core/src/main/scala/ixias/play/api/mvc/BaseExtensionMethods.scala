@@ -17,9 +17,12 @@ trait BaseExtensionMethods {
   val Identity = ixias.model.Identity
 
   /** HTTP */
-  val Json     = ixias.play.api.mvc.Json
-  val Jade     = ixias.play.api.mvc.Jade
-  val Form     = ixias.play.api.mvc.FormAction
+  val Json = ixias.play.api.mvc.Json
+  val Jade = ixias.play.api.mvc.Jade
+  val Form = ixias.play.api.mvc.FormAction
+
+  /** Stack Action Helper */
+  val StackAction = ixias.play.api.mvc.StackAction
 
   /**
    * The execution context to run this action in
