@@ -16,9 +16,9 @@ trait BaseExtensionMethods {
   val NoneId   = ixias.model.NoneId
   val Identity = ixias.model.Identity
 
-  /** HTTP */
-  val Json = ixias.play.api.mvc.Json
-  val Jade = ixias.play.api.mvc.Jade
+  /** HTTP Request/Response Helper */
+  val Json = ixias.play.api.mvc.JsonAction
+  val Jade = ixias.play.api.mvc.JadeAction
   val Form = ixias.play.api.mvc.FormAction
 
   /** Stack Action Helper */

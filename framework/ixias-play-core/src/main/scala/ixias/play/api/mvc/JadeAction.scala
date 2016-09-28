@@ -17,31 +17,10 @@ import org.fusesource.scalate.layout.DefaultLayoutStrategy
 
 // Jade TemplateのFactory定義
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-object Jade extends Jade {
-  def apply(template: String, layout: Option[String] = None) =
-    new Template(template, layout)
-}
-
-// Jade Template 定義
-//~~~~~~~~~~~~~~~~~~~~
-trait Jade {
+object JadeAction {
   import scala.collection.JavaConversions._
 
-  /** テンプレート格納ディレクトリ */
-  def getTemplateDir(env: Environment, conf: Configuration): Option[java.io.File] =
-    conf.getString("jade.template.path") match {
-      case Some(path) => Some(env.getFile(path))
-      case _          => Some(env.getFile("app/views"))
-    }
-
-  /** テンプレートで常にimport宣言をする場合の定義 */
-  def getImportStatements(conf: Configuration): Seq[String] =
-    conf.getStringList("jade.import") match {
-      case Some(list) => list.toSeq
-      case _          => Seq.empty[String]
-    }
-
-  /** エンジンの設定 */
+  // -- [ Properties ]----------------------------------------------------------
   lazy val templateEngine = (env: Environment, conf: Configuration) => {
     val engine = new TemplateEngine
     engine.resourceLoader     = new FileResourceLoader(getTemplateDir(env, conf))
@@ -53,13 +32,39 @@ trait Jade {
     engine
   }
 
-  /** テンプレート定義 */
-  class Template(
-    val template: String,
-    val layout:   Option[String]
-  ) {
-    def render(params: Map[String, Any] = Map.empty)
-      (implicit env: Environment, conf: Configuration): Html = {
+  // -- [ Methods ]-------------------------------------------------------------
+  /**
+   * Build a template component to render HTML.
+   */
+  def apply(template: String, layout: Option[String] = None) = Template(template, layout)
+
+  /**
+   * The root directory for template.
+   */
+  def getTemplateDir(env: Environment, conf: Configuration): Option[java.io.File] =
+    conf.getString("jade.template.path") match {
+      case Some(path) => Some(env.getFile(path))
+      case _          => Some(env.getFile("app/views"))
+    }
+
+  /**
+   * The declaration for `import` statement in template.
+   */
+  def getImportStatements(conf: Configuration): Seq[String] =
+    conf.getStringList("jade.import") match {
+      case Some(list) => list.toSeq
+      case _          => Seq.empty[String]
+    }
+
+  // -- [ Internal class ]------------------------------------------------------
+  /**
+   * The definition of template component.
+   */
+  sealed case class Template(template: String, layout: Option[String]) {
+    /**
+     * Renders a HTML body-text with parameters.
+     */
+    def render(params: Map[String, Any] = Map.empty)(implicit env: Environment, conf: Configuration): Html = {
       val engine = templateEngine(env, conf)
       try {
         if (layout.isDefined)
@@ -78,7 +83,6 @@ trait Jade {
     }
   }
 
-  /** コンパイルエラー発生時の例外 */
   final class JadeCompilationException(
     override val sourceName: String,
     override val input:      String,

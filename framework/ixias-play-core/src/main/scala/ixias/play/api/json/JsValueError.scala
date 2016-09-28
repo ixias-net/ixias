@@ -10,11 +10,11 @@ package ixias.play.api.json
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-// エラー
-//~~~~~~~~
+// The Error response
+//~~~~~~~~~~~~~~~~~~~~
 case class JsValueError(
-  val error:   Int,            // エラー
-  val message: Option[String]  // メッセージ
+  val error:   Int,            // Error code
+  val message: Option[String]  // Error message
 )
 
 object JsValueError {
