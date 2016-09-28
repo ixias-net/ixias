@@ -7,181 +7,68 @@
 
 package ixias.play.api.mvc
 
-import play.api.mvc._
-import play.api.{ Play, Application }
-import play.api.inject.{ Injector, BindingKey }
+import play.api.mvc.Result
+import scala.concurrent.Future
+import ixias.play.api.mvc.Errors._
+import StackActionRequest._
 
-import scala.reflect.ClassTag
-import scala.collection.concurrent.TrieMap
-import scala.concurrent.{ Future, ExecutionContext }
-import scala.language.higherKinds
+// The helper to retrieve request data.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+object StackAction {
 
-// The injector
-//~~~~~~~~~~~~~~~
-/**
- * An injector, capable of providing components.
- */
-sealed trait StackActionInjector {
-
-  /**
-   * Get an instance of the given class from the injector.
-   */
-  def instanceOf[T: ClassTag]: Option[T] =
-    Play.routesCompilerMaybeApplication.map(
-      _.injector.instanceOf[T]
-    )
-
-  /**
-   * Get an instance of the given class from the injector.
-   */
-  def instanceOf[T](clazz: Class[T]): Option[T] =
-    Play.routesCompilerMaybeApplication.map(
-      _.injector.instanceOf[T](clazz)
-    )
-
-  /**
-   * Get an instance bound to the given binding key.
-   */
-  def instanceOf[T](key: BindingKey[T]): Option[T] =
-    Play.routesCompilerMaybeApplication.map(
-      _.injector.instanceOf[T](key)
-    )
-}
-
-// Statck Action Function
-//~~~~~~~~~~~~~~~~~~~~~~~~~
-/**
- * Provides helpers for creating `Action` values.
- */
-trait StackActionBuilder[+R[_]] extends ActionFunction[StackActionRequest, R] with StackActionInjector { self =>
-  import StackActionRequest._
-
-  // --[ Methods ] -------------------------------------------------------------
-  /**
-   * Constructs an `Action` with default content, and no request parameter.
-   */
-  final def apply(block: => Result): Action[AnyContent] =
-    apply(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
-
-  /**
-   * Constructs an `Action` with default content
-   */
-  final def apply(block: R[AnyContent] => Result): Action[AnyContent] =
-    apply(BodyParsers.parse.default)(block)
-
-  /**
-   * Constructs an `Action`.
-   */
-  final def apply[A](bodyParser: BodyParser[A])(block: R[A] => Result): Action[A] =
-    async(bodyParser) { request: R[A] =>
-      Future.successful(block(request))
+  /** case Tuple1 */
+  def bindFromRequest[T1](a1: AttributeKey[T1])
+    (implicit r: StackActionRequest[_]): Either[Result, T1] =
+    r.get(a1) match {
+      case Some(v1) => Right(v1)
+      case _ => Left(E_NOT_FOUND)
     }
 
-  // --[ Methods ] -------------------------------------------------------------
-  /**
-   * Constructs an `Action` that returns a future of a result,
-   * with default content, and no request parameter.
-   */
-  final def async(block: => Future[Result]): Action[AnyContent] =
-    async(BodyParsers.parse.ignore(AnyContentAsEmpty: AnyContent))(_ => block)
-
-  /**
-   * Constructs an `Action` that returns a future of a result, with default content
-   */
-  final def async(block: R[AnyContent] => Future[Result]): Action[AnyContent] =
-    async(BodyParsers.parse.default)(block)
-
-  /**
-   * Constructs an `Action` that returns a future of a result, with default content.
-   */
-  final def async[A](bodyParser: BodyParser[A])(block: R[A] => Future[Result]): Action[A] =
-    composeAction(new Action[A] {
-      def parser = composeParser(bodyParser)
-      def apply(request: Request[A]) = try {
-        invokeBlock(StackActionRequest(request), block)
-      } catch {
-        // NotImplementedError is not caught by NonFatal, wrap it
-        case e: NotImplementedError => throw new RuntimeException(e)
-        // LinkageError is similarly harmless in Play Framework, since automatic reloading could easily trigger it
-        case e: LinkageError => throw new RuntimeException(e)
-      }
-      override def executionContext = StackActionBuilder.this.executionContext
-    })
-
-  /**
-   * Compose the parser.  This allows the action builder to potentially intercept requests before they are parsed.
-   *
-   * @param bodyParser The body parser to compose
-   * @return The composed body parser
-   */
-  protected def composeParser[A](bodyParser: BodyParser[A]): BodyParser[A] = bodyParser
-
-  /**
-   * Compose the action with other actions.  This allows mixing in of various actions together.
-   *
-   * @param action The action to compose
-   * @return The composed action
-   */
-  protected def composeAction[A](action: Action[A]): Action[A] = action
-
-  final def apply(params: Attribute[_]*): StackActionBuilder[R] = new StackActionBuilder[R] {
-    def invokeBlock[A](request: StackActionRequest[A], block: R[A] => Future[Result]) = {
-      val attrs = new TrieMap[AttributeKey[_], Any] ++= params.map(_.toTuple)
-      self.invokeBlock[A](request ++= attrs, block)
+  /** case Tuple2 */
+  def bindFromRequest[T1, T2](a1: AttributeKey[T1], a2: AttributeKey[T2])
+    (implicit r: StackActionRequest[_]): Either[Result, (T1, T2)] =
+    (r.get(a1), r.get(a2)) match {
+      case (Some(v1), Some(v2)) => Right((v1, v2))
+      case _ => Left(E_NOT_FOUND)
     }
-    override protected def composeParser[A](bodyParser: BodyParser[A]): BodyParser[A] = self.composeParser(bodyParser)
-    override protected def composeAction[A](action: Action[A]): Action[A] = self.composeAction(action)
-  }
 
-  /**
-   * Compose another ActionFunction with this one, with this one applied last.
-   */
-  override def andThen[Q[_]](other: ActionFunction[R, Q]): StackActionBuilder[Q] = new StackActionBuilder[Q] {
-    def invokeBlock[A](request: StackActionRequest[A], block: Q[A] => Future[Result]) =
-      self.invokeBlock[A](request, other.invokeBlock[A](_, block))
-    override protected def composeParser[A](bodyParser: BodyParser[A]): BodyParser[A] = self.composeParser(bodyParser)
-    override protected def composeAction[A](action: Action[A]): Action[A] = self.composeAction(action)
-  }
-}
+  /** case Tuple3 */
+  def bindFromRequest[T1, T2, T3](a1: AttributeKey[T1], a2: AttributeKey[T2], a3: AttributeKey[T3])
+    (implicit r: StackActionRequest[_]): Either[Result, (T1, T2, T3)] =
+    (r.get(a1), r.get(a2), r.get(a3)) match {
+      case (Some(v1), Some(v2), Some(v3)) => Right((v1, v2, v3))
+      case _ => Left(E_NOT_FOUND)
+    }
 
-// Statck Action Function
-//~~~~~~~~~~~~~~~~~~~~~~~~~
-sealed trait StackActionFunctionHelper extends ActionFunction[StackActionRequest, StackActionRequest] with StackActionInjector { self =>
-  import StackActionRequest._
-  final def apply(params: Attribute[_]*): ActionFunction[StackActionRequest, StackActionRequest] =
-    new ActionFunction[StackActionRequest, StackActionRequest] {
-      def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]) = {
-        val attrs = new TrieMap[AttributeKey[_], Any] ++= params.map(_.toTuple)
-        self.invokeBlock[A](request ++= attrs, block)
-      }
+  /** case Tuple4 */
+  def bindFromRequest[T1, T2, T3, T4](a1: AttributeKey[T1], a2: AttributeKey[T2], a3: AttributeKey[T3], a4: AttributeKey[T4])
+    (implicit r: StackActionRequest[_]): Either[Result, (T1, T2, T3, T4)] =
+    (r.get(a1), r.get(a2), r.get(a3), r.get(a4)) match {
+      case (Some(v1), Some(v2), Some(v3), Some(v4)) => Right((v1, v2, v3, v4))
+      case _ => Left(E_NOT_FOUND)
+    }
+
+  /** case Tuple5 */
+  def bindFromRequest[T1, T2, T3, T4, T5](a1: AttributeKey[T1], a2: AttributeKey[T2], a3: AttributeKey[T3], a4: AttributeKey[T4], a5: AttributeKey[T5])
+    (implicit r: StackActionRequest[_]): Either[Result, (T1, T2, T3, T4, T5)] =
+    (r.get(a1), r.get(a2), r.get(a3), r.get(a4), r.get(a5)) match {
+      case (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5)) => Right((v1, v2, v3, v4, v5))
+      case _ => Left(E_NOT_FOUND)
+    }
+
+  /** case Tuple5 */
+  def bindFromRequest[T1, T2, T3, T4, T5, T6](a1: AttributeKey[T1], a2: AttributeKey[T2], a3: AttributeKey[T3], a4: AttributeKey[T4], a5: AttributeKey[T5], a6: AttributeKey[T6])
+    (implicit r: StackActionRequest[_]): Either[Result, (T1, T2, T3, T4, T5, T6)] =
+    (r.get(a1), r.get(a2), r.get(a3), r.get(a4), r.get(a5), r.get(a6)) match {
+      case (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6)) => Right((v1, v2, v3, v4, v5, v6))
+      case _ => Left(E_NOT_FOUND)
+    }
+
+  /** case Tuple5 */
+  def bindFromRequest[T1, T2, T3, T4, T5, T6, T7](a1: AttributeKey[T1], a2: AttributeKey[T2], a3: AttributeKey[T3], a4: AttributeKey[T4], a5: AttributeKey[T5], a6: AttributeKey[T6], a7: AttributeKey[T7])
+    (implicit r: StackActionRequest[_]): Either[Result, (T1, T2, T3, T4, T5, T6, T7)] =
+    (r.get(a1), r.get(a2), r.get(a3), r.get(a4), r.get(a5), r.get(a6), r.get(a7)) match {
+      case (Some(v1), Some(v2), Some(v3), Some(v4), Some(v5), Some(v6), Some(v7)) => Right((v1, v2, v3, v4, v5, v6, v7))
+      case _ => Left(E_NOT_FOUND)
     }
 }
-
-/**
- * A simple kind of ActionFunction which, given a request, may
- * either immediately produce a Result (for example, an error), or call
- * its Action block with a parameter.
- * The critical (abstract) function is refine.
- */
-trait StackActionRefiner
-    extends ActionRefiner[StackActionRequest, StackActionRequest]
-    with StackActionFunctionHelper
-
-/**
- * A simple kind of ActionRefiner which, given a request,
- * unconditionally transforms it to a new parameter type to be passed to
- * its Action block.  The critical (abstract) function is transform.
- */
-trait StackActionTransformer
-    extends ActionTransformer[StackActionRequest, StackActionRequest]
-    with StackActionFunctionHelper
-
-/**
- * A simple kind of ActionRefiner which, given a request, may
- * either immediately produce a Result (for example, an error), or
- * continue its Action block with the same request.
- * The critical (abstract) function is filter.
- */
-trait StackActionFilter
-    extends ActionRefiner[StackActionRequest, StackActionRequest]
-    with StackActionFunctionHelper

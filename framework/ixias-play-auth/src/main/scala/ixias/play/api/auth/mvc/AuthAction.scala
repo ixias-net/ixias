@@ -18,15 +18,15 @@ trait AuthActionBuilder extends StackActionBuilder[StackActionRequest] {
   self =>
 
   // // --[ Methods ] -------------------------------------------------------------
-  final def apply(auth: AuthProfile): StackActionBuilder[StackActionRequest] =
+  final def apply(auth: AuthProfile[_]): StackActionBuilder[StackActionRequest] =
     apply(AuthProfileKey -> auth)
 
   // --[ Methods ] -------------------------------------------------------------
   /**
    * Invoke the block with a auth profile object.
    */
-  def withAuthProfile(request: StackActionRequest[_], block: AuthProfile => Future[Result]): Future[Result] =
-    request.get(AuthProfileKey) match {
+  def withAuthProfile[A](request: StackActionRequest[_], block: AuthProfile[A] => Future[Result]): Future[Result] =
+    request.get(AuthProfileKey).map(_.asInstanceOf[AuthProfile[A]]) match {
       case Some(auth) => block(auth)
       case None       => Future.successful(Results.InternalServerError)
     }

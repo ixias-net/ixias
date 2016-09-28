@@ -9,7 +9,7 @@ package ixias.play.api.auth.mvc
 
 import ixias.play.api.auth.token.{ Token, TokenViaHttpHeader }
 
-trait AuthProfileViaHttpHeader { self: AuthProfile =>
+trait AuthProfileViaHttpHeader { self: AuthProfile[_] =>
 
   /** The header name */
   val headerName: String = "X-IXIAS-TOKEN"

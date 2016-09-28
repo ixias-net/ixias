@@ -20,7 +20,7 @@ import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.StackActionRequest
 import ixias.play.api.mvc.Errors._
 
-trait AuthProfile extends Results
+trait AuthProfile[T] extends Results
 {
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
@@ -30,7 +30,7 @@ trait AuthProfile extends Results
   type User <: Entity[_]
 
   /** The type of authority roles */
-  type Authority >: Null
+  type Authority = T
 
   /** The key of attribute for containing required authority roles. */
   case object UserKey      extends StackActionRequest.AttributeKey[User]
