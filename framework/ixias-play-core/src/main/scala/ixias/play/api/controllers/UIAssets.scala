@@ -31,8 +31,11 @@ class UIAssets @Inject() (env: Environment, conf: Configuration) extends Control
   /** Assetsハンドラー */
   def versioned(file: String): Action[AnyContent] =
     env.mode match {
-      case Mode.Prod => controllers.Assets.versioned("/public", file)
-      case _         => devAssetHandler(file)
+      case Mode.Prod => {
+        import controllers.Assets._
+        controllers.Assets.versioned("/public", file)
+      }
+      case _ => devAssetHandler(file)
     }
 
   /** 開発モード時にAssetsを提供するディレクトリ・リスト */
