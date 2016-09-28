@@ -12,5 +12,5 @@ import ixias.play.api.mvc.StackActionRequest
 package object mvc {
 
   /** The key of attribute for containing required auth profile. */
-  case object AuthProfileKey extends StackActionRequest.AttributeKey[AuthProfile]
+  case object AuthProfileKey extends StackActionRequest.AttributeKey[AuthProfile[_]]
 }

@@ -7,22 +7,20 @@
 
 package ixias.play.api.auth.mvc
 
-import play.api.Application
-import play.api.mvc.{ Result, Results }
-
+import play.api.mvc.Result
 import scala.concurrent.Future
 import ixias.play.api.mvc.StackActionRequest
 
 /**
  * Provides the custom action for authentication.
  */
-object AuthenticatedOrNot extends AuthActionBuilder with Results {
+object AuthenticatedOrNot extends AuthActionBuilder {
 
   /**
    * Authenticate user's session.
    */
-  def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] = {
-    withAuthProfile(request, {
+  def invokeBlock[A](request: StackActionRequest[A], block: StackActionRequest[A] => Future[Result]): Future[Result] =
+    withAuthProfile[AnyRef](request, {
       implicit val ctx = executionContext
       auth => auth.restore(request) flatMap {
         case (None,       updater) => block(request).map(updater)
@@ -31,5 +29,4 @@ object AuthenticatedOrNot extends AuthActionBuilder with Results {
         } map(updater)
       }
     })
-  }
 }
