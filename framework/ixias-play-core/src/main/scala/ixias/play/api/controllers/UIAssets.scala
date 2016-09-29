@@ -13,6 +13,8 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Logger
 import play.api.libs.streams.Streams
 import play.api.libs.iteratee.Enumerator
+import play.api.http.HttpErrorHandler
+import controllers.AssetsBuilder
 
 import akka._
 import akka.stream.scaladsl._
@@ -23,20 +25,24 @@ import javax.inject._
 import java.io.{ File, FileInputStream }
 
 @Singleton
-class UIAssets @Inject() (env: Environment, conf: Configuration) extends Controller {
+class UIAssets @Inject() (
+  env:          Environment,
+  conf:         Configuration,
+  errorHandler: HttpErrorHandler
+) extends AssetsBuilder(errorHandler) {
+
+  import controllers.Assets._
 
   /** ロガーの取得 */
   private lazy val logger = Logger(getClass)
 
   /** Assetsハンドラー */
-  def versioned(file: String): Action[AnyContent] =
+  def versioned(file: Asset): Action[AnyContent] = {
     env.mode match {
-      case Mode.Prod => {
-        import controllers.Assets._
-        controllers.Assets.versioned("/public", file)
-      }
-      case _ => devAssetHandler(file)
+      case Mode.Prod => super.versioned("/public", file)
+      case _         => devAssetHandler(file.name)
     }
+  }
 
   /** 開発モード時にAssetsを提供するディレクトリ・リスト */
   val basePaths: List[java.io.File] =
