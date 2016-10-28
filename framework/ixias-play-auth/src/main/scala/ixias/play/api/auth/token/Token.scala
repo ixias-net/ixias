@@ -7,20 +7,12 @@
 
 package ixias.play.api.auth.token
 
-import scala.util.Random
 import scala.concurrent.Future
-import java.security.SecureRandom
-
-import play.api.mvc.{ RequestHeader, Result }
+import play.api.mvc.{RequestHeader, Result}
 import play.api.libs.iteratee.Execution.Implicits.trampoline
-
 import com.typesafe.config.ConfigFactory
-import org.apache.commons.codec.digest.DigestUtils
-import org.abstractj.kalium.encoders.Encoder
-import org.abstractj.kalium.keys.AuthenticationKey
-import org.abstractj.kalium.NaCl.Sodium.CRYPTO_AUTH_HMACSHA512256_BYTES
 
-import ixias.security.RandomStringToken
+import ixias.security.{ TokenSigner, RandomStringToken }
 import ixias.play.api.auth.container.Container
 
 // The security token
@@ -43,11 +35,7 @@ trait Token {
 object Token {
 
   /** The object that provides some cryptographic operations */
-  protected lazy val crypto: AuthenticationKey = {
-    val config = ConfigFactory.load()
-    val secret = config.getString("session.token.secret")
-    new AuthenticationKey(DigestUtils.md5Hex(secret), Encoder.RAW)
-  }
+  protected lazy val signer = TokenSigner()
 
   /** Generate a new token as string */
   final def generate(implicit container: Container[_]): Future[AuthenticityToken] = {
@@ -60,15 +48,9 @@ object Token {
 
   /** Verifies a given HMAC on a piece of data */
   final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] =
-    try {
-      val (signature, token) = signedToken.splitAt(CRYPTO_AUTH_HMACSHA512256_BYTES * 2)
-      crypto.verify(Encoder.RAW.decode(token), Encoder.HEX.decode(signature))
-      Some(token)
-    } catch { case _: Exception => None }
+    signer.verify(signedToken).toOption
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
-  final def signWithHMAC(token: AuthenticityToken): SignedToken = {
-    val signature = crypto.sign(Encoder.RAW.decode(token))
-    Encoder.HEX.encode(signature) + token
-  }
+  final def signWithHMAC(token: AuthenticityToken): SignedToken =
+    signer.sign(token)
 }
