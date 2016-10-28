@@ -11,7 +11,8 @@ lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
-    "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/"
+    "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/",
+    "keyczar"           at "https://raw.githubusercontent.com/google/keyczar/master/java/maven/"
   ),
   // Scala compile options
   scalacOptions ++= Seq(
@@ -38,9 +39,7 @@ lazy val playSettings = Seq(
   unmanagedSourceDirectories   in Compile += baseDirectory.value / "src" / "main" / "scala",
   unmanagedSourceDirectories   in Test    += baseDirectory.value / "src" / "test" / "scala",
   unmanagedResourceDirectories in Test    += baseDirectory.value / "src" / "test" / "resources",
-  libraryDependencies ++= Seq(ws, cache,
-    "org.abstractj.kalium" % "kalium" % "0.5.0"
-  )
+  libraryDependencies ++= Seq(ws, cache)
 )
 
 
@@ -83,8 +82,10 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
     "com.zaxxer"          % "HikariCP"        % "2.5.0",
     "com.bionicspirit"   %% "shade"           % "1.7.3",
     "org.slf4j"           % "slf4j-api"       % "1.7.21",
+    "org.keyczar"         % "keyczar"         % "0.71h",
+    "org.joda"            % "joda-convert"    % "1.8.1",
     "joda-time"           % "joda-time"       % "2.9.4",
-    "org.joda"            % "joda-convert"    % "1.8.1"
+    "commons-codec"       % "commons-codec"   % "1.10"
   ))
 
 lazy val ixiasMail = (project in file("framework/ixias-mail"))
