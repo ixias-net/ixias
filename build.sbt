@@ -11,7 +11,8 @@ lazy val commonSettings = Seq(
   resolvers ++= Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
-    "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/"
+    "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/",
+    "keyczar"           at "https://raw.githubusercontent.com/google/keyczar/master/java/maven/"
   ),
   // Scala compile options
   scalacOptions ++= Seq(
@@ -39,7 +40,7 @@ lazy val playSettings = Seq(
   unmanagedSourceDirectories   in Test    += baseDirectory.value / "src" / "test" / "scala",
   unmanagedResourceDirectories in Test    += baseDirectory.value / "src" / "test" / "resources",
   libraryDependencies ++= Seq(ws, cache,
-    "org.abstractj.kalium" % "kalium" % "0.5.0"
+    "org.keyczar" % "keyczar" % "0.71h"
   )
 )
 

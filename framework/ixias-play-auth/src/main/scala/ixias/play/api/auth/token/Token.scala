@@ -7,21 +7,15 @@
 
 package ixias.play.api.auth.token
 
-import scala.util.Random
 import scala.concurrent.Future
-import java.security.SecureRandom
-
-import play.api.mvc.{ RequestHeader, Result }
+import play.api.mvc.{RequestHeader, Result}
 import play.api.libs.iteratee.Execution.Implicits.trampoline
-
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.codec.digest.DigestUtils
-import org.abstractj.kalium.encoders.Encoder
-import org.abstractj.kalium.keys.AuthenticationKey
-import org.abstractj.kalium.NaCl.Sodium.CRYPTO_AUTH_HMACSHA512256_BYTES
-
 import ixias.security.RandomStringToken
 import ixias.play.api.auth.container.Container
+import org.apache.commons.codec.binary.{Hex, StringUtils}
+import org.keyczar.{HmacKey, Signer}
 
 // The security token
 //~~~~~~~~~~~~~~~~~~~~
@@ -43,10 +37,12 @@ trait Token {
 object Token {
 
   /** The object that provides some cryptographic operations */
-  protected lazy val crypto: AuthenticationKey = {
+  protected lazy val crypto: Signer = {
     val config = ConfigFactory.load()
     val secret = config.getString("session.token.secret")
-    new AuthenticationKey(DigestUtils.md5Hex(secret), Encoder.RAW)
+    val hmac = new HmacKey(DigestUtils.sha256(secret))
+    val reader = new ImportedKeyReader(hmac)
+    new Signer(reader)
   }
 
   /** Generate a new token as string */
@@ -61,14 +57,16 @@ object Token {
   /** Verifies a given HMAC on a piece of data */
   final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] =
     try {
-      val (signature, token) = signedToken.splitAt(CRYPTO_AUTH_HMACSHA512256_BYTES * 2)
-      crypto.verify(Encoder.RAW.decode(token), Encoder.HEX.decode(signature))
-      Some(token)
+      val (signature, token) = signedToken.splitAt(crypto.digestSize * 2)
+      crypto.verify(StringUtils.getBytesUsAscii(token), Hex.decodeHex(signature.toCharArray)) match {
+        case true => Some(token)
+        case false => None
+      }
     } catch { case _: Exception => None }
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   final def signWithHMAC(token: AuthenticityToken): SignedToken = {
-    val signature = crypto.sign(Encoder.RAW.decode(token))
-    Encoder.HEX.encode(signature) + token
+    val signature = crypto.sign(StringUtils.getBytesUsAscii(token))
+    new String(Hex.encodeHex(signature)) + token
   }
 }
