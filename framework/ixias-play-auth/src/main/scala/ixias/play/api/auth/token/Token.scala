@@ -11,11 +11,8 @@ import scala.concurrent.Future
 import play.api.mvc.{RequestHeader, Result}
 import play.api.libs.iteratee.Execution.Implicits.trampoline
 import com.typesafe.config.ConfigFactory
-import org.apache.commons.codec.digest.DigestUtils
 import ixias.security.RandomStringToken
 import ixias.play.api.auth.container.Container
-import org.apache.commons.codec.binary.{Hex, StringUtils}
-import org.keyczar.{HmacKey, Signer}
 
 // The security token
 //~~~~~~~~~~~~~~~~~~~~
@@ -37,12 +34,10 @@ trait Token {
 object Token {
 
   /** The object that provides some cryptographic operations */
-  protected lazy val crypto: Signer = {
+  protected lazy val crypto: HMacSigner = {
     val config = ConfigFactory.load()
     val secret = config.getString("session.token.secret")
-    val hmac = new HmacKey(DigestUtils.sha256(secret))
-    val reader = new ImportedKeyReader(hmac)
-    new Signer(reader)
+    HMacSigner(secret)
   }
 
   /** Generate a new token as string */
@@ -55,18 +50,8 @@ object Token {
   }
 
   /** Verifies a given HMAC on a piece of data */
-  final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] =
-    try {
-      val (signature, token) = signedToken.splitAt(crypto.digestSize * 2)
-      crypto.verify(StringUtils.getBytesUsAscii(token), Hex.decodeHex(signature.toCharArray)) match {
-        case true => Some(token)
-        case false => None
-      }
-    } catch { case _: Exception => None }
+  final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] = crypto.verify(signedToken)
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
-  final def signWithHMAC(token: AuthenticityToken): SignedToken = {
-    val signature = crypto.sign(StringUtils.getBytesUsAscii(token))
-    new String(Hex.encodeHex(signature)) + token
-  }
+  final def signWithHMAC(token: AuthenticityToken): SignedToken = crypto.sign(token)
 }
