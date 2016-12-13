@@ -10,7 +10,8 @@ package ixias.persistence.lifted
 import slick.profile.{ SqlTableComponent => P }
 import scala.language.implicitConversions
 
-final case class SlickColumnOptionsExtension[A <: P#ColumnOptions](val self: A) {
+final case class SlickColumnOptionsExtension[A <: P#ColumnOptions](self: A) {
+  val Boolean         = self.SqlType("BIT(1)")
   val Int8            = self.SqlType("TINYINT")
   val Int16           = self.SqlType("SMALLINT")
   val Int32           = self.SqlType("INT")
@@ -44,10 +45,13 @@ final case class SlickColumnOptionsExtension[A <: P#ColumnOptions](val self: A) 
   val AsciiCharBin128 = self.SqlType("VARCHAR(128) CHARACTER SET ascii COLLATE ascii_bin")
   val AsciiCharBin255 = self.SqlType("VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin")
   val DateTime        = self.SqlType("DATETIME")
+  val Date            = self.SqlType("DATE")
   val Ts              = self.SqlType("TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
   val TsCurrent       = self.SqlType("TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
   val Text            = self.SqlType("TEXT CHARACTER SET utf8")
   val Blob            = self.SqlType("BLOB")
+
+  def Decimal(m: Int, d: Int) = self.SqlType(s"DECIMAL($m, $d)")
 }
 
 trait SlickColumnOptionOps {
