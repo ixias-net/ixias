@@ -11,7 +11,7 @@ import slick.profile.{ SqlTableComponent => P }
 import scala.language.implicitConversions
 
 final case class SlickColumnOptionsExtension[A <: P#ColumnOptions](self: A) {
-  val Boolean         = self.SqlType("TINYINT(1)")
+  val Boolean         = self.SqlType("BIT(1)")
   val Int8            = self.SqlType("TINYINT")
   val Int16           = self.SqlType("SMALLINT")
   val Int32           = self.SqlType("INT")

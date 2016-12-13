@@ -28,7 +28,6 @@ sealed case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
     protected def toCalendar(v: T1): Calendar = Calendar.getInstance(v.getZone().toTimeZone())
 
     object Type extends driver.DriverJdbcType[T1] {
-      def zero = new T1(0L)
       def sqlType = java.sql.Types.TIMESTAMP
       def    getValue(       r: ResultSet,         idx: Int): T1   = toT1(r.getTimestamp(idx))
       def updateValue(v: T1, r: ResultSet,         idx: Int): Unit = r.updateTimestamp(idx, toT2(v))
@@ -44,16 +43,12 @@ sealed case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
 
     protected def toT1(v: T2): T1 = v match {
       case null => null
-      case date => val javaLocalDate = date.toLocalDate
-        new LocalDate(javaLocalDate.getYear, javaLocalDate.getMonthValue, javaLocalDate.getDayOfMonth)
+      case date => new LocalDate(date.getTime)
+
     }
     protected def toT2(v: T1): T2 = v match {
       case null => null
-      case date => val javaLocalDate = java.time.LocalDate.now()
-        .withYear(date.getYear)
-        .withMonth(date.getMonthOfYear)
-        .withDayOfMonth(date.getDayOfMonth)
-        java.sql.Date.valueOf(javaLocalDate)
+      case date => new java.sql.Date(date.toDate.getTime)
     }
 
     def sqlType = java.sql.Types.DATE
