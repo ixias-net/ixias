@@ -11,6 +11,7 @@ import play.api.mvc.{ Request, WrappedRequest }
 import scala.concurrent.Future
 import scala.collection.concurrent.TrieMap
 import ixias.play.api.mvc.Errors._
+import play.api.http.HeaderNames
 
 // Wrap an existing request. Useful to extend a request.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,6 +20,14 @@ case class StackActionRequest[A](
   underlying: Request[A],
   attributes: TrieMap[AttributeKey[_], Any] = TrieMap.empty
 ) extends WrappedRequest[A](underlying) {
+
+  override lazy val host: String = {
+    val AbsoluteUri = """(?is)^(https?)://([^/]+)(/.*|$)""".r
+    uri match {
+      case AbsoluteUri(proto, hostPort, rest) => hostPort
+      case _ => headers.get(X_FORWARDED_HOST).orElse(headers.get(HeaderNames.HOST)).getOrElse("")
+    }
+  }
 
   /**
    * Retrieve an attribute by specific key.
@@ -46,6 +55,8 @@ case class StackActionRequest[A](
 // The declaration for request's attribute.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 object StackActionRequest {
+
+  val X_FORWARDED_HOST  = "X-Forwarded-Host"
 
   /**
    * The attribute key of request.

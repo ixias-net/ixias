@@ -12,9 +12,16 @@ import scala.concurrent.Future
 import ixias.play.api.mvc.Errors._
 import StackActionRequest._
 
-// The helper to retrieve request data.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-object StackAction {
+/**
+  * Provides the custom action that use StackActionRequest.
+  * That action provides the helper to retrieve request data.
+  */
+object StackAction extends StackActionBuilder[StackActionRequest] {
+
+  /**
+    * Invoke the block with a StackActionRequest.
+    */
+  override def invokeBlock[A](request: StackActionRequest[A], block: (StackActionRequest[A]) => Future[Result]): Future[Result] = block(request)
 
   /** case Tuple1 */
   def bindFromRequest[T1](a1: AttributeKey[T1])
