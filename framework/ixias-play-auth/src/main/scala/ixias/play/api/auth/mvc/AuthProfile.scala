@@ -193,11 +193,13 @@ trait AuthProfile[T] extends Results
    * Verifies what user are authorized to do.
    */
   final def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (User, Result => Result)]] =
-    for {
+    (for {
       Some((user, updater)) <- authenticate.map(_.right.toOption)
       authorized            <- authorize(user, authority)
     } yield authorized match {
       case true  => Right(user -> updater)
       case false => Left(authorizationFailed(user, authority))
+    }) recover {
+      case _: NoSuchElementException => Left(authenticationFailed)
     }
 }
