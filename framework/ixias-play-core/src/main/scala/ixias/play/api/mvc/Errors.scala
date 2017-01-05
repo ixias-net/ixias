@@ -22,14 +22,14 @@ import ixias.play.api.json.JsValueError
 case class Error(status: Status, code: Int, message: Option[String] = None) extends Logging {
 
   /** Build a JSON response. */
-  def apply: Result = {
+  def toResult: Result = {
     val message = this.message.getOrElse("An error occurred in the client.")
     logger.info("code:%d, message:%s".format(code, message))
     status(Json.toJson(JsValueError(code, Some(message))))
   }
 
   /** Build a JSON response with error infomation. */
-  def apply(ex: Throwable): Result = {
+  def toResult(ex: Throwable): Result = {
     val message = this.message.getOrElse("An error occurred in the client.")
     logger.error("code:%d, message:%s".format(code, message), ex)
     status(Json.toJson(JsValueError(code, Some(message))))
@@ -44,7 +44,7 @@ trait Errors {
   val E_INTERNAL_SERVER = Error(InternalServerError, INTERNAL_SERVER_ERROR, Some("Internal server error."))
 
   import scala.language.implicitConversions
-  implicit def convert(v: Error): Result = v.apply
+  implicit def convert(v: Error): Result = v.toResult
 }
 
 object Errors extends Errors
