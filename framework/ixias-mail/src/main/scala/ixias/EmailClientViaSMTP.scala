@@ -32,12 +32,13 @@ class EmailClientViaSMTP extends EmailClient with EmailConfig {
        email.setSslSmtpPort(getSmtpPort().toString)
     }
     tpl.headers foreach { v => email.addHeader(v._1, v._2) }
-    for (u <- getSmtpUser(); p <- getSmtpPassword()) yield
+    for (u <- getSmtpUser(); p <- getSmtpPassword())
       email.setAuthenticator(new DefaultAuthenticator(u, p))
 
     // Sneds a email.
     (for {
       host    <- Future.fromTry(getSmtpHost())
+      _        = email.setHostName(host)
       message <- Future.fromTry(Try(email.send()))
     } yield message) andThen {
       case Success(_)  =>  logger.info("[SUCCESS] to=" + to.address)
