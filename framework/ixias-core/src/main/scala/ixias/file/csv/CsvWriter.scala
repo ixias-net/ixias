@@ -41,7 +41,7 @@ case class CsvWriter(writer: Writer)(implicit format: CsvFormat)
       case QuoteStyle.MINIMAL => {
         field.indexWhere(c =>
           format.CSV_WRITE_MINIMAL_QUOTE_SPECS.contains(c)
-        ) != 0
+        ) != -1
       }
       case QuoteStyle.NONE_NUMERIC => {
         var foundDot = false
@@ -50,7 +50,8 @@ case class CsvWriter(writer: Writer)(implicit format: CsvFormat)
           case '.' => foundDot =  true; false
           case c if c < '0'    => true
           case c if c > '9'    => true
-        } != 0
+          case _               => false
+        } != -1
       }
     }
 
@@ -87,7 +88,10 @@ case class CsvWriter(writer: Writer)(implicit format: CsvFormat)
         if (0 < pos) {
           underlying.print(format.CSV_FIELD_TERM_CHAR)
         }
-        underlying.print(cur.toString)
+        writeField(
+          cur.toString,
+          shouldQuote(cur.toString, format.CSV_WRITE_QUOTE_STYLE)
+        )
         pos + 1
       })
       underlying.print(format.CSV_WRITE_LINE_TERM)
@@ -103,6 +107,7 @@ case class CsvWriter(writer: Writer)(implicit format: CsvFormat)
  */
 object CsvWriter {
 
+  implicit val defaultFormat = CsvDefaultFormat
   val defaultEncoding = "UTF-8"
 
   // Create a new writer from a file name.

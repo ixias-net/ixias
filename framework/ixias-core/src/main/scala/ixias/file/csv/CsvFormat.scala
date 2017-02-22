@@ -16,15 +16,15 @@ trait CsvFormat
   val ASCII_CARRIAGE_RETURN = 0x0D
   val ASCII_SPACE           = 0x20
 
-  val CSV_FIELD_TERM_CHAR   = 0x2C // Comma:           ,
-  val CSV_ENCLOSED_CHAR     = 0x22 // Quotation Mark:  "
-  val CSV_ESCAPED_CHAR      = 0x5C // Reverse Solidus: \\
+  val CSV_FIELD_TERM_CHAR   = ','
+  val CSV_ENCLOSED_CHAR     = '"'
+  val CSV_ESCAPED_CHAR      = '\\'
 
   val CSV_WRITE_LINE_TERM   = "\r\n"
   val CSV_WRITE_QUOTE_STYLE = QuoteStyle.NONE_NUMERIC
   val CSV_WRITE_MINIMAL_QUOTE_SPECS = Seq(
-    ASCII_LINE_FEED,
-    ASCII_CARRIAGE_RETURN,
+    '\r',
+    '\n',
     CSV_FIELD_TERM_CHAR,
     CSV_ENCLOSED_CHAR
   )
