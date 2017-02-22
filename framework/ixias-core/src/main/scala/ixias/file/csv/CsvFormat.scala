@@ -16,7 +16,7 @@ trait CsvFormat
   val ASCII_CARRIAGE_RETURN = 0x0D
   val ASCII_SPACE           = 0x20
 
-  val CSV_FIELD_TERM_CHAR   = ','
+  val CSV_FIELD_TERM_CHAR   = '\t'
   val CSV_ENCLOSED_CHAR     = '"'
   val CSV_ESCAPED_CHAR      = '\\'
 
