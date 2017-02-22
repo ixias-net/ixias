@@ -82,23 +82,22 @@ case class CsvWriter(writer: Writer)(implicit format: CsvFormat)
   /**
    * Writes a single row to the CSV file.
    */
-  def writeRow(fields: Seq[Any])(implicit ex: ExecutionContext): Future[Unit] =
-    Future {
-      fields.foldLeft(0)((pos, cur) => {
-        if (0 < pos) {
-          underlying.print(format.CSV_FIELD_TERM_CHAR)
-        }
-        writeField(
-          cur.toString,
-          shouldQuote(cur.toString, format.CSV_WRITE_QUOTE_STYLE)
-        )
-        pos + 1
-      })
-      underlying.print(format.CSV_WRITE_LINE_TERM)
-      if (underlying.checkError) {
-        throw new java.io.IOException("Failed to write a row to the CSV file.")
+  def writeRow(fields: Seq[Any])(implicit ex: ExecutionContext): Unit = {
+    fields.foldLeft(0)((pos, cur) => {
+      if (0 < pos) {
+        underlying.print(format.CSV_FIELD_TERM_CHAR)
       }
+      writeField(
+        cur.toString,
+        shouldQuote(cur.toString, format.CSV_WRITE_QUOTE_STYLE)
+      )
+      pos + 1
+    })
+    underlying.print(format.CSV_WRITE_LINE_TERM)
+    if (underlying.checkError) {
+      throw new java.io.IOException("Failed to write a row to the CSV file.")
     }
+  }
 }
 
 
@@ -107,8 +106,8 @@ case class CsvWriter(writer: Writer)(implicit format: CsvFormat)
  */
 object CsvWriter {
 
-  implicit val defaultFormat = CsvDefaultFormat
-  val defaultEncoding = "UTF-8"
+  implicit val defaultFormat: CsvFormat = CsvDefaultFormat
+  val defaultEncoding = "UTF-16LE"
 
   // Create a new writer from a file name.
   def apply(file: String)                                    (implicit format: CsvFormat): CsvWriter = apply(file, false, defaultEncoding)(format)
@@ -126,6 +125,15 @@ object CsvWriter {
   def apply(fos: OutputStream)                   (implicit format: CsvFormat): CsvWriter = apply(fos, defaultEncoding)(format)
   def apply(fos: OutputStream, encoding: String) (implicit format: CsvFormat): CsvWriter = {
     try {
+      if (encoding == "UTF-8") {
+        fos.write(0xef)
+        fos.write(0xbb)
+        fos.write(0xbf)
+      }
+      if (encoding == "UTF-16LE") {
+        fos.write(0xff)
+        fos.write(0xfe)
+      }
       val writer = new OutputStreamWriter(fos, encoding)
       new CsvWriter(writer)(format)
     } catch {
