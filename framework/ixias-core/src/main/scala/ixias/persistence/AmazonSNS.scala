@@ -9,13 +9,19 @@ package ixias.persistence
 
 import scala.concurrent.{ Future, ExecutionContext }
 import ixias.persistence.model.DataSourceName
+import ixias.persistence.lifted.Aliases
 import ixias.persistence.backend.AmazonSNSBackend
 import ixias.persistence.dbio.Execution
-import com.amazonaws.services.sns.model.PublishResult
 
-// ファイル管理
-//~~~~~~~~~~~~~~
-trait AmazonSNSClient {
+// Amazon SNS
+//~~~~~~~~~~~~
+trait AmazonSNS extends Aliases {
+
+  // --[ Typedefs ]-------------------------------------------------------------
+  type PublishResult = com.amazonaws.services.sns.model.PublishResult
+
+  // --[ Alias ]----------------------------------------------------------------
+  val DataSourceName = ixias.persistence.model.DataSourceName
 
   // --[ Properties ]-----------------------------------------------------------
   /** The data source name */
