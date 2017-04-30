@@ -7,7 +7,9 @@
 
 package ixias.persistence
 
+import scala.util.{ Try, Success, Failure }
 import scala.concurrent.{ Future, ExecutionContext }
+
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.lifted.Aliases
 import ixias.persistence.backend.AmazonSNSBackend
@@ -38,20 +40,31 @@ trait AmazonSNS extends Aliases with Logging {
   /**
    * Sends a message to a topic's subscribed endpoints.
    */
-  def publish(message: String): Future[Seq[PublishResult]] = {
+  def publish(message: String): Future[Seq[PublishResult]] =
     backend.isSkip(dsn) match {
-      case true  => Future.successful(Seq.empty)
-      case false => for {
-        client   <- backend.getDatabase(dsn)
-        topicSeq <- Future.fromTry(backend.getTopicARN(dsn))
-      } yield topicSeq map {
-        topic => {
-          val msgFmt = "AWS-SNS :: publish a message. topic = %s, message = %s, result = %s"
-          val result = client.publish(topic, message)
-          logger.info(msgFmt.format(topic, message, result.toString()))
-          result
+      case true  => {
+        backend.getTopicARN(dsn) map { topic =>
+          logger.info("AWS-SNS :: skip to publish a message. topic = %s, message = %s".format(topic, message))
         }
+        Future.successful(Seq.empty)
       }
+      case false => for {
+        client    <- backend.getDatabase(dsn)
+        topicSeq  <- Future.fromTry(backend.getTopicARN(dsn))
+        resultSeq <- Future.sequence {
+          topicSeq map { topic =>
+            Future.fromTry {
+              Try(client.publish(topic, message))
+            } andThen {
+              case Success(result) => logger.info(
+                "AWS-SNS :: publish a message. topic = %s, message = %s, result = %s"
+                  .format(topic, message, result.toString()))
+              case Failure(ex)     => logger.error(
+                "AWS-SNS :: failed to publish a message. topic = %s, message = %s"
+                  .format(topic, message), ex)
+            }
+          }
+        }
+      } yield resultSeq
     }
-  }
 }
