@@ -58,7 +58,7 @@ trait AmazonSNSDataConfig {
    * Gets the flag to invoke SNS process.
    */
   def isSkip(dsn: DataSourceName): Boolean =
-    readValue(dsn)(_.getBoolean(CF_OPT_SNS_TOPIC_ARN)).getOrElse(false)
+    readValue(dsn)(_.getBoolean(CF_OPT_SNS_SKIP)).getOrElse(false)
 
   /**
    * Gets the topic ARN of Amazon SNS.
