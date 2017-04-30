@@ -22,9 +22,14 @@ import ixias.persistence.action.ShadeDBActionProvider
  */
 private[persistence] trait ShadeProfile extends Profile with ShadeDBActionProvider {
 
+  // --[ Typedefs ]-------------------------------------------------------------
   /** The back-end type required by this profile */
   type Backend = ShadeBackend
 
+  // --[ Alias ]----------------------------------------------------------------
+  val DataSourceName = ixias.persistence.model.DataSourceName
+
+  // --[ Properties ]-----------------------------------------------------------
   /** The back-end implementation for this profile */
   protected lazy val backend = ShadeBackend()
 
