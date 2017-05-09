@@ -37,9 +37,9 @@ class UIAssets @Inject() (
   private lazy val logger = Logger(getClass)
 
   /** Assetsハンドラー */
-  def versioned(file: Asset): Action[AnyContent] = {
+  override def versioned(path: String, file: Asset): Action[AnyContent] = {
     env.mode match {
-      case Mode.Prod => super.versioned("/public", file)
+      case Mode.Prod => super.versioned(path, file)
       case _         => devAssetHandler(file.name)
     }
   }
