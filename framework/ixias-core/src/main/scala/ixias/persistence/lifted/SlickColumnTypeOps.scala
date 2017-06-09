@@ -7,56 +7,30 @@
 
 package ixias.persistence.lifted
 
-import java.sql._
-import java.util.Calendar
-import scala.language.reflectiveCalls
-import scala.language.implicitConversions
-
 import slick.driver.JdbcProfile
-import org.joda.time.LocalDate
-
-
-sealed case class SlickColumnTypesExtension[P <: JdbcProfile](val driver: P)
-{
-  /** org.joda.time.DateTime */
-  object JodaDateTime {
-    type T1 = org.joda.time.DateTime
-    type T2 = java.sql.Timestamp
-
-    protected def toT1(v: T2): T1 = if (v == null) null else new T1(v.getTime)
-    protected def toT2(v: T1): T2 = if (v == null) null else new T2(v.getMillis)
-    protected def toCalendar(v: T1): Calendar = Calendar.getInstance(v.getZone().toTimeZone())
-
-    object Type extends driver.DriverJdbcType[T1] {
-      def sqlType = java.sql.Types.TIMESTAMP
-      def    getValue(       r: ResultSet,         idx: Int): T1   = toT1(r.getTimestamp(idx))
-      def updateValue(v: T1, r: ResultSet,         idx: Int): Unit = r.updateTimestamp(idx, toT2(v))
-      def    setValue(v: T1, p: PreparedStatement, idx: Int): Unit = p.setTimestamp(idx, toT2(v), toCalendar(v))
-      override def valueToSQLLiteral(value: T1): String = "{ts '" + toT2(value).toString + "'}"
-    }
-  }
-
-  /** [[org.joda.time.LocalDate]] */
-  object JodaLocalDate {
-    type T1 = org.joda.time.LocalDate
-    type T2 = java.sql.Date
-
-    protected def toT1(v: T2): T1 = if (v == null) null else new T1(v.getTime)
-    protected def toT2(v: T1): T2 = if (v == null) null else new T2(v.toDate.getTime)
-
-    object Type extends driver.DriverJdbcType[T1] {
-      def sqlType = java.sql.Types.DATE
-      def    getValue(       r: ResultSet,         idx: Int): T1   = toT1(r.getDate(idx))
-      def updateValue(v: T1, r: ResultSet,         idx: Int): Unit = r.updateDate(idx, toT2(v))
-      def    setValue(v: T1, p: PreparedStatement, idx: Int): Unit = p.setDate(idx, toT2(v))
-      override def valueToSQLLiteral(value: T1): String = "{d '" + toT2(value).toString + "'}"
-    }
-  }
-}
+import java.sql.{ Timestamp, Date, Time }
+import org.joda.time.{ DateTime, LocalDate, LocalTime, DateTimeZone }
+import ixias.model.Identity
 
 trait SlickColumnTypeOps[P <: JdbcProfile] {
   val driver: P
-  val columnTypes = SlickColumnTypesExtension(driver)
-  implicit val jodaDateTimeColumnType  = columnTypes.JodaDateTime.Type
-  implicit val jodaLocalDateColumnType = columnTypes.JodaLocalDate.Type
+  import driver.api._
+
+  // java.sql.Timestamp <-> org.joda.time.DateTime
+  implicit val jodaDateTimeColumnType = MappedColumnType.base[DateTime, Timestamp](
+    dt => new Timestamp(dt.getMillis),
+    ts => new DateTime(ts.getTime)
+  )
+
+  // java.sql.Date <-> org.joda.time.LocalDate
+  implicit val jodaLocalDateColumnType = MappedColumnType.base[LocalDate, Date](
+    ld => new Date(ld.toDateTimeAtStartOfDay(DateTimeZone.UTC).getMillis),
+    d  => new LocalDate(d.getTime)
+  )
+
+  // java.sql.Time <-> org.joda.time.LocalTime
+  implicit val jodaLocalTimeColumnType = MappedColumnType.base[LocalTime, Time](
+    lt => new Time(lt.toDateTimeToday.getMillis),
+    t  => new LocalTime(t, DateTimeZone.UTC)
+  )
 }
