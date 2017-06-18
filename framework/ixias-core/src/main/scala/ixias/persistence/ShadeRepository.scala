@@ -51,6 +51,8 @@ private[persistence] trait ShadeProfile extends Profile with ShadeDBActionProvid
 abstract class ShadeRepository[K <: Identity[_], E <: Entity[K]](implicit ttag: ClassTag[E])
     extends Repository[K, E] with ShadeProfile with MemcachedCodecs
 {
+  import api._
+
   // --[ Methods ]--------------------------------------------------------------
   val dsn: DataSourceName
 

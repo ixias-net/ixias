@@ -150,6 +150,17 @@ object Identity
   /** An Identity factory which returns `NoneId`
     * in a manner consistent with the collections hierarchy. */
   def empty[A] : Identity[A] = NoneId
+
+  /** @see `Tag.of` */
+  final class TagOf[T]() {
+    def apply[A](a: A):         Identity[A @@ T] = SomeId(Tag.apply(a))
+    def apply[A](a: Option[A]): Identity[A @@ T] = a match {
+      case Some(v) => SomeId(Tag.apply(v))
+      case None    => NoneId.asInstanceOf[Identity[A @@ T]]
+    }
+    def empty[A]: Identity[A @@ T] = NoneId.asInstanceOf[Identity[A @@ T]]
+  }
+  def of[T]: TagOf[T] = new TagOf[T]
 }
 
 /**
