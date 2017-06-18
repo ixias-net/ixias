@@ -7,10 +7,6 @@
 
 package ixias.security
 
-import java.security.SecureRandom
-import scala.util.{ Try, Success, Failure, Random }
-import scala.util.control.NonFatal
-
 /**
  * The component to provides common methods.
  */

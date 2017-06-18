@@ -10,10 +10,8 @@ package ixias.util
 import java.util.concurrent.TimeUnit
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.{ Duration, FiniteDuration }
-import scala.util.control.NonFatal
 
 import com.typesafe.config._
-import com.typesafe.config.impl.ConfigImpl
 
 /**
  * A full configuration set.

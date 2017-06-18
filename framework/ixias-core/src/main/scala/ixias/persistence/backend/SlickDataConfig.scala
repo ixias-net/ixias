@@ -8,7 +8,6 @@
 package ixias.persistence.backend
 
 import scala.util.Try
-import java.util.concurrent.TimeUnit
 import ixias.persistence.model.DataSourceName
 
 trait SlickDataConfig extends BasicDataConfig {

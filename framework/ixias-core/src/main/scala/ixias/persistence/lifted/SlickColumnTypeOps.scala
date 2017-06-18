@@ -7,7 +7,7 @@
 
 package ixias.persistence.lifted
 
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import java.sql.{ Timestamp, Date, Time }
 import org.joda.time.{ DateTime, LocalDate, LocalTime, DateTimeZone }
 

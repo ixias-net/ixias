@@ -8,8 +8,7 @@
 package ixias.security
 
 import java.security.SecureRandom
-import scala.util.{ Try, Success, Failure, Random }
-import scala.util.control.NonFatal
+import scala.util.Random
 
 /**
  * The generator to generate a new token as string

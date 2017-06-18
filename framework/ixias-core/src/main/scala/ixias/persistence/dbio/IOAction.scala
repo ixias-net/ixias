@@ -8,7 +8,6 @@
 package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import ixias.persistence.Repository
 
 /**
  * A Persistence I/O Action that can be executed on a database.

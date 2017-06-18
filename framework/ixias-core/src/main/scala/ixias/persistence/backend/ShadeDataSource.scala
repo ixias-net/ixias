@@ -8,9 +8,6 @@
 package ixias.persistence.backend
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
-import java.util.concurrent.TimeUnit
-
 import ixias.persistence.model.DataSourceName
 
 trait ShadeDataSource extends BasicDataSource with ShadeDataConfig {

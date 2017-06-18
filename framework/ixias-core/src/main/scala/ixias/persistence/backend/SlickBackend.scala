@@ -10,8 +10,7 @@ package ixias.persistence.backend
 import scala.util.{ Success, Failure }
 import scala.concurrent.Future
 
-import slick.jdbc.JdbcBackend
-import slick.driver.JdbcProfile
+import slick.jdbc.{ JdbcProfile, JdbcBackend }
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.dbio.Execution.Implicits.trampoline
 

@@ -8,7 +8,6 @@
 package ixias.security
 
 import scala.util.Try
-import scala.concurrent.Future
 import com.typesafe.config.ConfigFactory
 
 import org.keyczar.Signer

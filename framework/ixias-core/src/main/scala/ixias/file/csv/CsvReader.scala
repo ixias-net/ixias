@@ -7,7 +7,6 @@
 
 package ixias.file.csv
 
-import scala.util.Try
 import scala.io.Source
 
 object CsvReader

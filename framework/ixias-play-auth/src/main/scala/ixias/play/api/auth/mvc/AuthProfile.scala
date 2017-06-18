@@ -20,14 +20,14 @@ import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.StackActionRequest
 import ixias.play.api.mvc.Errors._
 
-trait AuthProfile[T] extends Results
+trait AuthProfile[K <: Identity[_], E <: Entity[_], T] extends Results
 {
   // --[ TypeDefs ]-------------------------------------------------------------
   /** The type of user identity */
-  type Id   <: Identity[_]
+  type Id   = K
 
   /** The type of user entity */
-  type User <: Entity[_]
+  type User = E
 
   /** The type of authority roles */
   type Authority = T

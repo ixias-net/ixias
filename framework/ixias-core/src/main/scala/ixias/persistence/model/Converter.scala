@@ -25,8 +25,6 @@ object Converter extends TableDefaultConverter {
 
 /** Default Serializers. */
 trait TableDefaultConverter {
-  import scala.language.implicitConversions
-
   /** Convert to Same Type. */
   implicit def SameTypeConv[A <: AnyVal]: Converter[A, A] = new Converter[A, A] {
     def convert(v: A) = v

@@ -8,11 +8,11 @@
 package ixias.persistence.util
 
 import scala.concurrent.Future
+import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
-import slick.driver.JdbcProfile
 
 import ixias.persistence.SlickProfile
-import ixias.persistence.model.{ Table, Converter }
+import ixias.persistence.model.Table
 
 /**
  * The utility tool to manage database with using Slick library.
@@ -22,8 +22,7 @@ trait SlickToolProvider[P <: JdbcProfile] extends SlickProfile[P] {
   /**
    * Show create table SQL statements.
    */
-  def showCreateTable[T <: Table[_, P]]
-    (table: T)(implicit conv: Converter[_, _]): Future[Unit] =
+  def showCreateTable[T <: Table[_, P]](table: T): Future[Unit] =
     SlickDBAction(table) { case (_, slick) =>
       import driver.api._
       slick.asInstanceOf[T#BasicQuery]
@@ -34,8 +33,7 @@ trait SlickToolProvider[P <: JdbcProfile] extends SlickProfile[P] {
   /**
    * Create database table by specified table schema.
    */
-  def createTable[T <: Table[_, P]]
-    (table: T)(implicit conv: Converter[_, _]): Future[Unit] =
+  def createTable[T <: Table[_, P]](table: T): Future[Unit] =
     SlickRunDBAction(table) { slick =>
       import driver.api._
       for {
@@ -50,8 +48,7 @@ trait SlickToolProvider[P <: JdbcProfile] extends SlickProfile[P] {
   /**
    * Drop database table by specified table schema.
    */
-    def dropTable[T <: Table[_, P]]
-      (table: T)(implicit conv: Converter[_, _]): Future[Unit] =
+    def dropTable[T <: Table[_, P]](table: T): Future[Unit] =
       SlickRunDBAction(table) { slick =>
         import driver.api._
         for {

@@ -7,9 +7,7 @@
 
 package ixias.persistence
 
-import scala.util.Failure
-import scala.concurrent.{ Future, ExecutionContext }
-import com.typesafe.config.{ Config, ConfigFactory }
+import scala.concurrent.ExecutionContext
 import org.slf4j.LoggerFactory
 
 import ixias.util.Logger

@@ -8,7 +8,6 @@
 package ixias.file.csv
 
 import java.io._
-import scala.concurrent.{ Future, ExecutionContext }
 
 /**
  * The writer to output a csv file.
@@ -82,7 +81,7 @@ case class CsvWriter(writer: Writer)(implicit format: CsvFormat)
   /**
    * Writes a single row to the CSV file.
    */
-  def writeRow(fields: Seq[Any])(implicit ex: ExecutionContext): Unit = {
+  def writeRow(fields: Seq[Any]): Unit = {
     fields.foldLeft(0)((pos, cur) => {
       if (0 < pos) {
         underlying.print(format.CSV_FIELD_TERM_CHAR)

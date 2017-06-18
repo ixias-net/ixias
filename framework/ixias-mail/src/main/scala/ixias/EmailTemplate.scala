@@ -8,7 +8,6 @@
 package ixias.mail
 
 import java.io.File
-import javax.mail.internet.InternetAddress
 
 // User's email data
 //~~~~~~~~~~~~~~~~~~~~

@@ -21,7 +21,7 @@ trait CsvFormat
   val CSV_ESCAPED_CHAR      = '\\'
 
   val CSV_WRITE_LINE_TERM   = "\r\n"
-  val CSV_WRITE_QUOTE_STYLE = QuoteStyle.NONE_NUMERIC
+  val CSV_WRITE_QUOTE_STYLE: QuoteStyle = QuoteStyle.NONE_NUMERIC
   val CSV_WRITE_MINIMAL_QUOTE_SPECS = Seq(
     '\r',
     '\n',

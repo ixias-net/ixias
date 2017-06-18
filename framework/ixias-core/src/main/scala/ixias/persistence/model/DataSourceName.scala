@@ -7,8 +7,6 @@
 
 package ixias.persistence.model
 
-import scala.language.implicitConversions
-
 /**
  * The DSN(Data-Source-Name) structure.
  */

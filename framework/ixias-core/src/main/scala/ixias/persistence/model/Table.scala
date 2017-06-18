@@ -7,7 +7,7 @@
 
 package ixias.persistence.model
 
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import ixias.persistence.lifted._
 
 trait Table[R, P <: JdbcProfile] { self =>

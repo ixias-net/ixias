@@ -10,7 +10,7 @@ package ixias.persistence.action
 import scala.util.Failure
 import scala.concurrent.Future
 
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import slick.dbio.{ DBIOAction, NoStream }
 
 import ixias.persistence.SlickProfile

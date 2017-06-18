@@ -7,7 +7,7 @@
 
 package ixias.persistence
 
-import slick.driver.JdbcProfile
+import slick.jdbc.JdbcProfile
 import ixias.model.{ Identity, Entity }
 import ixias.persistence.lifted._
 import ixias.persistence.backend.SlickBackend

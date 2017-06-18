@@ -7,7 +7,7 @@
 
 lazy val commonSettings = Seq(
   organization := "net.ixias",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.2",
   resolvers ++= Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
@@ -28,8 +28,8 @@ lazy val commonSettings = Seq(
     "-Ywarn-numeric-widen"     // Warn when numerics are widened.
   ),
   libraryDependencies ++= Seq(
-    "org.specs2"      %% "specs2-core"          % "3.8.3"  % Test,
-    "org.specs2"      %% "specs2-matcher-extra" % "3.8.3"  % Test,
+    "org.specs2"      %% "specs2-core"          % "3.9.1"  % Test,
+    "org.specs2"      %% "specs2-matcher-extra" % "3.9.1"  % Test,
     "ch.qos.logback"   % "logback-classic"      % "1.1.3"  % Test,
     "mysql"            % "mysql-connector-java" % "5.1.39" % Test
   )
@@ -78,9 +78,9 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "com.typesafe"        % "config"           % "1.3.0",
-    "com.typesafe.slick" %% "slick"            % "3.1.1",
+    "com.typesafe.slick" %% "slick"            % "3.2.0",
+    "io.monix"           %% "shade"            % "1.9.5",
     "com.zaxxer"          % "HikariCP"         % "2.5.0",
-    "com.bionicspirit"   %% "shade"            % "1.7.3",
     "com.amazonaws"       % "aws-java-sdk-sns" % "1.11.123",
     "org.slf4j"           % "slf4j-api"        % "1.7.21",
     "org.keyczar"         % "keyczar"          % "0.71h",

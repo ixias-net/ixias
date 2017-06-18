@@ -9,7 +9,6 @@ package ixias.persistence.backend
 
 import scala.concurrent.Future
 import java.sql.Connection
-
 import slick.jdbc.JdbcDataSource
 import ixias.persistence.model.DataSourceName
 
@@ -40,6 +39,9 @@ trait SlickDataSource extends BasicDataSource with SlickDataConfig {
      * Otherwise no action is taken.
      */
     def close(): Unit = ds.close()
+
+    /** The maximum pool size. */
+    val maxConnections: Option[Int] = None
   }
 
   // --[ Factory ]--------------------------------------------------------------
