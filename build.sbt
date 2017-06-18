@@ -39,7 +39,7 @@ lazy val playSettings = Seq(
   unmanagedSourceDirectories   in Compile += baseDirectory.value / "src" / "main" / "scala",
   unmanagedSourceDirectories   in Test    += baseDirectory.value / "src" / "test" / "scala",
   unmanagedResourceDirectories in Test    += baseDirectory.value / "src" / "test" / "resources",
-  libraryDependencies ++= Seq(ws, cache)
+  libraryDependencies ++= Seq(ws, ehcache)
 )
 
 
