@@ -111,7 +111,7 @@ lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "org.scala-lang"        % "scala-compiler" % scalaVersion.value,
-    "org.scalatra.scalate" %% "scalate-core"   % "1.7.1"
+    "org.scalatra.scalate" %% "scalate-core"   % "1.8.0"
   ))
 
 lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
