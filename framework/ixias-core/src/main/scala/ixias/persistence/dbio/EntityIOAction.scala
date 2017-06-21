@@ -8,20 +8,27 @@
 package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import ixias.model.{ Identity, Entity }
-import ixias.persistence.Repository
+import scala.concurrent.ExecutionContext
+import org.slf4j.LoggerFactory
+import ixias.util.Logger
+import ixias.model.{ Tagged, Entity, IdStatus }
 
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
-    extends IOAction { self: Repository[K, E] =>
+trait EntityIOAction[K <: Tagged[_, _], E <: Entity[K, _]] extends IOAction {
 
   /** The type of entity id */
   type Id     = K
 
   /** The type of entity */
   type Entity = E
+
+  /** The Execution Context */
+  protected implicit val ctx: ExecutionContext = Execution.Implicits.trampoline
+
+  /** The logger for profile */
+  protected lazy val logger = new Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   // --[ Methods ]--------------------------------------------------------------
   /**
@@ -49,30 +56,30 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
    */
   def get(id: Id): Future[Option[E]]
 
-  /**
-   * Returns the value associated with a identity, or
-   * a default value if the identity is not contained in the repository.
-   */
-  def getOrElse[E2 >: E](id: Id, f: Id => E2): Future[E2] =
-    get(id).map(_.getOrElse(f(id)))
-
-  /**
-   * Tests whether this repository contains a binding for a identity.
-   */
-  def contains(id: Id): Future[Boolean] =
-    get(id).map(_.isDefined)
-
-  // --[ Methods ]--------------------------------------------------------------
-  /**
-   * Adds a new identity/entity-value pair to this repository.
-   * If the map already contains a mapping for the identity,
-   * it will be overridden by the new value
-   */
-  def store(entity: E): Future[Id]
-
-  /**
-   * Removes a identity from this map,
-   * returning the value associated previously with that identity as an option.
-   */
-  def remove(id: Id): Future[Option[E]]
+  // /**
+  //  * Returns the value associated with a identity, or
+  //  * a default value if the identity is not contained in the repository.
+  //  */
+  // def getOrElse[E2 >: E](id: Id, f: Id => E2): Future[E2] =
+  //   get(id).map(_.getOrElse(f(id)))
+  // 
+  // /**
+  //  * Tests whether this repository contains a binding for a identity.
+  //  */
+  // def contains(id: Id): Future[Boolean] =
+  //   get(id).map(_.isDefined)
+  // 
+  // // --[ Methods ]--------------------------------------------------------------
+  // /**
+  //  * Adds a new identity/entity-value pair to this repository.
+  //  * If the map already contains a mapping for the identity,
+  //  * it will be overridden by the new value
+  //  */
+  // def store(entity: E): Future[Id]
+  // 
+  // /**
+  //  * Removes a identity from this map,
+  //  * returning the value associated previously with that identity as an option.
+  //  */
+  // def remove(id: Id): Future[Option[E]]
 }
