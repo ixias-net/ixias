@@ -7,33 +7,30 @@
 
 package ixias.model
 
-import scala.language.higherKinds
-
 object Tag {
-  type Id[X] = X
-
-  /** `subst` specialized to `Id`. */
-  @inline def apply[@specialized A, T](a: A): A @@ T = a.asInstanceOf[A @@ T]
-
-  /** `unsubst` specialized to `Id`. */
-  @inline def unwrap[@specialized A, T](a: A @@ T): A = unsubst[A, Id, T](a)
-
-  /** Remove the tag `T`, leaving `A`. */
-  def unsubst[A, F[_], T](fa: F[A @@ T]): F[A] = fa.asInstanceOf[F[A]]
-
-  /** @see `Tag.of` */
-  final class TagOf[T] private[Tag]() {
-    /** Like `Tag.apply`, but specify only the `T`. */
-    def apply[A](a: A): A @@ T = Tag.apply(a)
-    /** Like `Tag.unwrap`, but specify only the `T`. */
-    def unwrap[A](a: A @@ T): A = Tag.unwrap(a)
-    /** Like `Tag.unsubst`, but specify only the `T`. */
-    def unsubst[F[_], A](fa: F[A @@ T]): F[A] = Tag.unsubst(fa)
-  }
 
   /**
-   * Variants of `apply`, `subst`, and `unsubst` that require
-   * specifying the tag type but are more likely to infer the other type parameters.
+   * Creates a value of the Id given a value of its representation type.
    */
-  def of[T]: TagOf[T] = new TagOf[T]
+  @inline def apply[@specialized R, T](r: R): R @@ T =
+    r.asInstanceOf[R @@ T]
+
+  /**
+   * Returns a value of its representation type.
+   */
+  def unwrap[R, T](t: R @@ T): R =
+    t.asInstanceOf[R]
+
+}
+
+/**
+ * Variants of `apply`, `unwrap` that require specifying the Id
+ */
+final class TagOf[T] {
+  def empty[R]:       R @@ T  = Tag.apply(null.asInstanceOf[R])
+  def apply[R](r: R): R @@ T  = Tag.apply(r)
+  def unwrap[R](t: R @@ T): R = Tag.unwrap(t)
+}
+object TagOf {
+  def apply[T]: TagOf[T] = new TagOf[T]
 }

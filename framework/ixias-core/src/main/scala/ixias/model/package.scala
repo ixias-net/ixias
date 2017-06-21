@@ -10,9 +10,12 @@ package ixias
 package object model {
 
   /**
-   * Tag a type `T` with `Tag`.
-   * The resulting type is used to discriminate between type class instances.
+   * Tagged with `R` as representation type and added a tag.
+   *
+   * Values of the Id will not add any additional boxing beyond what's required for
+   * values of the representation type to conform to Any. In practice this means that value
+   * types will receive their standard Scala AnyVal boxing and reference types will be unboxed.
    */
-  private[model] type Tagged[A, T] = { type Tag = T; type Self = A }
-  type @@[T, Tag] = Tagged[T, Tag]
+  type     @@[R, T] = Tagged[R, T]
+  type Tagged[R, T] = { type Self = R; type Tag = T }
 }

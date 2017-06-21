@@ -10,26 +10,32 @@ package ixias.model
 import org.specs2.mutable._
 
 object idSpec extends Specification {
-  import id._
 
   // モデル
-  case class User(
+  case class User[S <: IdStatus](
     _id:  User.Id,
     name: String
-  ) extends Entity[User.Id]
+  ) extends Entity[User.Id, S]
 
   // コンパニオン・オブジェクト
   object User {
-    val  Id = id.of[Long, User]
-    type Id = id.IdType[Long, User]
-    def apply(id: Long, name: String): User = User(Id(id), name)
+    type Id = Long @@ User[_]
+    val  Id = TagOf[User[_]]
+    def apply(name: String):           User[IdStatus.Empty]  = User(Id.empty, name)
+    def apply(id: Long, name: String): User[IdStatus.Exists] = User(Id(id),   name)
   }
 
   "id" should {
-    val user1 = User(100,           "Kinugasa")
-    val user2 = User(User.Id.empty, "Kinugasa No Id")
+    val user1 = User(100, "Kinugasa")
+    val user2 = User("EmptyKinugasa")
 
+    println(user1.hasId)
+    println(user1.idOpt)
+    println(user1.id)
 
-    user1._id must_=== 100
+    println(user2.hasId)
+    println(user2.idOpt)
+    // println(user2.id)
+    user1.id must_=== User.Id(100)
   }
 }
