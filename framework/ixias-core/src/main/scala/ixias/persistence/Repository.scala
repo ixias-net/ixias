@@ -8,9 +8,11 @@
 package ixias.persistence
 
 import scala.language.higherKinds
+import org.slf4j.LoggerFactory
 import ixias.model.{ Tagged, Entity, IdStatus }
-import ixias.persistence.dbio.EntityIOAction
+import ixias.persistence.dbio.{ Execution, EntityIOAction }
 import ixias.persistence.lifted.{ Aliases, ExtensionMethodConversions }
+import ixias.util.Logger
 
 /**
  * The basic functionality that has to be implemented by all profiles.
@@ -25,6 +27,12 @@ private[persistence] trait Profile {
 
   /** The back-end implementation for this profile */
   protected val backend: Backend
+
+  /** The logger for profile */
+  protected lazy val logger  = Logger.apply
+
+  /** The Execution Context */
+  protected implicit val ctx = Execution.Implicits.trampoline
 
   /**
    * The API for using the utility methods with a single import statement.

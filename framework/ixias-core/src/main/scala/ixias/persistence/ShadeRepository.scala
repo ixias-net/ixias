@@ -10,21 +10,27 @@ package ixias.persistence
 import scala.reflect.ClassTag
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import shade.memcached.MemcachedCodecs
+import scala.language.higherKinds
+import shade.memcached.{ Memcached, MemcachedCodecs }
 
-import ixias.model.{ Identity, Entity }
+import ixias.model.{ Tagged, Entity, IdStatus }
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.backend.ShadeBackend
 import ixias.persistence.action.ShadeDBActionProvider
+import ixias.security.RandomStringToken
 
 /**
  * The profile for persistence with using the Shade library.
  */
-private[persistence] trait ShadeProfile extends Profile with ShadeDBActionProvider {
+private[persistence]
+trait ShadeProfile extends Profile with ShadeDBActionProvider {
 
   // --[ Typedefs ]-------------------------------------------------------------
+  /** The type of database objects. */
+  type Database = Memcached
+
   /** The back-end type required by this profile */
-  type Backend = ShadeBackend
+  type Backend  = ShadeBackend
 
   // --[ Alias ]----------------------------------------------------------------
   val DataSourceName = ixias.persistence.model.DataSourceName
@@ -48,9 +54,10 @@ private[persistence] trait ShadeProfile extends Profile with ShadeDBActionProvid
 /**
  * The base repository which is implemented basic feature methods of memcached.
  */
-abstract class ShadeRepository[K <: Identity[_], E <: Entity[K]](implicit ttag: ClassTag[E])
-    extends Repository[K, E] with ShadeProfile with MemcachedCodecs
-{
+abstract class ShadeRepository[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]](
+  implicit ttag1: ClassTag[E[IdStatus.Empty]],
+           ttag2: ClassTag[E[IdStatus.Exists]]
+) extends Repository[K, E] with ShadeProfile with MemcachedCodecs {
   import api._
 
   // --[ Methods ]--------------------------------------------------------------
@@ -58,29 +65,36 @@ abstract class ShadeRepository[K <: Identity[_], E <: Entity[K]](implicit ttag: 
 
   // --[ Methods ]--------------------------------------------------------------
   /** Fetches a value from the cache store. */
-  def get(key: Id): Future[Option[E]] =
+  def get(id: Id): Future[Option[EntityEmbeddedId]] = {
     DBAction(dsn) { db =>
-      db.get[E](key.get.toString)
+      db.get[EntityEmbeddedId](id.toString)
     } recoverWith {
       case _: java.io.InvalidClassException => Future.successful(None)
     }
+  }
 
   // --[ Methods ]--------------------------------------------------------------
   /** Sets a (key, value) in the cache store. */
-  def store(value: E): Future[Id] = store(value, Duration.Inf)
-  def store(value: E, expiry: Duration): Future[Id] =
+  def add(data: EntityWithNoId): Future[Id] = add(data, Duration.Inf)
+  def add(data: EntityWithNoId, expiry: Duration): Future[Id] =
     DBAction(dsn) { db =>
-      for {
-        _ <- db.set(value.id.get.toString, value, expiry)
-      } yield (value.id)
+      val id = RandomStringToken.next(32).asInstanceOf[K]
+      db.add(id.toString, data, expiry).map(_ => id)
+    }
+
+  /** Sets a (key, value) in the cache store. */
+  def update(data: EntityEmbeddedId): Future[Int] = update(data, Duration.Inf)
+  def update(data: EntityEmbeddedId, expiry: Duration): Future[Int] =
+    DBAction(dsn) { db =>
+      db.set(data.id.toString, data, expiry).map(_ => 1)
     }
 
   /** Update existing value expiry in the cache store. */
-  def updateExpiry(key: Id, expiry: Duration = Duration.Inf): Future[Unit] =
+  def updateExpiry(id: Id, expiry: Duration = Duration.Inf): Future[Unit] =
     DBAction(dsn) { db =>
       for {
-        Some(v) <- db.get[E](key.get.toString)
-        _       <- db.set(key.get.toString, v, expiry)
+        Some(data) <- db.get[EntityEmbeddedId](id.toString)
+        _          <- db.set(id.toString, data, expiry)
       } yield ()
     } recoverWith {
       case _: NoSuchElementException
@@ -88,11 +102,11 @@ abstract class ShadeRepository[K <: Identity[_], E <: Entity[K]](implicit ttag: 
     }
 
   /** Deletes a key from the cache store. */
-  def remove(key: Id): Future[Option[E]] =
+  def remove(id: Id): Future[Option[EntityEmbeddedId]] =
     DBAction(dsn) { db =>
       for {
-        old <- db.get[E](key.get.toString)
-        _   <- db.delete(key.get.toString)
+        old <- db.get[EntityEmbeddedId](id.toString)
+        _   <- db.delete(id.toString)
       } yield old
     } recoverWith {
       case _: java.io.InvalidClassException => Future.successful(None)

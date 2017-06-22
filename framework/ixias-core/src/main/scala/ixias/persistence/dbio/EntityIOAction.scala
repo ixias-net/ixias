@@ -9,15 +9,14 @@ package ixias.persistence.dbio
 
 import scala.concurrent.Future
 import scala.language.higherKinds
-import org.slf4j.LoggerFactory
-
-import ixias.util.Logger
 import ixias.model.{ Tagged, Entity, IdStatus }
+import ixias.persistence.Repository
 
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]] extends IOAction {
+trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]]
+    extends IOAction { self: Repository[K, E] =>
 
   /** The type of entity id */
   type Id = K
@@ -30,12 +29,6 @@ trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]] extend
 
   /** The type of entity when it has not id. */
   type EntityWithNoId   = E[IdStatus.Empty]
-
-  /** The logger for profile */
-  protected lazy val logger  = Logger.apply
-
-  /** The Execution Context */
-  protected implicit val ctx = Execution.Implicits.trampoline
 
   // --[ Methods ]--------------------------------------------------------------
   /**
@@ -82,7 +75,13 @@ trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]] extend
    * If the map already contains a mapping for the identity,
    * it will be overridden by the new value
    */
-  def store(entity: Entity[_]): Future[Id]
+  def add(entity: EntityWithNoId): Future[Id]
+
+  /**
+   * If the dataset already contains a mapping for the identity,
+   * it will be overridden by the new value and return number of affected rows.
+   */
+  def update(entity: EntityEmbeddedId): Future[Int]
 
   /**
    * Removes a identity from this map,

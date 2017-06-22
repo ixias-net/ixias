@@ -49,5 +49,4 @@ trait Entity[K <: Tagged[_, _], S <: IdStatus] extends Serializable
 }
 
 /** should an entity class always have an ID value. */
-trait EntityFixiedId[T <: Tagged[_, _]]
-    extends Entity[T, IdStatus.Exists] with Serializable
+trait EntityFixiedId[T <: Tagged[_, _]] extends Entity[T, IdStatus.Exists]

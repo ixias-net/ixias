@@ -20,11 +20,11 @@ trait ShadeDBActionProvider { self: ShadeProfile =>
 
   object ShadeDBAction extends BasicAction[DataSourceName, Database] {
 
-    /** Returns a future of a result */
+    /** Invoke DB action block. */
     def apply[A](dsn: DataSourceName)(block: Database => Future[A]): Future[A] =
       invokeBlock(dsn, block)
 
-    /** Invoke the block. */
+    /** Run block process */
     def invokeBlock[A](dsn: DataSourceName, block: Database => Future[A]): Future[A] =
       (for {
         db    <- backend.getDatabase(dsn)
