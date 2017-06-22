@@ -10,7 +10,7 @@ package ixias.persistence.backend
 import scala.util.Try
 import ixias.persistence.model.DataSourceName
 
-trait SlickDataConfig extends BasicDataConfig {
+trait SlickConfig extends BasicDatabaseConfig {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */

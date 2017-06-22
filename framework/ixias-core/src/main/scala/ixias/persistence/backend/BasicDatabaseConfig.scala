@@ -12,7 +12,7 @@ import scala.collection.JavaConverters._
 import ixias.util.Configuration
 import ixias.persistence.model.DataSourceName
 
-trait BasicDataConfig {
+trait BasicDatabaseConfig {
 
   /** The section format */
   protected val CF_SECTION_HOSTSPEC  = """hostspec.%s"""
@@ -70,7 +70,7 @@ trait BasicDataConfig {
     val opt  = config.getConfig(path).map { section =>
       section.underlying.getAnyRef(CF_HOSTSPEC_HOSTS) match {
         case v: String            => Seq(v)
-        case v: java.util.List[_] => asScalaBufferConverter(v).asScala.toList.map(_.toString)
+        case v: java.util.List[_] => v.asScala.toList.map(_.toString)
         case _ => throw new Exception(s"""Illegal value type of host setting. { path: $dsn }""")
       }
     }
