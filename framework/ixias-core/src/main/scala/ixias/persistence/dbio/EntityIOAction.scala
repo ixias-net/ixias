@@ -9,8 +9,8 @@ package ixias.persistence.dbio
 
 import scala.concurrent.Future
 import scala.language.higherKinds
-import scala.concurrent.ExecutionContext
 import org.slf4j.LoggerFactory
+
 import ixias.util.Logger
 import ixias.model.{ Tagged, Entity, IdStatus }
 
@@ -31,11 +31,11 @@ trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]] extend
   /** The type of entity when it has not id. */
   type EntityWithNoId   = E[IdStatus.Empty]
 
-  /** The Execution Context */
-  protected implicit val ctx: ExecutionContext = Execution.Implicits.trampoline
-
   /** The logger for profile */
-  protected lazy val logger = new Logger(LoggerFactory.getLogger(this.getClass.getName))
+  protected lazy val logger  = Logger.apply
+
+  /** The Execution Context */
+  protected implicit val ctx = Execution.Implicits.trampoline
 
   // --[ Methods ]--------------------------------------------------------------
   /**
