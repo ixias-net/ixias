@@ -8,7 +8,6 @@
 package ixias.persistence
 
 import scala.language.higherKinds
-import org.slf4j.LoggerFactory
 import ixias.model.{ Tagged, Entity, IdStatus }
 import ixias.persistence.dbio.{ Execution, EntityIOAction }
 import ixias.persistence.lifted.{ Aliases, ExtensionMethodConversions }
