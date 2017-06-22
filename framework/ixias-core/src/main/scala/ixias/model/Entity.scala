@@ -7,7 +7,7 @@
 
 package ixias.model
 
-import org.joda.time.DateTime
+import java.time.LocalDateTime
 import scala.reflect.runtime.universe._
 
 trait  IdStatus
@@ -31,10 +31,10 @@ trait Entity[K <: Tagged[_, _], S <: IdStatus] extends Serializable
   val version: Option[Long] = None
 
   /** The date and time when this entity was last updated. */
-  val updatedAt: DateTime   = new DateTime()
+  val updatedAt: LocalDateTime = LocalDateTime.now()
 
   /** The date and time when this entity was added to the system. */
-  val createdAt: DateTime   = new DateTime()
+  val createdAt: LocalDateTime = LocalDateTime.now()
 
   /** check whether exists entity id value. */
   def id(implicit ev: IdSt =:= IdStatus.Exists): Id = _id
