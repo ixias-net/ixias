@@ -9,7 +9,6 @@ package ixias.persistence.model
 
 import scala.reflect.ClassTag
 import scala.collection.immutable.ListMap
-import ixias.model.Identity
 
 /** The data converter. */
 trait Converter[-A, B] {
@@ -53,22 +52,6 @@ trait TableDefaultConverter {
   implicit def MapConv[A, B](implicit fmt: Converter[A, B]): Converter[Map[String, A], Map[String, B]] =
     new Converter[Map[String, A], Map[String, B]] {
       def convert(itr: Map[String, A]) = itr.foldLeft(ListMap.empty[String, B]){
-        case (prev, (k, v)) => prev + (k -> fmt.convert(v))
-      }
-    }
-
-  /** Serializer for Identity. */
-  implicit def IdentityConv[A]: Converter[Identity[A], Identity[A]] =
-    new Converter[Identity[A], Identity[A]] {
-      def convert(v: Identity[A]) = v
-    }
-
-  /**
-   * Serializer for Map[Identity[_], T] types.
-   */
-  implicit def MapWithIdentityConv[A, B](implicit fmt: Converter[A, B]): Converter[Map[Identity[_], A], Map[Identity[_], B]] =
-    new Converter[Map[Identity[_], A], Map[Identity[_], B]] {
-      def convert(itr: Map[Identity[_], A]) = itr.foldLeft(Map.empty[Identity[_], B]){
         case (prev, (k, v)) => prev + (k -> fmt.convert(v))
       }
     }

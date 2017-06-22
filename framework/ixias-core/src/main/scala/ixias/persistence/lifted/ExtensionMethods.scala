@@ -7,7 +7,5 @@
 
 package ixias.persistence.lifted
 
-trait ExtensionMethodConversions extends FutureOps
-    with QueryOps
-    with TaggedOps
-    with ConverterOps
+trait ExtensionMethodConversions
+  extends ConverterOps with QueryOps with TaggedOps
