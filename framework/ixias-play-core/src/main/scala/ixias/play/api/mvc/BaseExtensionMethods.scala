@@ -11,18 +11,10 @@ import scala.concurrent.ExecutionContext
 
 trait BaseExtensionMethods {
 
-  /** DDD Model */
-  val SomeId   = ixias.model.SomeId
-  val NoneId   = ixias.model.NoneId
-  val Identity = ixias.model.Identity
-
   /** HTTP Request/Response Helper */
   val Json = ixias.play.api.mvc.JsonAction
-  val Jade = ixias.play.api.mvc.JadeAction
   val Form = ixias.play.api.mvc.FormAction
-
-  /** Stack Action Helper */
-  val StackAction = ixias.play.api.mvc.StackAction
+//val Jade = ixias.play.api.mvc.JadeAction
 
   /**
    * The execution context to run this action in

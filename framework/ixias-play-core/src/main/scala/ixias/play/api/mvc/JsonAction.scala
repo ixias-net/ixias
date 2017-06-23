@@ -9,11 +9,7 @@ package ixias.play.api.mvc
 
 import play.api.mvc.Results._
 import play.api.mvc.{ Request, AnyContent, Result }
-import play.api.data.validation.ValidationError
 import play.api.libs.json.{ Reads, Writes, JsSuccess, JsError }
-import scala.concurrent.Future
-
-import ixias.play.api.mvc.Errors._
 import ixias.util.Logger
 
 // Helper for JSON

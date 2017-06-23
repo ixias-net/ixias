@@ -7,15 +7,8 @@
 
 package ixias.play.api.mvc
 
-import play.api.mvc.{ Request, Result }
-import play.api.mvc.Results._
-import play.api.data.Forms._
+import play.api.mvc.Request
 import play.api.data.{ Form, Mapping }
-import play.api.i18n.Lang.defaultLang
-
-import ixias.util.Logger
-import scala.concurrent.Future
-import ixias.play.api.mvc.Errors._
 
 // Helper for HTTP-POST data
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
