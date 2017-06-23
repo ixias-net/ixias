@@ -9,7 +9,7 @@ package ixias.play.api.controllers
 
 import controllers.{ AssetsBuilder, DefaultAssetsMetadata }
 import play.api.{ Mode, Environment, Configuration }
-import play.api.mvc.{ Action, AnyContent, ControllerComponents, BaseController }
+import play.api.mvc.{ Action, AnyContent, InjectedController }
 import play.api.http.LazyHttpErrorHandler
 import play.api.Logger
 
@@ -17,9 +17,8 @@ import play.api.Logger
 class UIAssets @javax.inject.Inject() (
   env:  Environment,
   conf: Configuration,
-  meta: DefaultAssetsMetadata,
-  protected val controllerComponents: ControllerComponents
-) extends AssetsBuilder(LazyHttpErrorHandler, meta) with BaseController {
+  meta: DefaultAssetsMetadata
+) extends AssetsBuilder(LazyHttpErrorHandler, meta) with InjectedController {
 
   import controllers.Assets._
 
