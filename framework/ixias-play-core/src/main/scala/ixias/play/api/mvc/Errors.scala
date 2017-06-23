@@ -11,8 +11,6 @@ import play.api.mvc.Result
 import play.api.mvc.Results._
 import play.api.http.Status._
 import play.api.libs.json.Json
-
-import ixias.util.EnumOf
 import ixias.util.Logging
 import ixias.play.api.json.JsValueError
 
