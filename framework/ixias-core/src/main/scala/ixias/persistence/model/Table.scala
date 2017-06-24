@@ -49,7 +49,7 @@ trait Table[R, P <: JdbcProfile] { self =>
    */
   trait API extends driver.API
       with Aliases
-      with ExtensionMethodConversions
+      with ExtensionMethods
       with SlickColumnOptionOps
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver

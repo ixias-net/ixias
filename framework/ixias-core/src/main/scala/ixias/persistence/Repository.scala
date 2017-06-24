@@ -10,7 +10,7 @@ package ixias.persistence
 import scala.language.higherKinds
 import ixias.model.{ Tagged, Entity, IdStatus }
 import ixias.persistence.dbio.{ Execution, EntityIOAction }
-import ixias.persistence.lifted.{ Aliases, ExtensionMethodConversions }
+import ixias.persistence.lifted.{ Aliases, ExtensionMethods }
 import ixias.util.Logger
 
 /**
@@ -38,7 +38,7 @@ private[persistence] trait Profile {
    * This provides the repository's implicits, the Database connections,
    * and commonly types and objects.
    */
-  trait API extends Aliases with ExtensionMethodConversions
+  trait API extends Aliases with ExtensionMethods
   val api: API
 }
 
