@@ -110,6 +110,14 @@ lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)
   .settings(publisherSettings: _*)
+
+lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
+  .settings(name := "ixias-play-scalate")
+  .enablePlugins(PlayScala)
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(playSettings:      _*)
+  .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "org.scala-lang"        % "scala-compiler" % scalaVersion.value,
     "org.scalatra.scalate" %% "scalate-core"   % "1.8.0"
@@ -136,7 +144,7 @@ lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasPlayCore, ixiasPlayAuth)
+  .aggregate(ixiasPlayCore, ixiasPlayScalate, ixiasPlayAuth)
   .dependsOn(ixiasPlayCore, ixiasPlayAuth)
 
 // Setting for prompt
