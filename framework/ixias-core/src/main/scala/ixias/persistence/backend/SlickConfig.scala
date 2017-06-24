@@ -8,6 +8,7 @@
 package ixias.persistence.backend
 
 import scala.util.Try
+import scala.concurrent.duration.Duration
 import ixias.persistence.model.DataSourceName
 
 trait SlickConfig extends BasicDatabaseConfig {
@@ -29,7 +30,7 @@ trait SlickConfig extends BasicDatabaseConfig {
    * Driver tries to maintain in the pool, including both idle and in-use connections.
    */
   protected def getHostSpecMinIdle(dsn: DataSourceName): Option[Int] =
-    readValue(dsn)(_.getInt(CF_HOSTSPEC_MIN_IDLE))
+    readValue(dsn)(_.get[Option[Int]](CF_HOSTSPEC_MIN_IDLE))
 
   /**
    * Get the property controls the maximum size that the pool is allowed to reach,
@@ -37,7 +38,7 @@ trait SlickConfig extends BasicDatabaseConfig {
    * the maximum number of actual connections to the database backend.
    */
   protected def getHostSpecMaxPoolSize(dsn: DataSourceName): Option[Int] =
-    readValue(dsn)(_.getInt(CF_HOSTSPEC_MAX_POOL_SIZE))
+    readValue(dsn)(_.get[Option[Int]](CF_HOSTSPEC_MAX_POOL_SIZE))
 
   /**
    * Get the maximum number of milliseconds that a client will wait for
@@ -45,7 +46,7 @@ trait SlickConfig extends BasicDatabaseConfig {
    * a connection becoming available, a SQLException will be thrown from
    */
   protected def getHostSpecConnectionTimeout(dsn: DataSourceName): Option[Long] =
-    readValue(dsn)(_.getMilliseconds(CF_HOSTSPEC_CONNECTION_TIMEOUT))
+    readValue(dsn)(_.get[Option[Duration]](CF_HOSTSPEC_CONNECTION_TIMEOUT).map(_.toMillis))
 
   /**
    * This property controls the maximum amount of time (in milliseconds) that
@@ -56,7 +57,7 @@ trait SlickConfig extends BasicDatabaseConfig {
    * A value of 0 means that idle connections are never removed from the pool.
    */
   protected def getHostSpecIdleTimeout(dsn: DataSourceName): Option[Long] =
-    readValue(dsn)(_.getMilliseconds(CF_HOSTSPEC_IDLE_TIMEOUT))
+    readValue(dsn)(_.get[Option[Duration]](CF_HOSTSPEC_IDLE_TIMEOUT).map(_.toMillis))
 
   /**
    * Get the JDBC Url

@@ -39,41 +39,40 @@ trait BasicDatabaseConfig {
       dsn.path + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
       dsn.path
     ).foldLeft[Option[A]](None) {
-      case (prev, path) => prev.orElse(config.getConfig(path).flatMap(f))
+      case (prev, path) => prev.orElse(f(config.get[Configuration](path)))
     }
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the username used for DataSource */
   protected def getUserName(dsn: DataSourceName): Option[String] =
-    readValue(dsn)(_.getString(CF_USERNAME))
+    readValue(dsn)(_.get[Option[String]](CF_USERNAME))
 
   /** Get the password used for DataSource */
   protected def getPassword(dsn: DataSourceName): Option[String] =
-    readValue(dsn)(_.getString(CF_PASSWORD))
+    readValue(dsn)(_.get[Option[String]](CF_PASSWORD))
 
   /** Get the flag for connection in read-only mode. */
   protected def getHostSpecReadOnly(dsn: DataSourceName): Option[Boolean] =
-    readValue(dsn)(_.getBoolean(CF_HOSTSPEC_READONLY))
+    readValue(dsn)(_.get[Option[Boolean]](CF_HOSTSPEC_READONLY))
 
   // --[ Methods ]--------------------------------------------------------------
   /** Get the JDBC driver class name. */
   protected def getDriverClassName(dsn: DataSourceName): Try[String] =
-    Try(readValue(dsn)(_.getString(CF_DRIVER_CLASS_NAME)).get)
+    Try(readValue(dsn)(_.get[Option[String]](CF_DRIVER_CLASS_NAME)).get)
 
   /** Get the database name. */
   protected def getDatabaseName(dsn: DataSourceName): Try[String] =
-    Try(readValue(dsn)(_.getString(CF_HOSTSPEC_DATABASE)).get)
+    Try(readValue(dsn)(_.get[Option[String]](CF_HOSTSPEC_DATABASE)).get)
 
   /** Get host list to connect to database. */
   protected def getHosts(dsn: DataSourceName): Try[Seq[String]] = {
-    val path = dsn.path + '.' + dsn.database + '.' + CF_SECTION_HOSTSPEC.format(dsn.hostspec)
-    val opt  = config.getConfig(path).map { section =>
-      section.underlying.getAnyRef(CF_HOSTSPEC_HOSTS) match {
-        case v: String            => Seq(v)
-        case v: java.util.List[_] => v.asScala.toList.map(_.toString)
-        case _ => throw new Exception(s"""Illegal value type of host setting. { path: $dsn }""")
-      }
+    val path    = dsn.path + '.' + dsn.database + '.' + CF_SECTION_HOSTSPEC.format(dsn.hostspec)
+    val section = config.get[Configuration](path).underlying
+    val opt     = section.getAnyRef(CF_HOSTSPEC_HOSTS) match {
+      case v: String            => Seq(v)
+      case v: java.util.List[_] => v.asScala.toList.map(_.toString)
+      case _ => throw new Exception(s"""Illegal value type of host setting. { path: $dsn }""")
     }
-    Try(opt.get)
+    Try(opt)
   }
 }

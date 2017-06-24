@@ -32,13 +32,13 @@ trait ShadeConfig extends BasicDatabaseConfig {
    * applications to prevent them from stepping over each other.
    */
   protected def getKeysPrefix(dsn: DataSourceName): String =
-    readValue(dsn)(_.getString(CF_KEY_PREFIX)).getOrElse(dsn.database + "#")
+    readValue(dsn)(_.get[Option[String]](CF_KEY_PREFIX)).getOrElse(dsn.database + "#")
 
   /**
    * Get the operation timeout; When the limit is reached,
    * the Future responses finish with Failure(TimeoutException)
    */
   protected def getHostSpecIdleTimeout(dsn: DataSourceName): FiniteDuration =
-    readValue(dsn)(_.getFiniteDuration(CF_OP_TIMEOUT))
+    readValue(dsn)(_.get[Option[FiniteDuration]](CF_OP_TIMEOUT))
       .getOrElse(FiniteDuration(30000, TimeUnit.MILLISECONDS))
 }
