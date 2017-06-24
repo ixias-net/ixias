@@ -9,13 +9,16 @@ package ixias.play.api.auth.container
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import ixias.model.Identity
+import ixias.model.Tagged
 import ixias.play.api.auth.token._
 
 /**
  * The container for session's tokens.
  */
-trait Container[Id <: Identity[_]] {
+trait Container[K <: Tagged[_, _]] {
+
+  /** The type of entity id */
+  type Id   = K
 
   /**
    * It is the first callback function executed
