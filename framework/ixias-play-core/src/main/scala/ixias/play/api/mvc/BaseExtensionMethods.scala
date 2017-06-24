@@ -7,23 +7,7 @@
 
 package ixias.play.api.mvc
 
-import scala.concurrent.ExecutionContext
-
 trait BaseExtensionMethods {
-
-  /** HTTP Request/Response Helper */
-  val Json = ixias.play.api.mvc.JsonAction
-  val Form = ixias.play.api.mvc.FormAction
-//val Jade = ixias.play.api.mvc.JadeAction
-
-  /**
-   * The execution context to run this action in
-   */
-  def executionContext: ExecutionContext =
-    play.api.libs.concurrent.Execution.defaultContext
-
-  object Implicits {
-    implicit def defaultContext: ExecutionContext =
-      play.api.libs.concurrent.Execution.defaultContext
-  }
+  val JsonHelper = ixias.play.api.mvc.JsonHelper
+  val FormHelper = ixias.play.api.mvc.FormHelper
 }
