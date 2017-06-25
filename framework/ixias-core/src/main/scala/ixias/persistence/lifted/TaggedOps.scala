@@ -10,10 +10,7 @@ package ixias.persistence.lifted
 import ixias.model._
 import scala.language.implicitConversions
 
-final case class TaggedTransformer[A, T](self: A @@ T) extends AnyVal {
-  @inline def unwrap: A = Tag.unwrap(self)
-}
-
 trait TaggedOps {
-  implicit def toTaggedTransformer[A, T](a: A @@ T) = TaggedTransformer(a)
+  implicit def taggedToUnwrapValue1[A, _](t: A @@ _): A = Tag.unwrap(t)
+  implicit def taggedToUnwrapValue2[A, _](t: Option[A @@ _]): Option[A] = t.map(Tag.unwrap(_))
 }
