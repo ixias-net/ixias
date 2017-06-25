@@ -30,7 +30,7 @@ case class TokenViaSession(val name: String) extends Token {
   /**
    * Put a specified security token to storage.
    */
-  def put(result: Result, token: AuthenticityToken)(implicit request: RequestHeader): Result = {
+  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result = {
     val signed     = SignedToken.unwrap(Token.signWithHMAC(token))
     val maxAgeSecs = maxAge.map(_.toSeconds.toInt)
     val cookie     = Cookie(cookieName, signed, maxAgeSecs, path, domain, secure, httpOnly, sameSite)
@@ -46,7 +46,7 @@ case class TokenViaSession(val name: String) extends Token {
   /**
    * Extract a security token from storage.
    */
-  def extract(request: RequestHeader): Option[AuthenticityToken] =
+  def extract(implicit request: RequestHeader): Option[AuthenticityToken] =
     for {
       signed <- request.cookies.get(cookieName).map(c => SignedToken(c.value))
       token  <- Token.verifyHMAC(signed)

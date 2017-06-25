@@ -22,7 +22,7 @@ trait Container[K <: Tagged[_, _]] {
   type Id   = K
 
   /** The execution context */
-  implicit def executionContext: scala.concurrent.ExecutionContext
+  implicit val executionContext: scala.concurrent.ExecutionContext
 
   /**
    * It is the first callback function executed

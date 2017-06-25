@@ -7,46 +7,35 @@
 
 package ixias.play.api.auth.mvc
 
-import scala.concurrent.{ Future, ExecutionContext }
+import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-
 import play.api.{ Environment, Mode }
-import play.api.mvc.{ RequestHeader, Result, Results }
-import play.api.libs.iteratee.Execution
+import play.api.mvc.{ RequestHeader, Result }
+import play.api.libs.typedmap.TypedKey
 
-import ixias.model.{ Identity, Entity }
-import ixias.play.api.auth.token.{ Token, AuthenticityToken, SignedToken }
+import ixias.model.{ Tagged, Entity }
+import ixias.play.api.auth.token.Token
 import ixias.play.api.auth.container.Container
-import ixias.play.api.mvc.StackActionRequest
 import ixias.play.api.mvc.Errors._
 
-trait AuthProfile[K <: Identity[_], E <: Entity[_], T] extends Results
+trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], T]
 {
+  import Token._
+
   // --[ TypeDefs ]-------------------------------------------------------------
-  /** The type of user identity */
-  type Id   = K
+  type Id        = K  // The identity to detect authenticated resource.
+  type Auth      = E  // The authenticated resource.
+  type Authority = T  // The type of authoriy
 
-  /** The type of user entity */
-  type User = E
-
-  /** The type of authority roles */
-  type Authority = T
-
-  /** The key of attribute for containing required authority roles. */
-  case object UserKey      extends StackActionRequest.AttributeKey[User]
-
-  /** The key of attribute for containing user data. */
-  case object AuthorityKey extends StackActionRequest.AttributeKey[Authority]
+  /** Keys to request attributes. */
+  object RequestAttrKey {
+    val Auth      = TypedKey[Auth]("Authentication")
+    val Authority = TypedKey[Authority]("Authority")
+  }
 
   // --[ Properties ]-----------------------------------------------------------
   /** The enviroment. */
-  implicit val env: Environment
-
-  /** Can execute program logic asynchronously */
-  implicit val ctx: ExecutionContext = Execution.Implicits.trampoline
-
-  /** The timeout value in `seconds` */
-  val sessionTimeout: Duration = Duration.Inf
+  val env: Environment
 
   /** The accessor for security token. */
   val tokenAccessor: Token
@@ -54,16 +43,22 @@ trait AuthProfile[K <: Identity[_], E <: Entity[_], T] extends Results
   /** The datastore for security token. */
   val datastore: Container[Id]
 
+  /** The timeout value in `seconds` */
+  val sessionTimeout: Duration = Duration.Inf
+
+  /** Can execute program logic asynchronously */
+  implicit val executionContext: scala.concurrent.ExecutionContext
+
   // --[ Methods ]--------------------------------------------------------------
   /**
-   * Resolve user by specified user-id.
+   * Resolve authenticated resource by the identity
    */
-  protected def resolve(uid: Id): Future[Option[User]]
+  def resolve(id: Id): Future[Option[Auth]]
 
   /**
-   * Verifies what user are authorized to do.
+   * Verifies what authenticated resource authorized to do.
    */
-  protected def authorize(user: User, authority: Option[Authority]): Future[Boolean]
+  def authorize(auth: Auth, authority: Option[Authority]): Future[Boolean]
 
   /**
    * Invoked if authentication failed with the credentials provided.
@@ -79,102 +74,99 @@ trait AuthProfile[K <: Identity[_], E <: Entity[_], T] extends Results
    * Authorization helps you to control access rights by granting or
    * denying specific permissions to an authenticated user.
    */
-  def authorizationFailed(user: User, authority: Option[Authority])(implicit request: RequestHeader): Result =
+  def authorizationFailed(auth: Auth, authority: Option[Authority])(implicit request: RequestHeader): Result =
     E_AUTHRIZATION
 
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Returns authorized user.
    */
-  def loggedIn(implicit request: StackActionRequest[_]): Option[User] =
-    request.get(UserKey)
+  final def loggedIn(implicit request: RequestHeader): Option[Auth] =
+    request.attrs.get(RequestAttrKey.Auth)
 
   /**
    * Returns the result response.
    */
-  def loggedIn[A](f: User => Result)
-    (implicit request: StackActionRequest[A]): Result =
-    loggedIn.fold(authenticationFailed)(f)
+  final def loggedIn(block: Auth => Result)(implicit request: RequestHeader): Result =
+    loggedIn match {
+      case Some(auth) => block(auth)
+      case None       => authenticationFailed
+    }
 
   /**
    * Returns the result response.
    */
-  def loggedIn[A](f: User => Future[Result])
-    (implicit request: StackActionRequest[A]): Future[Result] =
-    loggedIn.fold(Future(authenticationFailed))(f)
+  final def loggedIn(block: Auth => Future[Result])(implicit request: RequestHeader): Future[Result] =
+    loggedIn match {
+      case Some(auth) => block(auth)
+      case None       => Future.successful(authenticationFailed)
+    }
 
   /**
-   * Returns the result response of applying $f to user data
+   * Returns the result response of applying block
    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
    */
-  def loggedInOrNot[A](ifEmpty: => Result)(f: User => Result)
-    (implicit request: StackActionRequest[A]): Result =
-    loggedIn.fold(ifEmpty)(f)
+  final def loggedInOrNot(ifEmpty: => Result)(block: Auth => Result)(implicit request: RequestHeader): Result =
+    loggedIn match {
+      case Some(auth) => block(auth)
+      case None       => ifEmpty
+    }
 
   /**
-   * Returns the result response of applying $f to user data
+   * Returns the result response of applying block
    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
    */
-  def loggedInOrNot[A](ifEmpty: => Result)(f: User => Future[Result])
-    (implicit request: StackActionRequest[A]): Future[Result] =
-    loggedIn.fold(Future(ifEmpty))(f)
+  final def loggedInOrNot(ifEmpty: => Result)(block: Auth => Future[Result])(implicit request: RequestHeader): Future[Result] =
+    loggedIn match {
+      case Some(auth) => block(auth)
+      case None       => Future.successful(ifEmpty)
+    }
 
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Invoke this method on login succeeded.
    */
-  def loginSucceeded(uid: Id)(implicit request: RequestHeader): Future[Result]
-
-  /**
-   * Invoke this method on login succeeded.
-   */
-  def loginSucceeded(uid: Id, block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
-    datastore.open(uid, sessionTimeout).map { token =>
-      tokenAccessor.put(token)(block(token))
-    } recover { case _: Throwable => InternalServerError }
-
-  /**
-   * Invoke this method on logout succeeded.
-   */
-  def logoutSucceeded(uid: Id)(implicit request: RequestHeader): Future[Result]
-
-  /**
-   * Invoke this method on logout succeeded.
-   */
-  def logoutSucceeded(uid: Id, block: => Result)(implicit request: RequestHeader): Future[Result] =
-    tokenAccessor.extract(request) match {
-      case Some(token) => datastore.destroy(token).map(_ => tokenAccessor.discard(block))
-      case None        => Future.successful(tokenAccessor.discard(block))
+  final def loginSucceeded(id: Id)(block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
+    (for {
+      token  <- datastore.open(id, sessionTimeout)
+      result  = block(token)
+    } yield tokenAccessor.put(token)(result)) recover {
+      case _: Throwable => E_INTERNAL_SERVER
     }
+
+  /**
+   * Invoke this method on logout succeeded.
+   */
+  final def logoutSucceeded(uid: Id, block: => Result)(implicit request: RequestHeader): Future[Result] =
+    for {
+      _ <- tokenAccessor.extract match {
+        case None        => Future.successful(())
+        case Some(token) => datastore.destroy(token)
+      }
+    } yield tokenAccessor.discard(block)
 
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Extract a session token in `RequestHeader`.
    */
   final def extractAuthToken(implicit request: RequestHeader): Option[AuthenticityToken] =
-    (env.mode match {
-      case Mode.Prod => None
-      case _         => request.headers.get("TEST_AUTH_TOKEN")
-    }) orElse tokenAccessor.extract(request)
-
-  /**
-   * Extract a signed session token in `RequestHeader`.
-   */
-  def extractSignedToken(implicit request: RequestHeader): Option[SignedToken] =
-    extractAuthToken.map(Token.signWithHMAC)
+    (env.mode == Mode.Prod match {
+      case true  => None
+      case false => request.headers.get("TEST_AUTH_TOKEN").map(AuthenticityToken(_))
+    }) orElse tokenAccessor.extract
 
   /**
    * Restore a user data by the session token in `RequestHeader`.
    */
-  final def restore(implicit request: RequestHeader) : Future[(Option[User], Result => Result)] =
+  final def restore(implicit request: RequestHeader): Future[(Option[Auth], Result => Result)] =
     extractAuthToken match {
       case None        => Future.successful(None -> identity)
       case Some(token) => (for {
-        Some(uid)  <- datastore.read(token)
-        Some(user) <- resolve(uid)
+        Some(id)   <- datastore.read(token)
+        Some(auth) <- resolve(id)
         _          <- datastore.setTimeout(token, sessionTimeout)
       } yield {
-        Some(user) -> tokenAccessor.put(token) _
+        Some(auth) -> tokenAccessor.put(token) _
       }) recover {
         case ex: Throwable => None -> identity
       }
@@ -183,22 +175,22 @@ trait AuthProfile[K <: Identity[_], E <: Entity[_], T] extends Results
   /**
    * Verifies what user are authenticated to do.
    */
-  final def authenticate(implicit request: RequestHeader): Future[Either[Result, (User, Result => Result)]] =
+  final def authenticate(implicit request: RequestHeader): Future[Either[Result, (Auth, Result => Result)]] =
     restore map {
-      case (Some(user), updater) => Right(user -> updater)
+      case (Some(auth), updater) => Right(auth -> updater)
       case _                     =>  Left(authenticationFailed)
     }
 
   /**
    * Verifies what user are authorized to do.
    */
-  final def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (User, Result => Result)]] =
+  final def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (Auth, Result => Result)]] =
     (for {
-      Some((user, updater)) <- authenticate.map(_.right.toOption)
-      authorized            <- authorize(user, authority)
+      Some((auth, updater)) <- authenticate.map(_.toOption)
+      authorized            <- authorize(auth, authority)
     } yield authorized match {
-      case true  => Right(user -> updater)
-      case false => Left(authorizationFailed(user, authority))
+      case true  => Right(auth -> updater)
+      case false => Left(authorizationFailed(auth, authority))
     }) recover {
       case _: NoSuchElementException => Left(authenticationFailed)
     }

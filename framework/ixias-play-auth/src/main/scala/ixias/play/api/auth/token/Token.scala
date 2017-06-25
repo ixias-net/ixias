@@ -23,13 +23,13 @@ trait Token {
   protected val config = Configuration()
 
   /** Put a specified security token to storage */
-  def put(result: Result, token: AuthenticityToken)(implicit request: RequestHeader): Result
+  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result
 
   /** Discard a security token in storage */
   def discard(result: Result)(implicit request: RequestHeader): Result
 
   /** Extract a security token from storage */
-  def extract(request: RequestHeader): Option[AuthenticityToken]
+  def extract(implicit request: RequestHeader): Option[AuthenticityToken]
 }
 
 // Companion object
