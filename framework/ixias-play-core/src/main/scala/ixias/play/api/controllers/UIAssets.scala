@@ -7,29 +7,18 @@
 
 package ixias.play.api.controllers
 
-import play.api._
-import play.api.mvc.{ Action, AnyContent, Controller }
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import controllers.{ AssetsBuilder, DefaultAssetsMetadata }
+import play.api.{ Mode, Environment, Configuration }
+import play.api.mvc.{ Action, AnyContent, InjectedController }
+import play.api.http.LazyHttpErrorHandler
 import play.api.Logger
-import play.api.libs.streams.Streams
-import play.api.libs.iteratee.Enumerator
-import play.api.http.HttpErrorHandler
-import controllers.AssetsBuilder
 
-import akka._
-import akka.stream.scaladsl._
-import scala.concurrent.Future
-import scala.collection.JavaConversions._
-
-import javax.inject._
-import java.io.{ File, FileInputStream }
-
-@Singleton
-class UIAssets @Inject() (
-  env:          Environment,
-  conf:         Configuration,
-  errorHandler: HttpErrorHandler
-) extends AssetsBuilder(errorHandler) {
+@javax.inject.Singleton
+class UIAssets @javax.inject.Inject() (
+  env:  Environment,
+  conf: Configuration,
+  meta: DefaultAssetsMetadata
+) extends AssetsBuilder(LazyHttpErrorHandler, meta) with InjectedController {
 
   import controllers.Assets._
 
@@ -45,37 +34,37 @@ class UIAssets @Inject() (
   }
 
   /** 開発モード時にAssetsを提供するディレクトリ・リスト */
-  val basePaths: List[java.io.File] =
-    conf.getStringList("assets.dev.dirs") match {
-      case Some(dirs) => dirs.map(env.getFile).toList
-      case _          => List(
+  val basePaths: Seq[java.io.File] =
+    (conf.get[Seq[String]]("assets.dev.dirs") match {
+      case dirs if dirs.size > 0 => dirs.map(env.getFile)
+      case _ => Seq(
         env.getFile("ui"),
         env.getFile("ui/src"),
         env.getFile("ui/build"),
         env.getFile("ui/dist"),
         env.getFile("target/web/public/main")
       )
-    }
-  import javax.activation.MimetypesFileTypeMap
+    }).filter(_.exists)
+
+  // import javax.activation.MimetypesFileTypeMap
 
   /** Assetsハンドラー : 開発モード */
-  private def devAssetHandler(file: String): Action[AnyContent] = Action.async { request =>
-    Future {
-      val paths   = basePaths.view.map(new File(_, file)).filter(_.exists)
-      val results = paths.map(f => f.isFile match {
-        case false => Forbidden(views.html.defaultpages.unauthorized())
-        case true  => {
-          logger.info(s"Serving $file")
-          val in: FileInputStream = new FileInputStream(f)
-          val content: Enumerator[Array[Byte]] = Enumerator.fromStream(in) //, 1024*1024)
-          val source: Source[Array[Byte], NotUsed] = Source.fromPublisher(Streams.enumeratorToPublisher(content))
-          Ok.chunked(source)
-            .as(play.api.libs.MimeTypes.forFileName(file).getOrElse("application/octet-stream"))
-            .withHeaders(CACHE_CONTROL -> "no-store")
+  private def devAssetHandler(file: String): Action[AnyContent] = {
+    val path = basePaths.foldLeft[Option[String]](None) {
+      case (prev, path) => prev match {
+        case Some(_) => prev
+        case None    => {
+          val fullPath = path + "/" + file
+          val exists   = (new java.io.File(fullPath)).isFile
+          if (exists) Some(path.getName) else None
         }
-      })
-      results.headOption.getOrElse(
-        NotFound("404 - Page not found error." + request.path))
+      }
+    }
+    path match {
+      case Some(path) => at(path, file, aggressiveCaching = false)
+      case None       => Action { implicit request =>
+        NotFound("404 - Page not found error. path=" + request.path)
+      }
     }
   }
 }

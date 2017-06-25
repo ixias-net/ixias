@@ -8,6 +8,7 @@
 package ixias.mail
 
 import scala.util.Try
+import scala.concurrent.duration.Duration
 import ixias.util.Configuration
 
 trait EmailConfig {
@@ -35,79 +36,79 @@ trait EmailConfig {
    * Gets a E-mail's charset.
    */
   def getCharset(): String =
-    config.getString(CF_MAIL_CHARSET).getOrElse("utf-8")
+    config.get[Option[String]](CF_MAIL_CHARSET).getOrElse("utf-8")
 
   /**
    * Gets a bounce mail address.
    */
   def getBounceAddress(): Option[String] =
-    config.getString(CF_MAIL_BOUNCE_ADDRESS)
+    config.get[Option[String]](CF_MAIL_BOUNCE_ADDRESS)
 
   // --[ Methods ]--------------------------------------------------------------
   /**
    * SMTP : Gets the host name of the SMTP server
    */
   def getSmtpHost(): Try[String] =
-    Try(config.getString(CF_SMTP_HOST).get)
+    Try(config.get[Option[String]](CF_SMTP_HOST).get)
 
   /**
    * SMTP : Gets the listening port of the SMTP server.
    */
   def getSmtpPort(): Int =
-    config.getInt(CF_SMTP_PORT).getOrElse(25)
+    config.get[Option[Int]](CF_SMTP_PORT).getOrElse(25)
 
   /**
    * SMTP : Returns whether SSL/TLS encryption for the transport is currently enabled (SMTPS/POPS).
    */
   def getSmtpSSL(): Boolean =
-    config.getBoolean(CF_SMTP_SSL).getOrElse(false)
+    config.get[Option[Boolean]](CF_SMTP_SSL).getOrElse(false)
 
   /**
    * SMTP : Gets whether the client is configured to try to enable STARTTLS.
    */
   def getSmtpTLS(): Boolean =
-    config.getBoolean(CF_SMTP_TLS).getOrElse(false)
+    config.get[Option[Boolean]](CF_SMTP_TLS).getOrElse(false)
 
   /**
    * SMTP : Gets the user's name if authentication is needed.
    */
   def getSmtpUser(): Option[String] =
-    config.getString(CF_SMTP_USER)
+    config.get[Option[String]](CF_SMTP_USER)
 
   /**
    * SMTP : Gets the user's passowrd if authentication is needed.
    */
   def getSmtpPassword(): Option[String] =
-    config.getString(CF_SMTP_PASSWORD)
+    config.get[Option[String]](CF_SMTP_PASSWORD)
 
   /**
    * SMTP : Gets the socket I/O timeout value in milliseconds.
    */
   def getSmtpTimeout(): Option[Long] =
-    config.getMilliseconds(CF_SMTP_TIMEOUT)
+    config.get[Option[Duration]](CF_SMTP_TIMEOUT).map(_.toMillis)
 
   /**
    * SMTP : Gets the socket connection timeout value in milliseconds.
    */
   def getSmtpConnectionTimeout(): Option[Long] =
-    config.getMilliseconds(CF_SMTP_CON_TIMEOUT)
+    config.get[Option[Duration]](CF_SMTP_CON_TIMEOUT).map(_.toMillis)
 
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Twillio : Gets the service sid.
    */
   def getTwillioSid(): Try[String] =
-    Try(config.getString(CF_TWILLIO_SID).get)
+    Try(config.get[Option[String]](CF_TWILLIO_SID).get)
 
   /**
    * Twillio : Gets the service auth-token.
    */
   def getTwillioAuthToken(): Try[String] =
-    Try(config.getString(CF_TWILLIO_TOKEN).get)
+    Try(config.get[Option[String]](CF_TWILLIO_TOKEN).get)
 
   /**
    * Twillio : Gets a sender's phone number.
    */
   def getTwillioFrom(): Try[String] =
-    Try(config.getString(CF_TWILLIO_FROM).get)
+    Try(config.get[Option[String]](CF_TWILLIO_FROM).get)
 }

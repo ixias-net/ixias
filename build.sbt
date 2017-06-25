@@ -20,9 +20,10 @@ lazy val commonSettings = Seq(
     "-feature",                // Emit warning and location for usages of features that should be imported explicitly.
     "-unchecked",              // Enable additional warnings where generated code depends on assumptions.
     "-Xfatal-warnings",        // Fail the compilation if there are any warnings.
-    "-Xlint",                  // Enable recommended additional warnings.
+    "-Xlint:-unused,_",        // Enable recommended additional warnings.
     "-Ywarn-adapted-args",     // Warn if an argument list is modified to match the receiver.
     "-Ywarn-dead-code",        // Warn when dead code is identified.
+    "-Ywarn-unused:imports",   // Warn if an import selector is not referenced.
     "-Ywarn-inaccessible",     // Warn about inaccessible types in method signatures.
     "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
     "-Ywarn-numeric-widen"     // Warn when numerics are widened.
@@ -109,6 +110,14 @@ lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)
   .settings(publisherSettings: _*)
+
+lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
+  .settings(name := "ixias-play-scalate")
+  .enablePlugins(PlayScala)
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(playSettings:      _*)
+  .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "org.scala-lang"        % "scala-compiler" % scalaVersion.value,
     "org.scalatra.scalate" %% "scalate-core"   % "1.8.0"
@@ -135,7 +144,7 @@ lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasPlayCore, ixiasPlayAuth)
+  .aggregate(ixiasPlayCore, ixiasPlayScalate, ixiasPlayAuth)
   .dependsOn(ixiasPlayCore, ixiasPlayAuth)
 
 // Setting for prompt

@@ -8,20 +8,27 @@
 package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import ixias.model.{ Identity, Entity }
+import scala.language.higherKinds
+import ixias.model.{ Tagged, Entity, IdStatus }
 import ixias.persistence.Repository
 
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
+trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]]
     extends IOAction { self: Repository[K, E] =>
 
   /** The type of entity id */
-  type Id     = K
+  type Id = K
 
   /** The type of entity */
-  type Entity = E
+  type Entity[S <: IdStatus] = E[S]
+
+  /** The type of entity */
+  type EntityEmbeddedId = E[IdStatus.Exists]
+
+  /** The type of entity when it has not id. */
+  type EntityWithNoId   = E[IdStatus.Empty]
 
   // --[ Methods ]--------------------------------------------------------------
   /**
@@ -29,7 +36,7 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
    * returned when a identity is not found The method implemented here throws an exception,
    * but it might be overridden in subclasses.
    */
-  def default(id: Id): Future[E] =
+  def default(id: Id): Future[EntityEmbeddedId] =
     Future.failed(new NoSuchElementException("identity not found: " + id))
 
   /**
@@ -37,7 +44,7 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
    * This method invokes the `default` method of the map if there is no mapping
    * from the given identity to a value.
    */
-  def apply(id: Id): Future[E] =
+  def apply(id: Id): Future[EntityEmbeddedId] =
     get(id).flatMap(_ match {
       case Some(v) => Future.successful(v)
       case None    => default(id)
@@ -47,13 +54,13 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
   /**
    * Optionally returns the value associated with a identity.
    */
-  def get(id: Id): Future[Option[E]]
+  def get(id: Id): Future[Option[EntityEmbeddedId]]
 
   /**
    * Returns the value associated with a identity, or
    * a default value if the identity is not contained in the repository.
    */
-  def getOrElse[E2 >: E](id: Id, f: Id => E2): Future[E2] =
+  def getOrElse[E2 >: EntityEmbeddedId](id: Id, f: Id => E2): Future[E2] =
     get(id).map(_.getOrElse(f(id)))
 
   /**
@@ -68,11 +75,17 @@ trait EntityIOAction[K <: Identity[_], E <: Entity[K]]
    * If the map already contains a mapping for the identity,
    * it will be overridden by the new value
    */
-  def store(entity: E): Future[Id]
+  def add(entity: EntityWithNoId): Future[Id]
+
+  /**
+   * If the dataset already contains a mapping for the identity,
+   * it will be overridden by the new value and return number of affected rows.
+   */
+  def update(entity: EntityEmbeddedId): Future[Int]
 
   /**
    * Removes a identity from this map,
    * returning the value associated previously with that identity as an option.
    */
-  def remove(id: Id): Future[Option[E]]
+  def remove(id: Id): Future[Option[EntityEmbeddedId]]
 }

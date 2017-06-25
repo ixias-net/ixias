@@ -9,32 +9,43 @@ package ixias.persistence.backend
 
 import scala.util.{ Success, Failure }
 import scala.concurrent.Future
-
-import shade.memcached.Memcached
+import shade.memcached.{ Memcached, Configuration }
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.dbio.Execution.Implicits.trampoline
 
-case class ShadeBackend() extends BasicBackend with ShadeDataSource
+/**
+ * The shade backend to handle the database and session.
+ */
+case class ShadeBackend()
+   extends BasicBackend[Memcached] with ShadeConfig
 {
-  /** The type of database objects used by this backend. */
-  type Database = Memcached
-
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName): Future[Memcached] = {
+  def getDatabase(dsn: DataSourceName): Future[Database] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
-    ShadeBackendContainer.getOrElseUpdate(dsn) {
+    ShadeDatabaseContainer.getOrElseUpdate(dsn) {
       (for {
-        ds <- DataSource.forDSN(dsn)
-        db <- Future(Memcached(ds))
+        conf <- createConfiguration(dsn)
+        db    = Memcached(conf)
       } yield db) andThen {
         case Success(_) => logger.info("Created a new data souce. dsn=%s".format(dsn.toString))
         case Failure(_) => logger.info("Failed to create a data souce. dsn=%s".format(dsn.toString))
       }
     }
   }
+
+  /** Create a configuration for shade client to access memcached */
+  def createConfiguration(dsn: DataSourceName): Future[Configuration] =
+    Future.fromTry {
+      for {
+        addresses <- getAddresses(dsn)
+      } yield {
+        shade.memcached.Configuration(
+          addresses        = addresses,
+          keysPrefix       = Some(getKeysPrefix(dsn)),
+          operationTimeout = getHostSpecIdleTimeout(dsn)
+        )
+      }
+    }
 }
 
-/**
- * Manage data sources associated with DSN.
- */
-object ShadeBackendContainer extends BasicBackendContainer[Memcached]
+/** Manage data sources associated with DSN. */
+object ShadeDatabaseContainer extends BasicDatabaseContainer[Memcached]

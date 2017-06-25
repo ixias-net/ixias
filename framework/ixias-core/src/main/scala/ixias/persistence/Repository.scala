@@ -7,46 +7,47 @@
 
 package ixias.persistence
 
-import scala.concurrent.ExecutionContext
-import org.slf4j.LoggerFactory
-
+import scala.language.higherKinds
+import ixias.model.{ Tagged, Entity, IdStatus }
+import ixias.persistence.dbio.{ Execution, EntityIOAction }
+import ixias.persistence.lifted.{ Aliases, ExtensionMethods }
 import ixias.util.Logger
-import ixias.model.{ Identity, Entity }
-import ixias.persistence.dbio.EntityIOAction
-import ixias.persistence.lifted.{ Aliases, ExtensionMethodConversions }
-import ixias.persistence.dbio.Execution
 
 /**
  * The basic functionality that has to be implemented by all profiles.
  */
 private[persistence] trait Profile {
 
-  /** The back-end type required by this profile */
-  type Backend  <: ixias.persistence.backend.BasicBackend
-
   /** The type of database objects. */
-  type Database  = Backend#Database
+  type Database <: AnyRef
+
+  /** The back-end type required by this profile */
+  type Backend  <: ixias.persistence.backend.BasicBackend[Database]
 
   /** The back-end implementation for this profile */
   protected val backend: Backend
 
-  /** The Execution Context */
-  protected implicit val ctx: ExecutionContext = Execution.Implicits.trampoline
-
   /** The logger for profile */
-  protected lazy val logger =
-    new Logger(LoggerFactory.getLogger(this.getClass.getName))
+  protected lazy val logger  = Logger.apply
+
+  /** The Execution Context */
+  protected implicit val ctx = Execution.Implicits.trampoline
 
   /**
    * The API for using the utility methods with a single import statement.
    * This provides the repository's implicits, the Database connections,
    * and commonly types and objects.
    */
-  trait API extends Aliases with ExtensionMethodConversions
+  trait API extends Aliases with ExtensionMethods
   val api: API
 }
 
 /**
  * The basic repository with IOAction
  */
-trait Repository[K <: Identity[_], E <: Entity[K]] extends Profile with EntityIOAction[K, E]
+trait Repository[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]]
+    extends Profile with EntityIOAction[K, E]
+
+
+
+

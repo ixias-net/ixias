@@ -5,9 +5,8 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.play.api.mvc
+package ixias.play.api.scalate.mvc
 
-trait BaseExtensionMethods {
-  val JsonHelper = ixias.play.api.mvc.JsonHelper
-  val FormHelper = ixias.play.api.mvc.FormHelper
+trait ScalateExtensionMethods {
+  val JadeHelper = ixias.play.api.scalate.mvc.JadeHelper
 }

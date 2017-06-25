@@ -7,10 +7,10 @@
 
 package ixias.persistence.model
 
+import ixias.model._
 import org.specs2.mutable._
 import org.joda.time.DateTime
-import slick.driver.JdbcProfile
-import ixias.model.{ Entity, Identity }
+import slick.jdbc.JdbcProfile
 
 // ユーザ情報
 //~~~~~~~~~~~~
@@ -36,7 +36,7 @@ case class UserTable[P <: JdbcProfile](val driver: P)
     def test02(datetime: Option[DateTime]) = this.filter(_.createdAt < datetime)
   }
   class Table(tag: Tag) extends BasicTable(tag, "us er") {
-    def uid       = column[Option[Long]] ("uid",        O.UInt64, O.PrimaryKey)
+    def uid       = column[Option[Long]]   ("uid",        O.UInt64, O.PrimaryKey)
     def email     = column[Option[String]] ("email",      O.UInt64)
     def updatedAt = column[DateTime]       ("updated_at", O.TsCurrent)
     def createdAt = column[DateTime]       ("created_at", O.Ts)

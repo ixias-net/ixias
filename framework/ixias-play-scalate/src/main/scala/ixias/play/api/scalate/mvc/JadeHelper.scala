@@ -5,20 +5,18 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.play.api.mvc
+package ixias.play.api.scalate.mvc
 
 import play.twirl.api.Html
-import play.api.{ Play, Environment, Configuration, PlayException }
-import com.google.inject.Inject
+import play.api.{ Environment, Configuration }
 
 import org.fusesource.scalate.{ TemplateEngine, InvalidSyntaxException }
 import org.fusesource.scalate.util.FileResourceLoader
 import org.fusesource.scalate.layout.DefaultLayoutStrategy
 
-// Jade TemplateのFactory定義
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-object JadeAction {
-  import scala.collection.JavaConversions._
+// Jade 取り扱い処理
+//~~~~~~~~~~~~~~~~~~~~
+object JadeHelper {
 
   // -- [ Properties ]----------------------------------------------------------
   lazy val templateEngine = (env: Environment, conf: Configuration) => {
@@ -42,7 +40,7 @@ object JadeAction {
    * The root directory for template.
    */
   def getTemplateDir(env: Environment, conf: Configuration): Option[java.io.File] =
-    conf.getString("jade.template.path") match {
+    conf.get[Option[String]]("jade.template.path") match {
       case Some(path) => Some(env.getFile(path))
       case _          => Some(env.getFile("app/views"))
     }
@@ -51,10 +49,7 @@ object JadeAction {
    * The declaration for `import` statement in template.
    */
   def getImportStatements(conf: Configuration): Seq[String] =
-    conf.getStringList("jade.import") match {
-      case Some(list) => list.toSeq
-      case _          => Seq.empty[String]
-    }
+    conf.get[Seq[String]]("jade.import")
 
   // -- [ Internal class ]------------------------------------------------------
   /**
@@ -82,13 +77,4 @@ object JadeAction {
       }
     }
   }
-
-  final class JadeCompilationException(
-    override val sourceName: String,
-    override val input:      String,
-    override val line:       Integer,
-    override val position:   Integer,
-    message: String,
-    cause:   Throwable
-  ) extends PlayException.ExceptionSource("scalate compilation exception", message, cause)
 }

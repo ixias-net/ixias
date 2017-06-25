@@ -9,16 +9,12 @@ package ixias.play.api.mvc
 
 import play.api.mvc.Results._
 import play.api.mvc.{ Request, AnyContent, Result }
-import play.api.data.validation.ValidationError
 import play.api.libs.json.{ Reads, Writes, JsSuccess, JsError }
-import scala.concurrent.Future
-
-import ixias.play.api.mvc.Errors._
 import ixias.util.Logger
 
 // Helper for JSON
 //~~~~~~~~~~~~~~~~~~
-object JsonAction {
+object JsonHelper {
 
   // -- [ Properties ]----------------------------------------------------------
   protected lazy val logger = Logger.apply
@@ -27,20 +23,20 @@ object JsonAction {
   /**
    * Build a result object as JSON response.
    */
-  def toJson[T](content: T)(implicit writeable: Writes[T]): Result =
-    Ok(play.api.libs.json.Json.toJson(content))
+  def toJson[T](o: T)(implicit tjs: Writes[T]): Result =
+    Ok(play.api.libs.json.Json.toJson(o))
 
   /**
    * To bind request data to a `T` component.
    */
-  def bindFromRequest[T](implicit request: Request[AnyContent], rds: Reads[T]): Either[JsError, T] =
+  def bindFromRequest[T](implicit request: Request[AnyContent], rds: Reads[T]): Either[Result, T] =
     request.body.asJson match {
-      case None       => Left(JsError())
+      case None       => Left(BadRequest)
       case Some(json) => json.validate[T] match {
         case JsSuccess(v, _) => Right(v)
-        case error: JsError  => {
-          logger.error(JsError.toJson(error).toString())
-          Left(error)
+        case JsError(errs)   => {
+          logger.error(JsError.toJson(errs).toString())
+          Left(BadRequest(JsError.toJson(errs)))
         }
       }
     }

@@ -8,58 +8,24 @@
 package ixias.persistence.backend
 
 import scala.concurrent.Future
-import scala.collection.mutable.Map
-import scala.reflect.runtime.universe.TypeTag
-
-import ixias.util.Logger
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.dbio.Execution.Implicits.trampoline
+import ixias.persistence.dbio.Execution
+import ixias.util.Logger
 
 /**
- * Backend for the basic database and session handling features.
+ * The backend to handle the database and session.
  */
-trait BasicBackend extends BasicDataSource {
+trait BasicBackend[T] extends BasicDatabaseConfig {
+
+  /** The type of database used by this backend. */
+  type Database = T
+
+  /** The Execution Context */
+  protected implicit val ctx = Execution.Implicits.trampoline
 
   /** The logger for profile */
   protected lazy val logger  = Logger.apply
 
-  /** The type of database objects used by this backend. */
-  type Database <: AnyRef
-
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName): Future[Database]
-
-}
-
-/**
- * Manage data sources associated with DSN
- */
-private[backend] trait BasicBackendContainer[T] {
-
-  /** Shared store */
-  protected var resources: Map[Int, T] = Map.empty[Int, T]
-
-  /** Optionally returns the value associated with a DSN */
-  def get(dsn: DataSourceName)(implicit tag: TypeTag[T]): Future[Option[T]] = {
-    val key = dsn.hashCode * 31 + tag.hashCode
-    Future(resources.get(key))
-  }
-
-  /** Add a new data souce. */
-  def update(dsn: DataSourceName, db: T)(implicit tag: TypeTag[T]): Future[T] = {
-    val key = dsn.hashCode * 31 + tag.hashCode
-    Future({ resources.update(key, db); db })
-  }
-
-  /**
-   * If given DSN is already in this map, returns associated data souce.
-   * Otherwise, computes value from given expression `op`, stores with key
-   * in map and returns that value.
-   */
-  def getOrElseUpdate(dsn: DataSourceName)(op: => Future[T])(implicit tag: TypeTag[T]): Future[T] = {
-    get(dsn).flatMap {
-      case Some(db) => Future.successful(db)
-      case None     => op.flatMap(db => update(dsn, db))
-    }
-  }
+  def getDatabase(dsn: DataSourceName): Future[T]
 }

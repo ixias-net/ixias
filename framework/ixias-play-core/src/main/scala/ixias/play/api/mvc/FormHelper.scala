@@ -7,23 +7,22 @@
 
 package ixias.play.api.mvc
 
+import play.api.data.{ Form, Mapping }
 import play.api.mvc.{ Request, Result }
 import play.api.mvc.Results._
-import play.api.data.Forms._
-import play.api.data.{ Form, Mapping }
-import play.api.i18n.Lang.defaultLang
-
-import ixias.util.Logger
-import scala.concurrent.Future
-import ixias.play.api.mvc.Errors._
+import play.api.i18n.MessagesProvider
 
 // Helper for HTTP-POST data
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-object FormAction {
+object FormHelper {
 
   /**
    * To bind request data to a `T` component.
    */
-  def bindFromRequest[T](mapping: Mapping[T])(implicit request: Request[_]): Either[Form[T], T] =
-    Form(mapping).bindFromRequest.fold(Left(_), Right(_))
+  def bindFromRequest[T](mapping: Mapping[T])
+    (implicit request: Request[_], provider: MessagesProvider): Either[Result, T] =
+    Form(mapping).bindFromRequest().fold(
+      f => Left(BadRequest(f.errorsAsJson)),
+      v => Right(v)
+    )
 }

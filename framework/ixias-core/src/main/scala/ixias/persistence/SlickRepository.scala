@@ -8,7 +8,9 @@
 package ixias.persistence
 
 import slick.jdbc.JdbcProfile
-import ixias.model.{ Identity, Entity }
+import scala.language.higherKinds
+
+import ixias.model.{ Tagged, Entity, IdStatus }
 import ixias.persistence.lifted._
 import ixias.persistence.backend.SlickBackend
 import ixias.persistence.action.SlickDBActionProvider
@@ -16,14 +18,18 @@ import ixias.persistence.action.SlickDBActionProvider
 /**
  * The profile for persistence with using the Slick library.
  */
-private[persistence] trait SlickProfile[P <: JdbcProfile]
+private[persistence]
+trait SlickProfile[P <: JdbcProfile]
     extends Profile with SlickDBActionProvider[P] { self =>
 
   /** The type of slick driver */
-  type Driver  = P
+  type Driver   = P
+
+  /** The type of database objects. */
+  type Database = P#Backend#Database
 
   /** The back-end type required by this profile */
-  type Backend = SlickBackend[P]
+  type Backend  = SlickBackend[P]
 
   /** The configured driver. */
   protected val driver: Driver
@@ -49,5 +55,5 @@ private[persistence] trait SlickProfile[P <: JdbcProfile]
 /**
  * The repository for persistence with using the Slick library.
  */
-trait SlickRepository[K <: Identity[_], E <: Entity[K], P <: JdbcProfile]
-    extends Repository[K, E] with SlickProfile[P]
+trait SlickRepository[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S], P <: JdbcProfile]
+   extends Repository[K, E] with SlickProfile[P]

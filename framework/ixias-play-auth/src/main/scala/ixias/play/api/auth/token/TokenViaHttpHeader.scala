@@ -9,24 +9,31 @@ package ixias.play.api.auth.token
 
 import play.api.mvc.{ RequestHeader, Result }
 
-case class TokenViaHttpHeader(
-  protected val headerName: String
-) extends Token {
+case class TokenViaHttpHeader(val name: String) extends Token {
+  import Token._
+
+  // The configuration
+  val headerName = config.get[String](s"${name}.session.headerName")
 
   /**
    * Put a specified security token to HTTP-Headers.
    */
-  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result =
-    result.withHeaders(headerName -> Token.signWithHMAC(token))
-
-  /**
-   * Extract a security token from HTTP-Headers.
-   */
-  def extract(request: RequestHeader): Option[AuthenticityToken] =
-    request.headers.get(headerName).flatMap(Token.verifyHMAC)
+  def put(token: AuthenticityToken)(result: Result)(implicit request: RequestHeader): Result = {
+    val signed = Token.signWithHMAC(token)
+    result.withHeaders(headerName -> SignedToken.unwrap(signed))
+  }
 
   /**
    * Discard a security token.
    */
   def discard(result: Result)(implicit request: RequestHeader): Result = result
+
+  /**
+   * Extract a security token from HTTP-Headers.
+   */
+  def extract(implicit request: RequestHeader): Option[AuthenticityToken] =
+    for {
+      signed <- request.headers.get(headerName).map(SignedToken(_))
+      token  <- Token.verifyHMAC(signed)
+    } yield token
 }
