@@ -31,10 +31,10 @@ trait Entity[K <: Tagged[_, _], S <: IdStatus] extends Serializable
   val version: Option[Long] = None
 
   /** The date and time when this entity was last updated. */
-  val updatedAt: LocalDateTime = LocalDateTime.now()
+  val updatedAt: LocalDateTime
 
   /** The date and time when this entity was added to the system. */
-  val createdAt: LocalDateTime = LocalDateTime.now()
+  val createdAt: LocalDateTime
 
   /** check whether exists entity id value. */
   def id(implicit ev: IdSt =:= IdStatus.Exists): Id = _id
