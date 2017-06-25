@@ -21,6 +21,10 @@ object Tag {
   def unwrap[R, T](t: R @@ T): R =
     t.asInstanceOf[R]
 
+  /**
+   * Create a object as `TagOf`
+   */
+  def of[T]: TagOf[T] = new TagOf[T]
 }
 
 /**
