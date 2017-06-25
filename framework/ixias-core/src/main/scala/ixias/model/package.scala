@@ -18,4 +18,7 @@ package object model {
    */
   type     @@[R, T] = Tagged[R, T]
   type Tagged[R, T] = { type Self = R; type Tag = T }
+
+  /** The current time */
+  def NOW = java.time.LocalDateTime.now()
 }
