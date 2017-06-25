@@ -24,16 +24,16 @@ import scala.reflect._
  *
  */
 trait Enum          extends Serializable
-trait EnumStatus[T] extends Enum { type Code = T; val code: T }
-trait EnumBitFlags  extends EnumStatus[Long]
+trait EnumStatus    extends Enum { val code: Short }
+trait EnumBitFlags  extends Enum { val code: Long  }
 
 /**
  * The operation of EnumStatus
  */
 object EnumStatus {
-  abstract class Of[V <: EnumStatus[_]]
-    (implicit ttag: ClassTag[V]) extends Enum.Of[V] {
-    def apply(code: V#Code): V = this.find(_.code == code).get
+  abstract class Of[T <: EnumStatus]
+    (implicit ttag: ClassTag[T]) extends Enum.Of[T] {
+    def apply(code: Short): T = this.find(_.code == code).get
   }
 }
 
@@ -41,28 +41,28 @@ object EnumStatus {
  * The operation of EnumBitFlags
  */
 object EnumBitFlags {
-  abstract class Of[V <: EnumBitFlags]
-    (implicit ttag: ClassTag[V]) extends Enum.Of[V] {
+  abstract class Of[T <: EnumBitFlags]
+    (implicit ttag: ClassTag[T]) extends Enum.Of[T] {
 
     /** Get bitset objects from numeric bitset. */
-    def apply(bitset: V#Code): Seq[V] =
+    def apply(bitset: Long): Seq[T] =
       this.filter(p => (p.code & bitset) == p.code)
 
     /** Calaculate bitset as numeric */
-    def toBitset(bitset: Seq[V]): V#Code =
+    def toBitset(bitset: Seq[T]): Long =
       bitset.foldLeft(0L)((code, cur) => code | cur.code)
 
     /** Check to whether has a bit flag. */
-    def hasBitFlag(bitset: Seq[V], flag: V):      Boolean = (toBitset(bitset) & flag.code) == flag.code
-    def hasBitFlag(bitset: Seq[V], code: V#Code): Boolean = (toBitset(bitset) & code) == code
-    def hasBitFlag(bitset: V#Code, flag: V):      Boolean = (bitset & flag.code) == flag.code
-    def hasBitFlag(bitset: V#Code, code: V#Code): Boolean = (bitset & code) == code
+    def hasBitFlag(bitset: Seq[T], flag: T):    Boolean = (toBitset(bitset) & flag.code) == flag.code
+    def hasBitFlag(bitset: Seq[T], code: Long): Boolean = (toBitset(bitset) & code) == code
+    def hasBitFlag(bitset: Long,   flag: T):    Boolean = (bitset & flag.code) == flag.code
+    def hasBitFlag(bitset: Long,   code: Long): Boolean = (bitset & code) == code
 
     /** Set a specified bit flag. */
-    def setBitFlag(bitset: Seq[V], flag: V):      Seq[V] = apply(toBitset(bitset) | flag.code)
-    def setBitFlag(bitset: Seq[V], code: V#Code): Seq[V] = apply(toBitset(bitset) | code)
-    def setBitFlag(bitset: V#Code, flag: V):      V#Code = bitset | flag.code
-    def setBitFlag(bitset: V#Code, code: V#Code): V#Code = bitset | code
+    def setBitFlag(bitset: Seq[T], flag: T):    Seq[T] = apply(toBitset(bitset) | flag.code)
+    def setBitFlag(bitset: Seq[T], code: Long): Seq[T] = apply(toBitset(bitset) | code)
+    def setBitFlag(bitset: Long,   flag: T):    Long = bitset | flag.code
+    def setBitFlag(bitset: Long,   code: Long): Long = bitset | code
   }
 }
 
@@ -70,16 +70,16 @@ object EnumBitFlags {
  * The based operation of Enum
  */
 object Enum {
-  abstract class Of[V <: Enum](implicit ttag: ClassTag[V]) { self =>
+  abstract class Of[T <: Enum](implicit ttag: ClassTag[T]) { self =>
     import runtime.universe._
 
     // --[ Methods ]-------------------------------------------------------------=
     /**
      * The list of values for Enumeration.
      */
-    def values: List[V] = fields.getOrElse(getSelfFields).collect{ case v: V => v }
-    lazy final val map1: Map[String, V] = values.map(v => v.toString -> v).toMap
-    lazy final val map2: Map[String, V] = values.map(v => v.toString.toLowerCase -> v).toMap
+    def values: List[T] = fields.getOrElse(getSelfFields).collect{ case v: T => v }
+    lazy final val map1: Map[String, T] = values.map(v => v.toString -> v).toMap
+    lazy final val map2: Map[String, T] = values.map(v => v.toString.toLowerCase -> v).toMap
 
     /**
      * The myself instance fields.
@@ -108,40 +108,40 @@ object Enum {
     /**
      * Finds the first element of the sequence satisfying a predicate, if any.
      */
-    def find(f: V => Boolean): Option[V] = values.find(f)
+    def find(f: T => Boolean): Option[T] = values.find(f)
 
     /**
      * Selects all elements of this Enum which satisfy a predicate.
      */
-    def filter(f: V => Boolean): List[V] = values.filter(f)
+    def filter(f: T => Boolean): List[T] = values.filter(f)
 
     // --[ Methods ]-------------------------------------------------------------=
     /**
      * Retrieve the index number of the member passed in the values picked up by this enum
      */
-    def indexOf[M >: V](member: M): Int = values.indexOf(member)
+    def indexOf[M >: T](member: M): Int = values.indexOf(member)
 
     /**
      * Optionally returns an enum's member for a given name.
      */
-    def withNameOption(name: String): Option[V] = map1.get(name)
+    def withNameOption(name: String): Option[T] = map1.get(name)
 
     /**
      * Optionally returns an enum's member for a given name, disregarding case
      */
-    def withNameInsensitiveOption(name: String): Option[V] = map2.get(name.toLowerCase)
+    def withNameInsensitiveOption(name: String): Option[T] = map2.get(name.toLowerCase)
 
     /**
      * Retrieve an enum's member for a given name
      */
-    def withName(name: String): V =
+    def withName(name: String): T =
       withNameOption(name).getOrElse(
         throw new NoSuchElementException(s"$name is not a member of Enum $this"))
 
     /**
      * Retrieve an enum's member for a given name, disregarding case
      */
-    def withNameInsensitive(name: String): V =
+    def withNameInsensitive(name: String): T =
       withNameInsensitiveOption(name).getOrElse(
         throw new NoSuchElementException(s"$name is not a member of Enum $this"))
   }
