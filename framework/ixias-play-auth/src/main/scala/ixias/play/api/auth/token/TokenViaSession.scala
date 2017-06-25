@@ -10,12 +10,15 @@ package ixias.play.api.auth.token
 import play.api.mvc.{ Result, RequestHeader }
 
 case class TokenViaSession(sessionName: String) extends Token {
+  import Token._
 
   /**
    * Put a specified security token to storage.
    */
-  def put(result: Result, token: AuthenticityToken)(implicit request: RequestHeader): Result =
-    result.withSession(request.session + (sessionName -> token))
+  def put(result: Result, token: AuthenticityToken)(implicit request: RequestHeader): Result = {
+    val signed = Token.signWithHMAC(token)
+    result.withSession(request.session + (sessionName -> SignedToken.unwrap(signed)))
+  }
 
   /**
    * Discard a security token in storage.
@@ -26,5 +29,8 @@ case class TokenViaSession(sessionName: String) extends Token {
    * Extract a security token from storage.
    */
   def extract(request: RequestHeader): Option[AuthenticityToken] =
-    request.session.get(sessionName).flatMap(Token.verifyHMAC)
+    for {
+      signed <- request.session.get(sessionName).map(SignedToken(_))
+      token  <- Token.verifyHMAC(signed)
+    } yield token
 }

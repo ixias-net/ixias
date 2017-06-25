@@ -9,12 +9,14 @@ package ixias.play.api.auth.token
 
 import play.api.mvc.{ RequestHeader, Result }
 import scala.concurrent.{ Future, ExecutionContext }
+import ixias.model.{ @@, TagOf }
 import ixias.security.{ TokenSigner, RandomStringToken }
 import ixias.play.api.auth.container.Container
 
 // The security token
 //~~~~~~~~~~~~~~~~~~~~
 trait Token {
+  import Token._
 
   /** Put a specified security token to storage */
   def put(result: Result, token: AuthenticityToken)(implicit request: RequestHeader): Result
@@ -30,20 +32,31 @@ trait Token {
 //~~~~~~~~~~~~~~~~~~
 object Token {
 
+  sealed    trait  Tag
+  protected object Tag {
+    trait SignedToken       extends Token
+    trait AuthenticityToken extends Token
+  }
+  type SignedToken       = String @@ Tag.SignedToken
+  type AuthenticityToken = String @@ Tag.AuthenticityToken
+  val  SignedToken       = TagOf[Tag.SignedToken]
+  val  AuthenticityToken = TagOf[Tag.AuthenticityToken]
+
   /** The object that provides some cryptographic operations */
   protected lazy val signer = TokenSigner()
 
   /** Verifies a given HMAC on a piece of data */
   final def verifyHMAC(signedToken: SignedToken): Option[AuthenticityToken] =
-    signer.verify(signedToken).toOption
+    signer.verify(SignedToken.unwrap(signedToken)).toOption
+      .map(AuthenticityToken(_))
 
   /** Signs the given String with HMAC-SHA1 using the secret token.*/
   final def signWithHMAC(token: AuthenticityToken): SignedToken =
-    signer.sign(token)
+    SignedToken(signer.sign(AuthenticityToken.unwrap(token)))
 
   /** Generate a new token as string */
   final def generate(container: Container[_])(implicit ec: ExecutionContext): Future[AuthenticityToken] = {
-    val token = RandomStringToken.next(32)
+    val token = AuthenticityToken(RandomStringToken.next(32))
     container.read(token).flatMap {
       case Some(_) => generate(container)
       case None    => Future.successful(token)
