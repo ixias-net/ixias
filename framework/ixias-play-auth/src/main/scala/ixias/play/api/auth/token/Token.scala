@@ -11,12 +11,16 @@ import play.api.mvc.{ RequestHeader, Result }
 import scala.concurrent.{ Future, ExecutionContext }
 import ixias.model.{ @@, TagOf }
 import ixias.security.{ TokenSigner, RandomStringToken }
+import ixias.util.Configuration
 import ixias.play.api.auth.container.Container
 
 // The security token
 //~~~~~~~~~~~~~~~~~~~~
 trait Token {
   import Token._
+
+  /** The configuration */
+  protected val config = Configuration()
 
   /** Put a specified security token to storage */
   def put(result: Result, token: AuthenticityToken)(implicit request: RequestHeader): Result
