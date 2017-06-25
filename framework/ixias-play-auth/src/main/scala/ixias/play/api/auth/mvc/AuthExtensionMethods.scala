@@ -8,7 +8,7 @@
 package ixias.play.api.auth.mvc
 
 trait AuthExtensionMethods {
-  val Authenticated      = ixias.play.api.auth.mvc.Authenticated
-  val AuthenticatedOrNot = ixias.play.api.auth.mvc.AuthenticatedOrNot
-  val Authorized         = ixias.play.api.auth.mvc.Authorized
+  val Authenticated      = AuthenticatedActionBuilder
+  val AuthenticatedOrNot = AuthenticatedOrNotActionBuilder
+  val Authorized         = AuthorizedActionBuilder
 }

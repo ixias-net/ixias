@@ -18,14 +18,14 @@ import ixias.play.api.auth.token.Token
 import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.Errors._
 
-trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], T]
+trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
 {
   import Token._
 
   // --[ TypeDefs ]-------------------------------------------------------------
   type Id        = K  // The identity to detect authenticated resource.
   type Auth      = E  // The authenticated resource.
-  type Authority = T  // The type of authoriy
+  type Authority = A  // The type of authoriy
 
   /** Keys to request attributes. */
   object RequestAttrKey {
@@ -58,7 +58,8 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], T]
   /**
    * Verifies what authenticated resource authorized to do.
    */
-  def authorize(auth: Auth, authority: Option[Authority]): Future[Boolean]
+  def authorize(auth: Auth, authority: Option[Authority]): Future[Boolean] =
+    Future.successful(true)
 
   /**
    * Invoked if authentication failed with the credentials provided.
