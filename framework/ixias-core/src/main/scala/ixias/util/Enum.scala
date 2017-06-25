@@ -23,7 +23,49 @@ import scala.reflect._
  * }
  *
  */
-abstract class EnumOf[+V](implicit ttag: ClassTag[V]) { self =>
+trait Enum          extends Serializable
+trait EnumStatus[T] extends Enum { type Code = T; val code: T }
+trait EnumBitFlags  extends EnumStatus[Long]
+
+/**
+ * The operation of EnumStatus
+ */
+abstract class EnumStatusOf[V <: EnumStatus[_]]
+  (implicit ttag: ClassTag[V]) extends EnumOf[V] {
+  def apply(code: V#Code): V = this.find(_.code == code).get
+}
+
+/**
+ * The operation of EnumBitFlags
+ */
+abstract class EnumBitFlagsOf[V <: EnumBitFlags]
+  (implicit ttag: ClassTag[V]) extends EnumOf[V] {
+
+  /** Get bitset objects from numeric bitset. */
+  def apply(bitset: V#Code): Seq[V] =
+    this.filter(p => (p.code & bitset) == p.code)
+
+  /** Calaculate bitset as numeric */
+  def toBitset(bitset: Seq[V]): V#Code =
+    bitset.foldLeft(0L)((code, cur) => code | cur.code)
+
+  /** Check to whether has a bit flag. */
+  def hasBitFlag(bitset: Seq[V], flag: V):      Boolean = (toBitset(bitset) & flag.code) == flag.code
+  def hasBitFlag(bitset: Seq[V], code: V#Code): Boolean = (toBitset(bitset) & code) == code
+  def hasBitFlag(bitset: V#Code, flag: V):      Boolean = (bitset & flag.code) == flag.code
+  def hasBitFlag(bitset: V#Code, code: V#Code): Boolean = (bitset & code) == code
+
+  /** Set a specified bit flag. */
+  def setBitFlag(bitset: Seq[V], flag: V):      Seq[V] = apply(toBitset(bitset) | flag.code)
+  def setBitFlag(bitset: Seq[V], code: V#Code): Seq[V] = apply(toBitset(bitset) | code)
+  def setBitFlag(bitset: V#Code, flag: V):      V#Code = bitset | flag.code
+  def setBitFlag(bitset: V#Code, code: V#Code): V#Code = bitset | code
+}
+
+/**
+ * The based operation of Enum
+ */
+abstract class EnumOf[V <: Enum](implicit ttag: ClassTag[V]) { self =>
   import runtime.universe._
 
   // --[ Methods ]-------------------------------------------------------------=

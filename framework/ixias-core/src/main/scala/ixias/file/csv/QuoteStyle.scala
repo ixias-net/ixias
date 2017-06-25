@@ -7,9 +7,9 @@
 
 package ixias.file.csv
 
-import ixias.util.EnumOf
+import ixias.util.{ Enum, EnumOf }
 
-  sealed abstract class QuoteStyle extends Serializable
+  sealed abstract class QuoteStyle extends Enum
   object QuoteStyle extends EnumOf[QuoteStyle] {
     case object NONE         extends QuoteStyle
     case object MINIMAL      extends QuoteStyle
