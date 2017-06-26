@@ -7,46 +7,46 @@
 
 package ixias.model
 
-import java.time.LocalDateTime
 import scala.reflect.runtime.universe._
 
+/** Entity's id Status */
 trait  IdStatus
 object IdStatus {
   trait Empty  extends IdStatus
   trait Exists extends IdStatus
 }
 
-trait Entity[K <: Tagged[_, _], S <: IdStatus] extends Serializable
+/** The Entity */
+final class Entity[M <: EntityModel[_], S <: IdStatus](val data: M)
 {
-  /** The type of entity id */
-  type Id   = K
+  /** The entity data model */
+  type Model     = M
 
-  /** The status of entity's identity. */
-  type IdSt = S
+  /** The status of entity's identity */
+  type IdStatus  = S
 
-  /** The entity's identity. */
-  val _id: Id
+  /** check whether exists entity id value */
+  def id(implicit ev: S =:= IdStatus.Exists) = data.id.get
 
-  /** The current version of the object. Used for optimistic concurrency versioning. */
-  val version: Option[Long] = None
-
-  /** The date and time when this entity was last updated. */
-  val updatedAt: LocalDateTime
-
-  /** The date and time when this entity was added to the system. */
-  val createdAt: LocalDateTime
-
-  /** check whether exists entity id value. */
-  def id(implicit ev: IdSt =:= IdStatus.Exists): Id = _id
-
-  /** get entity id value as `Option[Id]`. */
-  def idOpt(implicit ev: TypeTag[IdSt]): Option[Id] =
-    if (hasId) Some(_id) else None
-
-  /** check whether exists entity id value. */
-  def hasId(implicit ev: TypeTag[IdSt]): Boolean =
+  /** check whether exists entity id value */
+  def hasId(implicit ev: TypeTag[IdStatus]): Boolean =
     ev.tpe =:= typeOf[IdStatus.Exists]
 }
 
-/** should an entity class always have an ID value. */
-trait EntityEmbeddedId[T <: Tagged[_, _]] extends Entity[T, IdStatus.Exists]
+// Companion object
+//~~~~~~~~~~~~~~~~~~~
+object Entity {
+  /** Create a entity object with embedded id. */
+  def apply[M <: EntityModel[_]](data: M): Entity[M, IdStatus.Exists] =
+    data.id match {
+      case Some(_) => new Entity(data)
+      case None    => throw new IllegalArgumentException("Coud not found id on entity's data.")
+    }
+
+  /** Create a entity object with no id. */
+  def prepare[M <: EntityModel[_]](data: M): Entity[M, IdStatus.Empty] =
+    data.id match {
+      case None    => new Entity(data)
+      case Some(_) => throw new IllegalArgumentException("The entity's id is already setted.")
+    }
+}
