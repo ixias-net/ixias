@@ -22,6 +22,9 @@ trait Table[R, P <: JdbcProfile] { self =>
   /** The table query. */
   val query: Query
 
+  /** The alias for DSN */
+  val DataSourceName = ixias.persistence.model.DataSourceName
+
   //-- [ Table Manifest ] ------------------------------------------------------
   /** The type of table row. */
   type Record = R
