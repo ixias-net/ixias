@@ -23,8 +23,8 @@ object idSpec extends Specification {
   object User {
     val  Id = the[Identity[Id]]
     type Id = Long @@ User
-    def apply(name: String): EntityWithNoId[Id, User] =
-      EntityWithNoId { User(None, "Kinugasa") }
+    def apply(name: String): Entity.WithNoId[Id, User] =
+      Entity.WithNoId { User(None, "Kinugasa") }
   }
 
   // テスト
