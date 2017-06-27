@@ -8,4 +8,4 @@
 package ixias.persistence.lifted
 
 trait ExtensionMethods
-  extends ConverterOps with QueryOps with TaggedOps
+  extends ConverterOps with QueryOps

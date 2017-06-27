@@ -8,9 +8,7 @@
 package ixias.persistence
 
 import slick.jdbc.JdbcProfile
-import scala.language.higherKinds
-
-import ixias.model.{ Tagged, Entity, IdStatus }
+import ixias.model.{ @@, EntityModel }
 import ixias.persistence.lifted._
 import ixias.persistence.backend.SlickBackend
 import ixias.persistence.action.SlickDBActionProvider
@@ -55,5 +53,5 @@ trait SlickProfile[P <: JdbcProfile]
 /**
  * The repository for persistence with using the Slick library.
  */
-trait SlickRepository[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S], P <: JdbcProfile]
-   extends Repository[K, E] with SlickProfile[P]
+trait SlickRepository[K <: @@[_, _], M <: EntityModel[K], P <: JdbcProfile]
+   extends Repository[K, M] with SlickProfile[P]

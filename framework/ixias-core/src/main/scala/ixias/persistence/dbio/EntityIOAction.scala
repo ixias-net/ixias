@@ -8,27 +8,23 @@
 package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import scala.language.higherKinds
-import ixias.model.{ Tagged, Entity, IdStatus }
+import ixias.model.{ @@, Entity, EntityModel, IdStatus }
 import ixias.persistence.Repository
 
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]]
-    extends IOAction { self: Repository[K, E] =>
+trait EntityIOAction[K <: @@[_, _], M <: EntityModel[K]]
+    extends IOAction { self: Repository[K, M] =>
 
   /** The type of entity id */
   type Id = K
 
-  /** The type of entity */
-  type Entity[S <: IdStatus] = E[S]
-
-  /** The type of entity */
-  type EntityEmbeddedId = E[IdStatus.Exists]
-
   /** The type of entity when it has not id. */
-  type EntityWithNoId   = E[IdStatus.Empty]
+  type EntityWithNoId   = Entity[K, M, IdStatus.Empty]
+
+  /** The type of entity when it has embedded id */
+  type EntityEmbeddedId = Entity[K, M, IdStatus.Exists]
 
   // --[ Methods ]--------------------------------------------------------------
   /**
@@ -72,8 +68,6 @@ trait EntityIOAction[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]]
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Adds a new identity/entity-value pair to this repository.
-   * If the map already contains a mapping for the identity,
-   * it will be overridden by the new value
    */
   def add(entity: EntityWithNoId): Future[Id]
 

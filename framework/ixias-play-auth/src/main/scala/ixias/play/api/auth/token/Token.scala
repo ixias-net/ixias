@@ -9,7 +9,8 @@ package ixias.play.api.auth.token
 
 import play.api.mvc.{ RequestHeader, Result }
 import scala.concurrent.{ Future, ExecutionContext }
-import ixias.model.{ @@, TagOf }
+
+import ixias.model._
 import ixias.security.{ TokenSigner, RandomStringToken }
 import ixias.util.Configuration
 import ixias.play.api.auth.container.Container
@@ -43,8 +44,8 @@ object Token {
   }
   type SignedToken       = String @@ Tag.SignedToken
   type AuthenticityToken = String @@ Tag.AuthenticityToken
-  val  SignedToken       = TagOf[Tag.SignedToken]
-  val  AuthenticityToken = TagOf[Tag.AuthenticityToken]
+  val  SignedToken       = the[Identity[SignedToken]]
+  val  AuthenticityToken = the[Identity[AuthenticityToken]]
 
   /** The object that provides some cryptographic operations */
   protected lazy val signer = TokenSigner()

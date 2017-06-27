@@ -7,8 +7,7 @@
 
 package ixias.persistence
 
-import scala.language.higherKinds
-import ixias.model.{ Tagged, Entity, IdStatus }
+import ixias.model.{ @@, EntityModel }
 import ixias.persistence.dbio.{ Execution, EntityIOAction }
 import ixias.persistence.lifted.{ Aliases, ExtensionMethods }
 import ixias.util.Logger
@@ -45,9 +44,5 @@ private[persistence] trait Profile {
 /**
  * The basic repository with IOAction
  */
-trait Repository[K <: Tagged[_, _], E[S <: IdStatus] <: Entity[K, S]]
-    extends Profile with EntityIOAction[K, E]
-
-
-
-
+trait Repository[K <: @@[_, _], M <: EntityModel[K]]
+    extends Profile with EntityIOAction[K, M]

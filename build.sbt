@@ -78,16 +78,15 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.typesafe"        % "config"           % "1.3.0",
-    "com.typesafe.slick" %% "slick"            % "3.2.0",
-    "io.monix"           %% "shade"            % "1.9.5",
-    "com.zaxxer"          % "HikariCP"         % "2.5.0",
-    "com.amazonaws"       % "aws-java-sdk-sns" % "1.11.123",
-    "org.slf4j"           % "slf4j-api"        % "1.7.21",
-    "org.keyczar"         % "keyczar"          % "0.71h",
-    "org.joda"            % "joda-convert"     % "1.8.1",
-    "joda-time"           % "joda-time"        % "2.9.4",
-    "commons-codec"       % "commons-codec"    % "1.10"
+    "com.chuusai"        %% "shapeless"     % "2.3.2",
+    "com.typesafe"        % "config"        % "1.3.0",
+    "com.typesafe.slick" %% "slick"         % "3.2.0",
+    "io.monix"           %% "shade"         % "1.9.5",
+    "com.zaxxer"          % "HikariCP"      % "2.5.0",
+    "org.keyczar"         % "keyczar"       % "0.71h",
+    "commons-codec"       % "commons-codec" % "1.10",
+    "joda-time"           % "joda-time"     % "2.9.4",
+    "org.slf4j"           % "slf4j-api"     % "1.7.21"
   ))
 
 lazy val ixiasMail = (project in file("framework/ixias-mail"))
