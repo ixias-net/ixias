@@ -82,11 +82,13 @@ abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag
     }
 
   /** Sets a (key, value) in the cache store. */
-  def update(data: EntityEmbeddedId): Future[Int] = update(data, Duration.Inf)
-  def update(data: EntityEmbeddedId, expiry: Duration): Future[Int] =
+  def update(data: EntityEmbeddedId): Future[Option[EntityEmbeddedId]] = update(data, Duration.Inf)
+  def update(data: EntityEmbeddedId, expiry: Duration): Future[Option[EntityEmbeddedId]] =
     DBAction(dsn) { db =>
-      db.set(data.id.toString, data.v, expiry)
-        .map(_ => 1)
+      for {
+        old <- db.get[M](data.id.toString)
+        _   <- db.set(data.id.toString, data.v, expiry)
+      } yield old.map(Entity.EmbeddedId[K, M])
     }
 
   /** Update existing value expiry in the cache store. */

@@ -73,9 +73,9 @@ trait EntityIOAction[K <: @@[_, _], M <: EntityModel[K]]
 
   /**
    * If the dataset already contains a mapping for the identity,
-   * it will be overridden by the new value and return number of affected rows.
+   * it will be overridden by the new value.
    */
-  def update(entity: EntityEmbeddedId): Future[Int]
+  def update(entity: EntityEmbeddedId): Future[Option[EntityEmbeddedId]]
 
   /**
    * Removes a identity from this map,
