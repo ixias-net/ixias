@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 /**
  * The definition for projecting domain model of DDD
  */
-trait EntityModel[K <: Tagged[_, _]] extends Serializable
+trait EntityModel[K <: @@[_, _]] extends Serializable
 {
   /** The type of entity id */
   type Id = K
