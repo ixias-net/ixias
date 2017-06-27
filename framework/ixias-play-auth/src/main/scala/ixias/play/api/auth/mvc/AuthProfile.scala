@@ -13,23 +13,24 @@ import play.api.{ Environment, Mode }
 import play.api.mvc.{ RequestHeader, Result }
 import play.api.libs.typedmap.TypedKey
 
-import ixias.model.{ Tagged, Entity }
+import ixias.model.{ @@, Entity, EntityModel, IdStatus }
 import ixias.play.api.auth.token.Token
 import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.Errors._
 
-trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
+trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A]
 {
   import Token._
 
   // --[ TypeDefs ]-------------------------------------------------------------
-  type Id        = K  // The identity to detect authenticated resource.
-  type Auth      = E  // The authenticated resource.
-  type Authority = A  // The type of authoriy
+  type Id         = K                              // The identity to detect authenticated resource.
+  type Auth       = M                              // The authenticated resource.
+  type AuthEntity = Entity[K, M, IdStatus.Exists]  // The entity which is containing authenticated resource.
+  type Authority  = A                              // The type of authoriy
 
   /** Keys to request attributes. */
   object RequestAttrKey {
-    val Auth      = TypedKey[Auth]("Authentication")
+    val Auth      = TypedKey[AuthEntity]("Authentication")
     val Authority = TypedKey[Authority]("Authority")
   }
 
@@ -53,12 +54,12 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
   /**
    * Resolve authenticated resource by the identity
    */
-  def resolve(id: Id): Future[Option[Auth]]
+  def resolve(id: Id): Future[Option[AuthEntity]]
 
   /**
    * Verifies what authenticated resource authorized to do.
    */
-  def authorize(auth: Auth, authority: Option[Authority]): Future[Boolean] =
+  def authorize(auth: AuthEntity, authority: Option[Authority]): Future[Boolean] =
     Future.successful(true)
 
   /**
@@ -75,20 +76,20 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
    * Authorization helps you to control access rights by granting or
    * denying specific permissions to an authenticated user.
    */
-  def authorizationFailed(auth: Auth, authority: Option[Authority])(implicit request: RequestHeader): Result =
+  def authorizationFailed(auth: AuthEntity, authority: Option[Authority])(implicit request: RequestHeader): Result =
     E_AUTHRIZATION
 
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Returns authorized user.
    */
-  final def loggedIn(implicit request: RequestHeader): Option[Auth] =
+  final def loggedIn(implicit request: RequestHeader): Option[AuthEntity] =
     request.attrs.get(RequestAttrKey.Auth)
 
   /**
    * Returns the result response.
    */
-  final def loggedIn(block: Auth => Result)(implicit request: RequestHeader): Result =
+  final def loggedIn(block: AuthEntity => Result)(implicit request: RequestHeader): Result =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => authenticationFailed
@@ -97,7 +98,7 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
   /**
    * Returns the result response.
    */
-  final def loggedIn(block: Auth => Future[Result])(implicit request: RequestHeader): Future[Result] =
+  final def loggedIn(block: AuthEntity => Future[Result])(implicit request: RequestHeader): Future[Result] =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => Future.successful(authenticationFailed)
@@ -107,7 +108,7 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
    * Returns the result response of applying block
    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
    */
-  final def loggedInOrNot(ifEmpty: => Result)(block: Auth => Result)(implicit request: RequestHeader): Result =
+  final def loggedInOrNot(ifEmpty: => Result)(block: AuthEntity => Result)(implicit request: RequestHeader): Result =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => ifEmpty
@@ -117,7 +118,7 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
    * Returns the result response of applying block
    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
    */
-  final def loggedInOrNot(ifEmpty: => Result)(block: Auth => Future[Result])(implicit request: RequestHeader): Future[Result] =
+  final def loggedInOrNot(ifEmpty: => Result)(block: AuthEntity => Future[Result])(implicit request: RequestHeader): Future[Result] =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => Future.successful(ifEmpty)
@@ -159,7 +160,7 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
   /**
    * Restore a user data by the session token in `RequestHeader`.
    */
-  final def restore(implicit request: RequestHeader): Future[(Option[Auth], Result => Result)] =
+  final def restore(implicit request: RequestHeader): Future[(Option[AuthEntity], Result => Result)] =
     extractAuthToken match {
       case None        => Future.successful(None -> identity)
       case Some(token) => (for {
@@ -176,7 +177,7 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
   /**
    * Verifies what user are authenticated to do.
    */
-  final def authenticate(implicit request: RequestHeader): Future[Either[Result, (Auth, Result => Result)]] =
+  final def authenticate(implicit request: RequestHeader): Future[Either[Result, (AuthEntity, Result => Result)]] =
     restore map {
       case (Some(auth), updater) => Right(auth -> updater)
       case _                     =>  Left(authenticationFailed)
@@ -185,7 +186,7 @@ trait AuthProfile[K <: Tagged[_, _], E <: Entity[_, _], A]
   /**
    * Verifies what user are authorized to do.
    */
-  final def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (Auth, Result => Result)]] =
+  final def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (AuthEntity, Result => Result)]] =
     (for {
       Some((auth, updater)) <- authenticate.map(_.toOption)
       authorized            <- authorize(auth, authority)
