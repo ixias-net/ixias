@@ -7,8 +7,8 @@
 
 package ixias.persistence.model
 
-import slick.jdbc.JdbcProfile
 import ixias.persistence.lifted._
+import slick.jdbc.JdbcProfile
 
 trait Table[R, P <: JdbcProfile] { self =>
 
@@ -51,6 +51,7 @@ trait Table[R, P <: JdbcProfile] { self =>
       with Aliases
       with ExtensionMethods
       with SlickColumnOptionOps
+      with SlickRepOps[P]
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver
   }

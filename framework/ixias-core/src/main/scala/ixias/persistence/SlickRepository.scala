@@ -44,7 +44,10 @@ trait SlickProfile[P <: JdbcProfile]
    * This provides the repository's implicits, the Database connections,
    * and commonly types and objects.
    */
-  trait API extends super.API with driver.API with SlickColumnTypeOps[P] {
+  trait API extends super.API
+      with driver.API
+      with SlickRepOps[P]
+      with SlickColumnTypeOps[P] {
     lazy val driver = self.driver
   }
   val api: API = new API {}
