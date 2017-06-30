@@ -100,6 +100,12 @@ lazy val ixiasMail = (project in file("framework/ixias-mail"))
     "org.apache.commons"  % "commons-email"   % "1.4"
   ))
 
+lazy val ixiasAwsSns = (project in file("framework/ixias-aws-sns"))
+  .settings(name := "ixias-aws-sns")
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+
 // IxiaS Play Libraries
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
@@ -138,6 +144,13 @@ lazy val ixias = (project in file("."))
   .settings(publisherSettings: _*)
   .aggregate(ixiasCore, ixiasMail, ixiasPlay)
   .dependsOn(ixiasCore, ixiasMail)
+
+lazy val ixiasAws = (project in file("target/ixias-aws"))
+  .settings(name := "ixias-aws")
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .aggregate(ixiasCore, ixiasAwsSns)
+  .dependsOn(ixiasCore, ixiasAwsSns)
 
 lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")
