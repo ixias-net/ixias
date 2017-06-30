@@ -14,7 +14,7 @@ import com.amazonaws.auth.{ AWSCredentials, BasicAWSCredentials }
 import ixias.util.Configuration
 import ixias.persistence.model.DataSourceName
 
-trait AmazonSNSDataConfig {
+trait AmazonSNSConfig {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
@@ -53,25 +53,33 @@ trait AmazonSNSDataConfig {
    * Gets the AWS access key ID for this credentials object.
    */
   protected def getAWSAccessKeyId(dsn: DataSourceName): Try[String] =
-    Try(readValue(dsn)(_.get[Option[String]](CF_ACCESS_KEY)).get)
+    Try(readValue(dsn)(
+      _.get[Option[String]](CF_ACCESS_KEY)).get
+    )
 
   /**
    * Gets the AWS secret access key for this credentials object.
    */
   protected def getAWSSecretKey(dsn: DataSourceName): Try[String] =
-    Try(readValue(dsn)(_.get[Option[String]](CF_SECRET_KEY)).get)
+    Try(readValue(dsn)(
+      _.get[Option[String]](CF_SECRET_KEY)).get
+    )
 
   /**
    * Gets a region enum corresponding to the given region name.
    */
   protected def getAWSRegion(dsn: DataSourceName): Try[Regions] =
-    Try(Regions.fromName(readValue(dsn)(_.get[Option[String]](CF_REGION)).get))
+    Try(Regions.fromName(readValue(dsn)(
+      _.get[Option[String]](CF_REGION)).get
+    ))
 
   /**
    * Gets the flag to invoke SNS process.
    */
   def isSkip(dsn: DataSourceName): Boolean =
-    readValue(dsn)(_.get[Option[Boolean]](CF_OPT_SNS_SKIP)).getOrElse(false)
+    readValue(dsn)(
+      _.get[Option[Boolean]](CF_OPT_SNS_SKIP)
+    ).getOrElse(false)
 
   /**
    * Gets the topic ARN of Amazon SNS.
