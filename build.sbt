@@ -6,8 +6,8 @@
  */
 
 lazy val commonSettings = Seq(
-  organization := "net.ixias",
-  scalaVersion := "2.12.2",
+  organization  := "net.ixias",
+  scalaVersion  := "2.12.2",
   resolvers ++= Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
@@ -100,11 +100,15 @@ lazy val ixiasMail = (project in file("framework/ixias-mail"))
     "org.apache.commons"  % "commons-email"   % "1.4"
   ))
 
+lazy val awsSdkVersion = "1.11.156"
 lazy val ixiasAwsSns = (project in file("framework/ixias-aws-sns"))
   .settings(name := "ixias-aws-sns")
   .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    "com.amazonaws" % "aws-java-sdk-sns" % awsSdkVersion
+  ))
 
 // IxiaS Play Libraries
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
