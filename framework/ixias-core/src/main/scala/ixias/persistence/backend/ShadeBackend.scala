@@ -19,11 +19,11 @@ case class ShadeBackend()
    extends BasicBackend[Memcached] with ShadeConfig
 {
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName): Future[Database] = {
+  def getDatabase(implicit dsn: DataSourceName): Future[Database] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
-    ShadeDatabaseContainer.getOrElseUpdate(dsn) {
+    ShadeDatabaseContainer.getOrElseUpdate {
       (for {
-        conf <- createConfiguration(dsn)
+        conf <- createConfiguration
         db    = Memcached(conf)
       } yield db) andThen {
         case Success(_) => logger.info("Created a new data souce. dsn=%s".format(dsn.toString))
@@ -33,15 +33,15 @@ case class ShadeBackend()
   }
 
   /** Create a configuration for shade client to access memcached */
-  def createConfiguration(dsn: DataSourceName): Future[Configuration] =
+  def createConfiguration(implicit dsn: DataSourceName): Future[Configuration] =
     Future.fromTry {
       for {
-        addresses <- getAddresses(dsn)
+        addresses <- getAddresses
       } yield {
         shade.memcached.Configuration(
           addresses        = addresses,
-          keysPrefix       = Some(getKeysPrefix(dsn)),
-          operationTimeout = getHostSpecIdleTimeout(dsn)
+          keysPrefix       = Some(getKeysPrefix),
+          operationTimeout = getHostSpecIdleTimeout
         )
       }
     }

@@ -11,7 +11,6 @@ import scala.concurrent.Future
 import scala.util.{ Success, Failure }
 import ixias.util.Logger
 import ixias.persistence.dbio.Execution
-import ixias.persistence.model.DataSourceName
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.sns.{ AmazonSNS, AmazonSNSClientBuilder }
 
@@ -27,19 +26,19 @@ object AmazonSNSBackend extends AmazonSNSConfig {
   protected implicit val ctx = Execution.Implicits.trampoline
 
   /** Get a Database instance from connection pool. */
-  def getClient(dsn: DataSourceName): Future[AmazonSNS] = {
+  def getClient(implicit dsn: DataSourceName): Future[AmazonSNS] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
     Future.fromTry(
       for {
-        credentials <- getAWSCredentials(dsn)
-        region      <- getAWSRegion(dsn)
-      } yield AmazonSNSClientBuilder.standard()
+        credentials <- getAWSCredentials
+        region      <- getAWSRegion
+      } yield AmazonSNSClientBuilder.standard
         .withCredentials(new AWSStaticCredentialsProvider(credentials))
         .withRegion(region)
-        .build()
+        .build
     ) andThen {
-      case Success(_) => logger.info("Created a new data souce. dsn=%s".format(dsn.toString))
-      case Failure(_) => logger.info("Failed to create a data souce. dsn=%s".format(dsn.toString))
+      case Success(_) => logger.info("Generated a new client. dsn=%s".format(dsn.toString))
+      case Failure(_) => logger.info("Failed to build a client. dsn=%s".format(dsn.toString))
     }
   }
 }

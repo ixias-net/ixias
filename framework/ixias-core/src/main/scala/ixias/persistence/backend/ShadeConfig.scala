@@ -23,22 +23,22 @@ trait ShadeConfig extends BasicDatabaseConfig {
   /**
    * Get the list of server addresses, separated by space.
    */
-  protected def getAddresses(dsn: DataSourceName): Try[String] =
-    getHosts(dsn).map(_.mkString(","))
+  protected def getAddresses(implicit dsn: DataSourceName): Try[String] =
+    getHosts.map(_.mkString(","))
 
   /**
    * Get the prefix to be added to used keys when storing/retrieving values
    * useful for having the same Memcached instances used by several
    * applications to prevent them from stepping over each other.
    */
-  protected def getKeysPrefix(dsn: DataSourceName): String =
-    readValue(dsn)(_.get[Option[String]](CF_KEY_PREFIX)).getOrElse(dsn.database + "#")
+  protected def getKeysPrefix(implicit dsn: DataSourceName): String =
+    readValue(_.get[Option[String]](CF_KEY_PREFIX)).getOrElse(dsn.database + "#")
 
   /**
    * Get the operation timeout; When the limit is reached,
    * the Future responses finish with Failure(TimeoutException)
    */
-  protected def getHostSpecIdleTimeout(dsn: DataSourceName): FiniteDuration =
-    readValue(dsn)(_.get[Option[FiniteDuration]](CF_OP_TIMEOUT))
+  protected def getHostSpecIdleTimeout(implicit dsn: DataSourceName): FiniteDuration =
+    readValue(_.get[Option[FiniteDuration]](CF_OP_TIMEOUT))
       .getOrElse(FiniteDuration(30000, TimeUnit.MILLISECONDS))
 }

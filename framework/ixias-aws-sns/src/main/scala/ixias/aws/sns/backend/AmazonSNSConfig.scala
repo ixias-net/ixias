@@ -12,86 +12,84 @@ import scala.collection.JavaConverters._
 import com.amazonaws.regions.Regions
 import com.amazonaws.auth.{ AWSCredentials, BasicAWSCredentials }
 import ixias.util.Configuration
-import ixias.persistence.model.DataSourceName
 
 trait AmazonSNSConfig {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
-  protected val CF_ACCESS_KEY        = "aws_access_key_id"
-  protected val CF_SECRET_KEY        = "aws_secret_access_key"
-  protected val CF_REGION            = "aws_region"
-  protected val CF_OPT_SNS_SKIP      = "aws_sns_skip"
-  protected val CF_OPT_SNS_TOPIC_ARN = "aws_sns_topic"
+  protected val CF_SNS_ACCESS_KEY        = "access_key_id"
+  protected val CF_SNS_SECRET_KEY        = "secret_access_key"
+  protected val CF_SNS_REGION            = "region"
+  protected val CF_SNS_OPT_SNS_SKIP      = "skip"
+  protected val CF_SNS_OPT_SNS_TOPIC_ARN = "topic"
 
   /** The configuration */
   protected val config = Configuration()
-
-  // --[ Configuration ]--------------------------------------------------------
-  /**
-   * Get a value by specified key.
-   */
-  final private def readValue[A](dsn: DataSourceName)(f: Configuration => Option[A]): Option[A] =
-    Seq(
-      dsn.path + "." + dsn.database,
-      dsn.path
-    ).foldLeft[Option[A]](None) {
-      case (prev, path) => prev.orElse(f(config.get[Configuration](path)))
-    }
 
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Gets the AWS credentials object.
    */
-  protected def getAWSCredentials(dsn: DataSourceName): Try[AWSCredentials] =
+  protected def getAWSCredentials(implicit dsn: DataSourceName): Try[AWSCredentials] =
     for {
-      akey <- getAWSAccessKeyId(dsn)
-      skey <- getAWSSecretKey(dsn)
+      akey <- getAWSAccessKeyId
+      skey <- getAWSSecretKey
     } yield new BasicAWSCredentials(akey, skey)
 
   /**
    * Gets the AWS access key ID for this credentials object.
    */
-  protected def getAWSAccessKeyId(dsn: DataSourceName): Try[String] =
-    Try(readValue(dsn)(
-      _.get[Option[String]](CF_ACCESS_KEY)).get
+  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Try[String] =
+    Try(readValue(
+      _.get[Option[String]](CF_SNS_ACCESS_KEY)).get
     )
 
   /**
    * Gets the AWS secret access key for this credentials object.
    */
-  protected def getAWSSecretKey(dsn: DataSourceName): Try[String] =
-    Try(readValue(dsn)(
-      _.get[Option[String]](CF_SECRET_KEY)).get
+  protected def getAWSSecretKey(implicit dsn: DataSourceName): Try[String] =
+    Try(readValue(
+      _.get[Option[String]](CF_SNS_SECRET_KEY)).get
     )
 
   /**
    * Gets a region enum corresponding to the given region name.
    */
-  protected def getAWSRegion(dsn: DataSourceName): Try[Regions] =
-    Try(Regions.fromName(readValue(dsn)(
-      _.get[Option[String]](CF_REGION)).get
+  protected def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
+    Try(Regions.fromName(readValue(
+      _.get[Option[String]](CF_SNS_REGION)).get
     ))
 
   /**
    * Gets the flag to invoke SNS process.
    */
-  def isSkip(dsn: DataSourceName): Boolean =
-    readValue(dsn)(
-      _.get[Option[Boolean]](CF_OPT_SNS_SKIP)
+  def isSkip(implicit dsn: DataSourceName): Boolean =
+    readValue(
+      _.get[Option[Boolean]](CF_SNS_OPT_SNS_SKIP)
     ).getOrElse(false)
 
   /**
    * Gets the topic ARN of Amazon SNS.
    */
-  def getTopicARN(dsn: DataSourceName): Try[Seq[String]] = {
-    val path    = dsn.path + "." + dsn.database
+  def getTopicARN(implicit dsn: DataSourceName): Try[Seq[String]] = {
+    val path    = dsn.path + "." + dsn.resource
     val section = config.get[Configuration](path).underlying
-    val opt     = section.getAnyRef(CF_OPT_SNS_TOPIC_ARN) match {
+    val opt     = section.getAnyRef(CF_SNS_OPT_SNS_TOPIC_ARN) match {
       case v: String            => Seq(v)
       case v: java.util.List[_] => v.asScala.toList.map(_.toString)
       case _ => throw new Exception(s"""Illegal value type of host setting. { path: $dsn }""")
     }
     Try(opt)
   }
+
+  /**
+   * Get a value by specified key.
+   */
+  final private def readValue[A](f: Configuration => Option[A])(implicit dsn: DataSourceName): Option[A] =
+    Seq(
+      dsn.path + "." + dsn.resource,
+      dsn.path
+    ).foldLeft[Option[A]](None) {
+      case (prev, path) => prev.orElse(f(config.get[Configuration](path)))
+    }
 }

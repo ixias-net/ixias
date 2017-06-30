@@ -27,5 +27,5 @@ trait BasicBackend[T] extends BasicDatabaseConfig {
   protected lazy val logger  = Logger.apply
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName): Future[T]
+  def getDatabase(implicit dsn: DataSourceName): Future[T]
 }

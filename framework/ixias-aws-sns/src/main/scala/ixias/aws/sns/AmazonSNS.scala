@@ -13,7 +13,6 @@ import com.amazonaws.services.sns.model.PublishResult
 
 import ixias.persistence.lifted.Aliases
 import ixias.persistence.dbio.Execution
-import ixias.persistence.model.DataSourceName
 import ixias.util.Logging
 
 // Amazon SNS
@@ -21,12 +20,12 @@ import ixias.util.Logging
 trait AmazonSNS extends Aliases with Logging {
 
   // --[ Alias ]----------------------------------------------------------------
-  val DataSourceName = ixias.persistence.model.DataSourceName
+  /** The data source name */
+  val  DataSourceName = ixias.aws.sns.backend.DataSourceName
+  type DataSourceName = ixias.aws.sns.backend.DataSourceName
+  implicit val dsn: DataSourceName
 
   // --[ Properties ]-----------------------------------------------------------
-  /** The data source name */
-  implicit  val dsn: DataSourceName
-
   /** The backend */
   protected val backend = ixias.aws.sns.backend.AmazonSNSBackend
 
