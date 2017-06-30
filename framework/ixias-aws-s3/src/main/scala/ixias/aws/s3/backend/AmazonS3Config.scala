@@ -56,7 +56,7 @@ trait AmazonS3Config {
   /**
    * Gets a region enum corresponding to the given region name.
    */
-  protected def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
+  def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
     Try(Regions.fromName(readValue(
       _.get[Option[String]](CF_S3_REGION)).get
     ))

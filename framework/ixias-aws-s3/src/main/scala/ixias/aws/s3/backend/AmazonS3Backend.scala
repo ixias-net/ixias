@@ -50,6 +50,14 @@ object AmazonS3Backend extends AmazonS3Config {
   // The wrapper for AmazonS3 client
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   protected case class AmazonS3(underlying: com.amazonaws.services.s3.AmazonS3) {
+    // import com.amazonaws.services.s3.model._
+    //
+    // /** Gets the object stored in Amazon S3 under the specified bucket and key. */
+    // def load(file: File): Future[S3Object] =
+    //   Future(underlying.getObject(new GetObjectRequest(
+    //     file.bucket,
+    //     file.key
+    //   )))
   }
 }
 
