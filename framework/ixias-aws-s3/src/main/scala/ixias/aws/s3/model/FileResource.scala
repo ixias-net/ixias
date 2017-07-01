@@ -7,3 +7,19 @@
 
 package ixias.aws.s3.model
 
+import ixias.model.Entity
+
+// The type of file resource.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+case class FileResource(
+  fid:     File.Id,
+  content: Option[File]
+)
+
+// The companion object
+//~~~~~~~~~~~~~~~~~~~~~~
+object FileResource {
+  def apply(fid:  File.Id)                          = new FileResource(fid,     None)
+  def apply(file: Entity.EmbeddedId[File.Id, File]) = new FileResource(file.id, Some(file.v))
+}
+
