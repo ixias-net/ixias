@@ -8,6 +8,7 @@
 package ixias.play.api.mvc
 
 trait BaseExtensionMethods {
+  val Cursor     = ixias.persistence.model.Cursor
   val JsonHelper = ixias.play.api.mvc.JsonHelper
   val FormHelper = ixias.play.api.mvc.FormHelper
 }
