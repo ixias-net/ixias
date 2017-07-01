@@ -14,6 +14,7 @@ trait BaseExtensionMethods {
   val Cursor     = ixias.persistence.model.Cursor
   val JsonHelper = ixias.play.api.mvc.JsonHelper
   val FormHelper = ixias.play.api.mvc.FormHelper
+  val AttrHelper = ixias.play.api.mvc.RequestHeaderAttrHelper
 
   implicit def convEitherToResult(v: Either[Result, Result]): Result =
     v match { case Right(r) => r case Left(l) => l }
