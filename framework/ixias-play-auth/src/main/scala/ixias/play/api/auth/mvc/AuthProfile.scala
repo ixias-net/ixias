@@ -128,7 +128,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A]
   /**
    * Invoke this method on login succeeded.
    */
-  final def loginSucceeded(id: Id)(block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
+  final def loginSucceeded(id: Id, block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
     (for {
       token  <- datastore.open(id, sessionTimeout)
       result  = block(token)
