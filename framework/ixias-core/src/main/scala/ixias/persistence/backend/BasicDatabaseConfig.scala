@@ -39,7 +39,9 @@ trait BasicDatabaseConfig {
       dsn.path + "." + CF_SECTION_HOSTSPEC.format(dsn.hostspec),
       dsn.path
     ).foldLeft[Option[A]](None) {
-      case (prev, path) => prev.orElse(f(config.get[Configuration](path)))
+      case (prev, path) => prev.orElse {
+        config.get[Option[Configuration]](path).flatMap(f(_))
+      }
     }
 
   // --[ Methods ]--------------------------------------------------------------
