@@ -10,7 +10,9 @@ package ixias.persistence
 import ixias.model.{ @@, EntityModel }
 import ixias.persistence.dbio.{ Execution, EntityIOAction }
 import ixias.persistence.lifted.{ Aliases, ExtensionMethods }
+
 import ixias.util.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * The basic functionality that has to be implemented by all profiles.
@@ -27,7 +29,8 @@ private[persistence] trait Profile {
   protected val backend: Backend
 
   /** The logger for profile */
-  protected lazy val logger  = Logger.apply
+  protected lazy val logger  =
+    new Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   /** The Execution Context */
   protected implicit val ctx = Execution.Implicits.trampoline
