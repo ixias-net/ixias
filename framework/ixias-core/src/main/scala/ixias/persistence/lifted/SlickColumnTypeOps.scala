@@ -9,7 +9,7 @@ package ixias.persistence.lifted
 
 import slick.driver.JdbcProfile
 import java.sql.{ Timestamp, Date, Time }
-import org.joda.time.{ DateTime, LocalDate, LocalTime, DateTimeZone }
+import org.joda.time.{ DateTime, LocalDate, LocalTime, Duration, DateTimeZone }
 import ixias.model.Identity
 
 trait SlickColumnTypeOps[P <: JdbcProfile] {
@@ -31,6 +31,12 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
   // java.sql.Time <-> org.joda.time.LocalTime
   implicit val jodaLocalTimeColumnType = MappedColumnType.base[LocalTime, Time](
     lt => new Time(lt.toDateTimeToday.getMillis),
-    t  => new LocalTime(t, DateTimeZone.UTC)
+    t  => new LocalTime(t)
+  )
+
+  // java.sql.Time <-> org.joda.time.Duration
+  implicit val jodaDurationColumnType = MappedColumnType.base[Duration, Time](
+    d => new Time(d.getMillis),
+    t => new Duration(t)
   )
 }
