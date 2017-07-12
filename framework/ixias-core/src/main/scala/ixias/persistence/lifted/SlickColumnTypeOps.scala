@@ -38,6 +38,6 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
   // java.sql.Time <-> org.joda.time.Duration
   implicit val jodaDurationColumnType = MappedColumnType.base[Duration, Time](
     d => new Time(d.getMillis - TimeZone.getDefault.getRawOffset),
-    t => new Duration(t.getTime)
+    t => new Duration(t.getTime + TimeZone.getDefault.getRawOffset)
   )
 }
