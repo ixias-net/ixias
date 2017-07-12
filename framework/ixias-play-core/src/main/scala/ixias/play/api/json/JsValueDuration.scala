@@ -7,9 +7,9 @@
 
 package ixias.play.api.json
 
-import org.joda.time.Duration
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import org.joda.time.{ Period, Duration }
 
 // JodaTime JSON Formatter
 //~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -21,7 +21,7 @@ object JsValueDuration {
    */
   implicit val jodaDurationReads: Reads[Duration] = Reads[Duration] {
     case JsString(repr) => try {
-      JsSuccess(Duration.parse(repr))
+      JsSuccess(Period.parse(repr).toStandardDuration)
     } catch {
       case _: IllegalArgumentException => JsError("error.invalid.duration")
     }
