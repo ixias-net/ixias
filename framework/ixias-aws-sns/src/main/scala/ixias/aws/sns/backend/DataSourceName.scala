@@ -20,7 +20,7 @@ sealed class DataSourceName(
 object DataSourceName {
 
   /** The synatx format for DSN */
-  val SYNTAX_DATA_SOURCE_NAME = """^ixias.sns.s3://(\w+?)$""".r
+  val SYNTAX_DATA_SOURCE_NAME = """^(ixias.aws.sns)://(\w+?)$""".r
 
   /** Build a `DataSourceName` object. */
   def apply(dsn: String) = dsn match {

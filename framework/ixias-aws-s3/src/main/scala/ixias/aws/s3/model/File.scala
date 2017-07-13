@@ -48,8 +48,10 @@ case class File(
 object File {
 
   // --[ File ID ]--------------------------------------------------------------
-  val  Id = the[Identity[Id]]
-  type Id = Long @@ File
+  val  Id         = the[Identity[Id]]
+  type Id         = Long @@ File
+  type WithNoId   = Entity.WithNoId   [Id, File]
+  type EmbeddedId = Entity.EmbeddedId [Id, File]
 
   object Config extends AmazonS3Config
 
