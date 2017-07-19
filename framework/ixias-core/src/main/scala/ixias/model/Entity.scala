@@ -31,6 +31,9 @@ final class Entity[K <: @@[_, _], M <: EntityModel[K], S <: IdStatus](val v: M) 
   /** check whether exists entity id value */
   def hasId(implicit ev: TypeTag[IdStatus]): Boolean =
     ev.tpe =:= typeOf[IdStatus.Exists]
+
+  /** Builds a new `Entity` by applying a function to values. */
+  @inline def map[M2 <: EntityModel[K]](f: M => M2): Entity[K, M2, S] = new Entity(f(v))
 }
 
 // Companion object for Entity
