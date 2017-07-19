@@ -156,7 +156,7 @@ lazy val ixias = (project in file("."))
   .settings(name := "ixias")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasCore, ixiasMail, ixiasPlay)
+  .aggregate(ixiasCore, ixiasMail, ixiasAws, ixiasPlay)
   .dependsOn(ixiasCore, ixiasMail)
 
 lazy val ixiasAws = (project in file("target/ixias-aws"))
