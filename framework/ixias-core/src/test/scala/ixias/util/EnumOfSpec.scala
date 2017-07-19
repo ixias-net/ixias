@@ -11,8 +11,8 @@ import org.specs2.mutable._
 
 object EnumOfSpec extends Specification {
 
-  sealed abstract class Color(val red: Double, val green: Double, val blue: Double)
-  object Color extends EnumOf[Color] {
+  sealed abstract class Color(val red: Double, val green: Double, val blue: Double) extends Enum
+  object Color extends Enum.Of[Color] {
     case object Red   extends Color(1, 0, 0)
     case object Green extends Color(0, 1, 0)
     case object Blue  extends Color(0, 0, 1)

@@ -29,8 +29,13 @@ object idSpec extends Specification {
 
   // テスト
   "model" should {
-    val user = User("Kinugasa")
-    user.hasId  must_=== false
-    user.v.name must_=== "Kinugasa"
+    val user1 = User("Kinugasa")
+    val user2 = user1.map(_.copy(name = "Sp1rytus"))
+
+    println(user1.v)
+    println(user2.v)
+
+    user1.hasId  must_=== false
+    user1.v.name must_=== "Kinugasa"
   }
 }
