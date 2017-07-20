@@ -17,13 +17,13 @@ object IdStatus {
 }
 
 /** The Entity */
-final class Entity[K <: @@[_, _], M <: EntityModel[K], S <: IdStatus](val v: M) {
+final class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](val v: M) {
 
   /** The entity data model */
-  type Model    = M
+  type Model    <: M
 
   /** The status of entity's identity */
-  type IdStatus = S
+  type IdStatus =  S
 
   /** get id value whene id is exists */
   def id(implicit ev: S =:= IdStatus.Exists): K = v.id.get
