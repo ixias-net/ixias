@@ -14,7 +14,17 @@ import ixias.model.Entity
 case class FileResource(
   fid:     File.Id,
   content: Option[File]
-)
+) {
+  def join(file: Option[File.EmbeddedId]): FileResource =
+    this.copy(content = file.collect {
+      case e if e.id == this.fid => e.v
+    })
+
+  def join(candidates: Seq[File.EmbeddedId]): FileResource =
+    this.copy(content = candidates.collectFirst {
+      case e if e.id == this.fid => e.v
+    })
+}
 
 // The companion object
 //~~~~~~~~~~~~~~~~~~~~~~

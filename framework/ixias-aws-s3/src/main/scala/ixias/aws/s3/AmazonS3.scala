@@ -11,7 +11,7 @@ import slick.jdbc.JdbcProfile
 import com.amazonaws.services.s3.model.S3ObjectInputStream
 import scala.concurrent.Future
 
-import ixias.aws.s3.model.{ File, FileResource }
+import ixias.aws.s3.model.File
 import ixias.aws.s3.persistence.SlickResource
 import ixias.persistence.SlickRepository
 
@@ -42,15 +42,6 @@ trait AmazonS3Repository[P <: JdbcProfile]
     }
 
   /**
-   * Get File object as `FileResource`.
-   */
-  def getResource(id: Id): Future[FileResource] =
-    get(id) map {
-      case None       => FileResource(id)
-      case Some(file) => FileResource(file)
-    }
-
-  /**
    * Get file object as `Entity` with a input stream for it.
    */
   def getWithContent(id: Id): Future[Option[(EntityEmbeddedId, S3ObjectInputStream)]] =
@@ -62,8 +53,16 @@ trait AmazonS3Repository[P <: JdbcProfile]
       } yield Some((file, s3object.getObjectContent()))
     }
 
+  /**
+   * Finds file objects by set of file ids.
+   */
+  def find(ids: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
+    RunDBAction(FileTable, "slave") { slick =>
+      slick.filter(_.id inSet ids).result
+    }
+
   // --[ Methods ]--------------------------------------------------------------
-  /** @see addViaPresignedUrl */
+  @deprecated("use `add` or `addViaPresignedUrl` method", "2.0")
   def add(file: EntityWithNoId): Future[Id] =
     Future.failed(new UnsupportedOperationException)
 
@@ -94,6 +93,58 @@ trait AmazonS3Repository[P <: JdbcProfile]
       }
     } yield (File.Id(fid), url.toString())
 
+  // --[ Methods ]--------------------------------------------------------------
+  @deprecated("use `update` or `updateViaPresignedUrl` method", "2.0")
+  def update(file: EntityEmbeddedId): Future[Option[EntityEmbeddedId]] =
+    Future.failed(new UnsupportedOperationException)
+
+  /**
+   * Update the file information.
+   * At the same time upload a specified file to S3.
+   */
+  def update(file: EntityEmbeddedId, content: java.io.File): Future[Option[EntityEmbeddedId]] =
+    for {
+      client <- s3.getClient
+      _      <- client.upload(file.v, content)
+      old    <- RunDBAction(FileTable) { slick =>
+        for {
+          old <- slick.unique(file.id).result.headOption
+          _   <- slick.unique(file.id).update(file.v)
+        } yield old
+      }
+    } yield old
+
+  /**
+   * Update the file information.
+   * However, the file body content has not yet been uploaded to S3.
+   * After this method called, upload a file via presigned URL.
+   */
+  def updateViaPresignedUrl(file: EntityEmbeddedId): Future[(Option[EntityEmbeddedId], String)] =
+    for {
+      client <- s3.getClient
+      url    <- client.genPresignedUrl(file.v)
+      old    <- RunDBAction(FileTable) { slick =>
+        for {
+          old <- slick.unique(file.id).result.headOption
+          _   <- slick.unique(file.id).update(file.v)
+        } yield old
+      }
+    } yield (old, url.toString())
+
+  /**
+   * Update the sepecified file's image size.
+   */
+  def updateImageSize(fid: Id, size: File.ImageSize): Future[Option[EntityEmbeddedId]] =
+    RunDBAction(FileTable) { slick =>
+      for {
+        old <- slick.unique(fid).result.headOption
+        _   <- slick.unique(fid).map(
+          c => (c.width, c.height)
+        ).update((Some(size.width), Some(size.height)))
+      } yield old
+    }
+
+  // --[ Methods ]--------------------------------------------------------------
   /**
    * Remove the file information and a file object at S3.
    */
