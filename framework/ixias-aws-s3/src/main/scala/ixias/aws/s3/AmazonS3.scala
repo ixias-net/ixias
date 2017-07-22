@@ -56,7 +56,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
   /**
    * Finds file objects by set of file ids.
    */
-  def find(ids: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
+  def filter(ids: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
     RunDBAction(FileTable, "slave") { slick =>
       slick.filter(_.id inSet ids).result
     }
