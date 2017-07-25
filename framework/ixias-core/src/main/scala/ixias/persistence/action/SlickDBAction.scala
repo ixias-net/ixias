@@ -56,16 +56,6 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
       for {
         dsn   <- Future(table.dsn.get(hostspec).get)
         value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), block)
-      } yield value
-
-    /** Invoke DB action block with adaption convert. */
-    def adapt[A, B, T <: Table[_, P]]
-      (table: T, hostspec: String = DEFAULT_DSN_KEY)
-      (block: ((Database, T#Query)) => Future[A])
-      (implicit conv: A => B): Future[B] =
-      for {
-        dsn   <- Future(table.dsn.get(hostspec).get)
-        value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), block)
       } yield conv(value)
     }
 
@@ -82,18 +72,6 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
       for {
         dsn    <- Future(table.dsn.get(hostspec).get)
         value  <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), {
-          case (db, slick) => db.run(action(slick))
-        })
-      } yield value
-
-    /** Invoke DB action block with adaption convert. */
-    def adapt[A, B, T <: Table[_, P]]
-      (table: T, hostspec: String = DEFAULT_DSN_KEY)
-      (action: T#Query => DBIOAction[A, NoStream, Nothing])
-      (implicit conv: A => B): Future[B] =
-      for {
-        dsn   <- Future(table.dsn.get(hostspec).get)
-        value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), {
           case (db, slick) => db.run(action(slick))
         })
       } yield conv(value)
