@@ -57,4 +57,9 @@ trait SlickProfile[P <: JdbcProfile]
  * The repository for persistence with using the Slick library.
  */
 trait SlickRepository[K <: @@[_, _], M <: EntityModel[K], P <: JdbcProfile]
-   extends Repository[K, M] with SlickProfile[P]
+    extends Repository[K, M] with SlickProfile[P] {
+  trait API extends super.API
+      with SlickQueryOps
+      with SlickDBIOActionOps[K, M]
+  override val api: API = new API {}
+}
