@@ -17,7 +17,7 @@ object IdStatus {
 }
 
 /** The Entity */
-final class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](val v: M) {
+final case class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](v: M) {
 
   /** The entity data model */
   type Model    <: M
