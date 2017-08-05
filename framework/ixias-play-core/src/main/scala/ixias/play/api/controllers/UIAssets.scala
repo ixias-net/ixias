@@ -46,25 +46,28 @@ class UIAssets @javax.inject.Inject() (
       )
     }).filter(_.exists)
 
-  // import javax.activation.MimetypesFileTypeMap
-
   /** Assetsハンドラー : 開発モード */
-  private def devAssetHandler(file: String): Action[AnyContent] = {
-    val path = basePaths.foldLeft[Option[String]](None) {
+  private def devAssetHandler(file: String): Action[AnyContent] = Action { implicit request =>
+    val resource = basePaths.foldLeft[Option[java.io.File]](None) {
       case (prev, path) => prev match {
         case Some(_) => prev
         case None    => {
           val fullPath = path + "/" + file
-          val exists   = (new java.io.File(fullPath)).isFile
-          if (exists) Some(path.getName) else None
+          val resource = new java.io.File(fullPath)
+          if (resource.isFile) Some(resource) else None
         }
       }
     }
-    path match {
-      case Some(path) => at(path, file, aggressiveCaching = false)
-      case None       => Action { implicit request =>
-        NotFound("404 - Page not found error. path=" + request.path)
+    resource match {
+      case Some(file) => {
+        val stream = new java.io.FileInputStream(file)
+        val source = akka.stream.scaladsl.StreamConverters.fromInputStream(() => stream)
+        logger.info(s"Serving $file")
+        Ok.chunked(source)
+          .as(fileMimeTypes.forFileName(file.toString).getOrElse("application/octet-stream"))
+          .withHeaders(CACHE_CONTROL -> "no-store")
       }
+      case None => NotFound("404 - Page not found error. path=" + request.path)
     }
   }
 }
