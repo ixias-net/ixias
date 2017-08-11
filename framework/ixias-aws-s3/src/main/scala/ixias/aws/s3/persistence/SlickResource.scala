@@ -17,7 +17,6 @@ trait SlickResource[P <: JdbcProfile] {
   implicit val dsn: DataSourceName
 
   // --[ Tables ] --------------------------------------------------------------
-  object FileTable extends FileTable(driver, dsn)
-
+  object FileTable extends FileTable
   lazy val AllTables = Seq(FileTable)
 }

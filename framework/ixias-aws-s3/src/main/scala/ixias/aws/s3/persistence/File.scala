@@ -10,13 +10,13 @@ package ixias.aws.s3.persistence
 import java.time.LocalDateTime
 import slick.jdbc.JdbcProfile
 import ixias.aws.s3.model.File
-import ixias.aws.s3.backend.{ DataSourceName => S3DSN }
+import ixias.aws.s3.backend.{ DataSourceName => S3DSN, AmazonS3Config }
 import ixias.persistence.model.Table
 
 // Table definition.
 //~~~~~~~~~~~~~~~~~~~~
-case class FileTable[P <: JdbcProfile](val driver: P, val s3dsn: S3DSN)
-    extends Table[File, P] { self =>
+case class FileTable[P <: JdbcProfile]()(implicit val driver: P, val s3dsn: S3DSN)
+    extends Table[File, P] with AmazonS3Config { self =>
   import api._
 
   // --[ DNS ] -----------------------------------------------------------------
@@ -33,7 +33,7 @@ case class FileTable[P <: JdbcProfile](val driver: P, val s3dsn: S3DSN)
   lazy val query = new Query
 
   // --[ Table definition ] ----------------------------------------------------
-  class Table(tag: Tag) extends BasicTable(tag, "aws_s3_file") {
+  class Table(tag: Tag) extends BasicTable(tag, getMetaTableName) {
 
     // Columns
     /* @1 */ def id        = column[Option[Long]]  ("id",         O.UInt64, O.PrimaryKey, O.AutoInc)

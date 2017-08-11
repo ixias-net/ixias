@@ -23,6 +23,7 @@ trait AmazonS3Config {
   protected val CF_S3_BUCKET_NAME           = "bucket_name"
   protected val CF_S3_PRESIGNED_URL_TIMEOUT = "presigned_url_timeout"
   protected val CF_S3_CONNECTION_TIMEOUT    = "connection_timeout"
+  protected val CF_S3_META_TABLE_NAME       = "meta_table_name"
 
   /** The configuration */
   protected val config = Configuration()
@@ -89,6 +90,13 @@ trait AmazonS3Config {
       _.get[Option[Duration]](CF_S3_PRESIGNED_URL_TIMEOUT).map(_.toMillis))
        .getOrElse(500000L)
     )
+
+  /**
+   * Gets the table name which is containing META-INFO of storage object.
+   */
+  def getMetaTableName(implicit dsn: DataSourceName): String =
+    readValue(_.get[Option[String]](CF_S3_META_TABLE_NAME))
+      .getOrElse("aws_s3_file")
 
   /**
    * Get a value by specified key.
