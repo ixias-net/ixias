@@ -39,6 +39,7 @@ object AmazonS3Backend extends AmazonS3Config {
         AmazonS3(AmazonS3ClientBuilder.standard
           .withCredentials(new AWSStaticCredentialsProvider(credentials))
           .withRegion(region)
+          .withPathStyleAccessEnabled(true)
           .build)
       }
     ) andThen {
