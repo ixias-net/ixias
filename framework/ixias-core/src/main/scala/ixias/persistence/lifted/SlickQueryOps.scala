@@ -17,10 +17,6 @@ final case class SlickQueryTransformer[R, U](val self: Query[R, U, Seq]) extends
       case None        => if (0 < cursor.offset) self.drop(cursor.offset) else self
       case Some(limit) => self.drop(cursor.offset).take(limit)
     }
-  // def toEntity[K <: @@[_, _], M <: EntityModel[K]]: Query[Entity.EmbeddedId[K, M], U, Seq] =
-  //   self.collect {
-  //     case m: M => Entity.EmbeddedId[K, M](m)
-  //   }
 }
 
 trait SlickQueryOps {
