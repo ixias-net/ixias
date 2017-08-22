@@ -85,6 +85,7 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
     "io.monix"           %% "shade"         % "1.9.5",
     "com.zaxxer"          % "HikariCP"      % "2.5.0",
     "org.keyczar"         % "keyczar"       % "0.71h",
+    "org.uaparser"       %% "uap-scala"     % "0.1.0",
     "commons-codec"       % "commons-codec" % "1.10",
     "joda-time"           % "joda-time"     % "2.9.4",
     "org.slf4j"           % "slf4j-api"     % "1.7.21"

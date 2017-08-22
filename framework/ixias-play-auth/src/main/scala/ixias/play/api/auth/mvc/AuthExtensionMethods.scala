@@ -8,11 +8,9 @@
 package ixias.play.api.auth.mvc
 
 import play.api.mvc._
+import ixias.play.api.mvc.BaseExtensionMethods
 
-trait AuthExtensionMethods { self: BaseController =>
-
-  /** The ExecutionContext with using on Playframework. */
-  implicit lazy val executionContext = defaultExecutionContext
+trait AuthExtensionMethods extends BaseExtensionMethods { self: BaseController =>
 
   // For authentication
   def Authenticated(auth: AuthProfile[_, _, _]): ActionBuilder[Request, AnyContent] =
