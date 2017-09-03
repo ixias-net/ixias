@@ -7,8 +7,20 @@
 
 package ixias.play.api.auth.mvc
 
-trait AuthExtensionMethods {
-  val Authenticated      = AuthenticatedActionBuilder
-  val AuthenticatedOrNot = AuthenticatedOrNotActionBuilder
-  val Authorized         = AuthorizedActionBuilder
+import play.api.mvc._
+import ixias.play.api.mvc.BaseExtensionMethods
+
+trait AuthExtensionMethods extends BaseExtensionMethods { self: BaseController =>
+
+  // For authentication
+  def Authenticated(auth: AuthProfile[_, _, _]): ActionBuilder[Request, AnyContent] =
+    AuthenticatedActionBuilder(auth, parse.default)
+
+  // For authentication or not.
+  def AuthenticatedOrNot(auth: AuthProfile[_, _, _]): ActionBuilder[Request, AnyContent] =
+    AuthenticatedOrNotActionBuilder(auth, parse.default)
+
+  // For authorization
+  def Authorized[T](auth: AuthProfile[_, _, T], authority: Option[T]): ActionBuilder[Request, AnyContent] =
+    AuthorizedActionBuilder(auth, authority, parse.default)
 }

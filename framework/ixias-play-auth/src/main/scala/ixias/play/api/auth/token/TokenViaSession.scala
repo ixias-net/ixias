@@ -19,13 +19,13 @@ case class TokenViaSession(val name: String) extends Token {
     ConfigLoader(_.getString).map(SameSite.parse)
 
   // The configuration
-  val cookieName = config.get[String]                 (s"${name}.session.cookieName")
-  val maxAge     = config.get[Option[FiniteDuration]] (s"${name}.session.maxAge")
-  val path       = config.get[String]                 (s"${name}.session.path")
-  val domain     = config.get[Option[String]]         (s"${name}.session.domain")
-  val secure     = config.get[Boolean]                (s"${name}.session.secure")
-  val httpOnly   = config.get[Boolean]                (s"${name}.session.httpOnly")
-  val sameSite   = config.get[Option[SameSite]]       (s"${name}.session.sameSite")
+  val cookieName = config.get[String]                 (s"session.${name}.cookieName")
+  val maxAge     = config.get[Option[FiniteDuration]] (s"session.${name}.maxAge")
+  val path       = config.get[String]                 (s"session.${name}.path")
+  val domain     = config.get[Option[String]]         (s"session.${name}.domain")
+  val secure     = config.get[Boolean]                (s"session.${name}.secure")
+  val httpOnly   = config.get[Boolean]                (s"session.${name}.httpOnly")
+  val sameSite   = config.get[Option[SameSite]]       (s"session.${name}.sameSite")
 
   /**
    * Put a specified security token to storage.

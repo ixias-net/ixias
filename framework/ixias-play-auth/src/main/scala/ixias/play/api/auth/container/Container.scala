@@ -9,13 +9,13 @@ package ixias.play.api.auth.container
 
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import ixias.model.Tagged
+import ixias.model.@@
 import ixias.play.api.auth.token._
 
 /**
  * The container for session's tokens.
  */
-trait Container[K <: Tagged[_, _]] {
+trait Container[K <: @@[_, _]] {
   import Token._
 
   /** The type of entity id */

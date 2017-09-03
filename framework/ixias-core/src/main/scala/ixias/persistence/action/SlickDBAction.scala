@@ -9,12 +9,10 @@ package ixias.persistence.action
 
 import scala.util.Failure
 import scala.concurrent.Future
-
 import slick.jdbc.JdbcProfile
 import slick.dbio.{ DBIOAction, NoStream }
-
 import ixias.persistence.SlickProfile
-import ixias.persistence.model.{ DataSourceName, Table, Converter }
+import ixias.persistence.model.{ DataSourceName, Table }
 
 trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
 
@@ -34,7 +32,6 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
   {
     type Request       = SlickDBActionRequest[T]
     type BlockArgument = (Database, T#Query)
-
     /** Run block process */
     def invokeBlock[A](req: Request, block: BlockArgument => Future[A]): Future[A] =
       (for {
@@ -52,24 +49,14 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
   object SlickDBAction extends SlickDBAction {
 
     /** Invoke DB action block. */
-    def apply[A, T <: Table[_, P]]
+    def apply[A, B, T <: Table[_, P]]
       (table: T, hostspec: String = DEFAULT_DSN_KEY)
-      (block: ((Database, T#Query)) => Future[A]): Future[A] =
+      (block: ((Database, T#Query)) => Future[A])
+      (implicit conv: A => B): Future[B] =
       for {
         dsn   <- Future(table.dsn.get(hostspec).get)
         value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), block)
-      } yield value
-
-    /** Invoke DB action block with adaption convert. */
-    def adapt[A, B, T <: Table[_, P]]
-      (table: T, hostspec: String = DEFAULT_DSN_KEY)
-      (block: ((Database, T#Query)) => Future[A])
-      (implicit conv: Converter[A, B]): Future[B] =
-      for {
-        dsn     <- Future(table.dsn.get(hostspec).get)
-        value   <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), block)
-        adapted <- Future(conv.convert(value))
-      } yield adapted
+      } yield conv(value)
     }
 
   /**
@@ -77,28 +64,16 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
    */
   object SlickRunDBAction extends SlickDBAction {
 
-    /** Invoke DB action block with adaption convert. */
-    def apply[A, T <: Table[_, P]]
-      (table: T, hostspec: String = DEFAULT_DSN_KEY)
-      (action: T#Query => DBIOAction[A, NoStream, Nothing]): Future[A] =
-      for {
-        dsn   <- Future(table.dsn.get(hostspec).get)
-        value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), {
-          case (db, slick) => db.run(action(slick))
-        })
-      } yield value
-
-    /** Invoke DB action block with adaption convert. */
-    def adapt[A, B, T <: Table[_, P]]
+    /** Invoke DB action block. */
+    def apply[A, B, T <: Table[_, P]]
       (table: T, hostspec: String = DEFAULT_DSN_KEY)
       (action: T#Query => DBIOAction[A, NoStream, Nothing])
-      (implicit conv: Converter[A, B]): Future[B] =
+      (implicit conv: A => B): Future[B] =
       for {
         dsn    <- Future(table.dsn.get(hostspec).get)
         value  <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), {
           case (db, slick) => db.run(action(slick))
         })
-        adapted <- Future(conv.convert(value))
-      } yield adapted
+      } yield conv(value)
   }
 }

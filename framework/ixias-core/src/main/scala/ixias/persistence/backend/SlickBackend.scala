@@ -22,10 +22,10 @@ case class SlickBackend[P <: JdbcProfile](val driver: P)
    extends BasicBackend[P#Backend#Database] with SlickConfig {
 
   /** Get a Database instance from connection pool. */
-  def getDatabase(dsn: DataSourceName): Future[Database] =
-    SlickDatabaseContainer.getOrElseUpdate(dsn) {
+  def getDatabase(implicit dsn: DataSourceName): Future[Database] =
+    SlickDatabaseContainer.getOrElseUpdate {
       (for {
-        ds <- createDataSource(dsn)
+        ds <- createDataSource
         db <- Future(driver.backend.Database.forSource(ds))
       } yield db) andThen {
         case Success(_) => logger.info("Created a new data souce. dsn=%s".format(dsn.toString))
@@ -34,11 +34,11 @@ case class SlickBackend[P <: JdbcProfile](val driver: P)
     }
 
   /** Create a JdbcDataSource from DSN (Database Souce Name) */
-  def createDataSource(dsn: DataSourceName): Future[HikariCPDataSource] =
+  def createDataSource(implicit dsn: DataSourceName): Future[HikariCPDataSource] =
     Future.fromTry {
       for {
-        driver <- getDriverClassName(dsn)
-        url    <- getJdbcUrl(dsn)
+        driver <- getDriverClassName
+        url    <- getJdbcUrl
       } yield {
         val hconf = new HikariConfig()
         hconf.setDriverClassName(driver)
@@ -47,14 +47,13 @@ case class SlickBackend[P <: JdbcProfile](val driver: P)
         hconf.addDataSourceProperty("useSSL", false)
 
         // Optional properties.
-        getUserName(dsn)                  map hconf.setUsername
-        getPassword(dsn)                  map hconf.setPassword
-        getHostSpecReadOnly(dsn)          map hconf.setReadOnly
-        getHostSpecMinIdle(dsn)           map hconf.setMinimumIdle
-        getHostSpecMaxPoolSize(dsn)       map hconf.setMaximumPoolSize
-        getHostSpecConnectionTimeout(dsn) map hconf.setConnectionTimeout
-        getHostSpecIdleTimeout(dsn)       map hconf.setIdleTimeout
-
+        getUserName                  map hconf.setUsername
+        getPassword                  map hconf.setPassword
+        getHostSpecReadOnly          map hconf.setReadOnly
+        getHostSpecMinIdle           map hconf.setMinimumIdle
+        getHostSpecMaxPoolSize       map hconf.setMaximumPoolSize
+        getHostSpecConnectionTimeout map hconf.setConnectionTimeout
+        getHostSpecIdleTimeout       map hconf.setIdleTimeout
         HikariCPDataSource(new HikariDataSource(hconf), hconf)
       }
     }

@@ -7,7 +7,35 @@
 
 package ixias.play.api.mvc
 
-trait BaseExtensionMethods {
-  val JsonHelper = ixias.play.api.mvc.JsonHelper
-  val FormHelper = ixias.play.api.mvc.FormHelper
+import play.api.mvc._
+import cats.data.EitherT
+import cats.instances.future._
+import scala.concurrent.Future
+import scala.language.implicitConversions
+
+trait BaseExtensionMethods { self: BaseController =>
+  val Cursor        = ixias.persistence.model.Cursor
+  val JsonHelper    = ixias.play.api.mvc.JsonHelper
+  val FormHelper    = ixias.play.api.mvc.FormHelper
+  val AttrHelper    = ixias.play.api.mvc.RequestHeaderAttrHelper
+
+  /** The ExecutionContext with using on Playframework. */
+  implicit lazy val executionContext = defaultExecutionContext
+
+  // --[ Methods ] -------------------------------------------------------------
+  // Either[Result, Result] -> Result
+  implicit def convEitherToResult(v: Either[Result, Result]): Result =
+    v match { case Right(r) => r case Left(l) => l }
+
+  // Future[Either[Result, Result]] -> Future[Result]
+  implicit def convEitherToResult(f: Future[Either[Result, Result]]): Future[Result] =
+    f.map(convEitherToResult(_))
+
+  // EitherT[Future, Result, Result] -> Future[Result]
+  implicit def convEitherToResult(t: EitherT[Future, Result, Result]): Future[Result] =
+    t.valueOr(v => v)
+
+  // --[ Methods ] -------------------------------------------------------------
+  def DeviceDetection: ActionBuilder[Request, AnyContent] = DeviceDetectionBuilder(parse.default)
+  val DeviceDetectionAttrKey = ixias.play.api.mvc.DeviceDetectionAttrKey
 }

@@ -21,11 +21,11 @@ private[backend] trait BasicDatabaseContainer[T] {
   protected var cache: Map[Int, T] = Map.empty[Int, T]
 
   /** Optionally returns the value associated with a DSN */
-  def get(dsn: DataSourceName): Option[T] =
+  def get(implicit dsn: DataSourceName): Option[T] =
     cache.get(dsn.hashCode)
 
   /** Add a new data souce. */
-  def update(dsn: DataSourceName, db: T): Unit =
+  def update(db: T)(implicit dsn: DataSourceName): Unit =
     cache.update(dsn.hashCode, db)
 
   /**
@@ -33,9 +33,9 @@ private[backend] trait BasicDatabaseContainer[T] {
    * Otherwise, computes value from given expression `op`, stores with key
    * in map and returns that value.
    */
-  def getOrElseUpdate(dsn: DataSourceName)(op: => Future[T]): Future[T] =
-    get(dsn) match {
+  def getOrElseUpdate(op: => Future[T])(implicit dsn: DataSourceName): Future[T] =
+    get match {
       case Some(db) => Future.successful(db)
-      case None     => op.map(db => { update(dsn, db); db })
+      case None     => op.map(db => { update(db); db })
     }
 }

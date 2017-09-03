@@ -7,46 +7,59 @@
 
 package ixias.model
 
-import java.time.LocalDateTime
 import scala.reflect.runtime.universe._
 
+/** Entity's id Status */
 trait  IdStatus
 object IdStatus {
   trait Empty  extends IdStatus
   trait Exists extends IdStatus
 }
 
-trait Entity[K <: Tagged[_, _], S <: IdStatus] extends Serializable
-{
-  /** The type of entity id */
-  type Id   = K
+/** The Entity */
+final case class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](v: M) {
 
-  /** The status of entity's identity. */
-  type IdSt = S
+  /** The entity data model */
+  type Model    <: M
 
-  /** The entity's identity. */
-  val _id: Id
+  /** The status of entity's identity */
+  type IdStatus =  S
 
-  /** The current version of the object. Used for optimistic concurrency versioning. */
-  val version: Option[Long] = None
+  /** get id value whene id is exists */
+  def id(implicit ev: S =:= IdStatus.Exists): K = v.id.get
 
-  /** The date and time when this entity was last updated. */
-  val updatedAt: LocalDateTime = LocalDateTime.now()
-
-  /** The date and time when this entity was added to the system. */
-  val createdAt: LocalDateTime = LocalDateTime.now()
-
-  /** check whether exists entity id value. */
-  def id(implicit ev: IdSt =:= IdStatus.Exists): Id = _id
-
-  /** get entity id value as `Option[Id]`. */
-  def idOpt(implicit ev: TypeTag[IdSt]): Option[Id] =
-    if (hasId) Some(_id) else None
-
-  /** check whether exists entity id value. */
-  def hasId(implicit ev: TypeTag[IdSt]): Boolean =
+  /** check whether exists entity id value */
+  def hasId(implicit ev: TypeTag[IdStatus]): Boolean =
     ev.tpe =:= typeOf[IdStatus.Exists]
+
+  /** Builds a new `Entity` by applying a function to values. */
+  @inline def map[M2 <: EntityModel[K]](f: M => M2): Entity[K, M2, S] = new Entity(f(v))
 }
 
-/** should an entity class always have an ID value. */
-trait EntityFixiedId[T <: Tagged[_, _]] extends Entity[T, IdStatus.Exists]
+// Companion object for Entity
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+object Entity {
+
+  // Entity with no identity.
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~
+  type   WithNoId[K <: @@[_, _], M <: EntityModel[K]] = Entity[K, M, IdStatus.Empty]
+  object WithNoId {
+    /** Create a entity object with no id. */
+    def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): WithNoId[K, M] =
+      data.id match {
+        case None    =>       new Entity(data)
+        case Some(_) => throw new IllegalArgumentException("The entity's id is already setted.")
+      }
+  }
+
+  // Entity has embedded Id.
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~
+  type   EmbeddedId[K <: @@[_, _], M <: EntityModel[K]] = Entity[K, M, IdStatus.Exists]
+  object EmbeddedId {
+    def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): EmbeddedId[K, M] =
+      data.id match {
+        case Some(_) =>       new Entity(data)
+        case None    => throw new IllegalArgumentException("Coud not found id on entity's data.")
+      }
+  }
+}

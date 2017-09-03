@@ -12,30 +12,30 @@ import org.specs2.mutable._
 object idSpec extends Specification {
 
   // モデル
-  case class User[S <: IdStatus](
-    _id:  User.Id,
-    name: String
-  ) extends Entity[User.Id, S]
+  case class User(
+    id:        Option[User.Id],
+    name:      String,
+    createdAt: java.time.LocalDateTime = NOW,
+    updatedAt: java.time.LocalDateTime = NOW
+  ) extends EntityModel[User.Id]
 
   // コンパニオン・オブジェクト
   object User {
-    type Id = Long @@ User[_]
-    val  Id = TagOf[User[_]]
-    def apply(name: String):           User[IdStatus.Empty]  = User(Id.empty, name)
-    def apply(id: Long, name: String): User[IdStatus.Exists] = User(Id(id),   name)
+    val  Id = the[Identity[Id]]
+    type Id = Long @@ User
+    def apply(name: String): Entity.WithNoId[Id, User] =
+      Entity.WithNoId { User(None, "Kinugasa") }
   }
 
-  "id" should {
-    val user1 = User(100, "Kinugasa")
-    val user2 = User("EmptyKinugasa")
+  // テスト
+  "model" should {
+    val user1 = User("Kinugasa")
+    val user2 = user1.map(_.copy(name = "Sp1rytus"))
 
-    println(user1.hasId)
-    println(user1.idOpt)
-    println(user1.id)
+    println(user1.v)
+    println(user2.v)
 
-    println(user2.hasId)
-    println(user2.idOpt)
-    // println(user2.id)
-    user1.id must_=== User.Id(100)
+    user1.hasId  must_=== false
+    user1.v.name must_=== "Kinugasa"
   }
 }

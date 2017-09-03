@@ -7,8 +7,8 @@
 
 package ixias.persistence.model
 
-import slick.jdbc.JdbcProfile
 import ixias.persistence.lifted._
+import slick.jdbc.JdbcProfile
 
 trait Table[R, P <: JdbcProfile] { self =>
 
@@ -21,6 +21,9 @@ trait Table[R, P <: JdbcProfile] { self =>
 
   /** The table query. */
   val query: Query
+
+  /** The alias for DSN */
+  val DataSourceName = ixias.persistence.model.DataSourceName
 
   //-- [ Table Manifest ] ------------------------------------------------------
   /** The type of table row. */
@@ -51,6 +54,7 @@ trait Table[R, P <: JdbcProfile] { self =>
       with Aliases
       with ExtensionMethods
       with SlickColumnOptionOps
+      with SlickRepOps[P]
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver
   }

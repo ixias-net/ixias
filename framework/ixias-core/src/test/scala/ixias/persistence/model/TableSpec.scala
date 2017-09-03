@@ -7,7 +7,6 @@
 
 package ixias.persistence.model
 
-import ixias.model._
 import org.specs2.mutable._
 import org.joda.time.DateTime
 import slick.jdbc.JdbcProfile

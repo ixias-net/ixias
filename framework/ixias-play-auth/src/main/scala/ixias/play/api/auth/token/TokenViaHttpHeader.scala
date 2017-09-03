@@ -13,7 +13,7 @@ case class TokenViaHttpHeader(val name: String) extends Token {
   import Token._
 
   // The configuration
-  val headerName = config.get[String](s"${name}.session.headerName")
+  val headerName = config.get[String](s"session.${name}.headerName")
 
   /**
    * Put a specified security token to HTTP-Headers.

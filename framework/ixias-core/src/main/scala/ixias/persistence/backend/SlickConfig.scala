@@ -29,24 +29,24 @@ trait SlickConfig extends BasicDatabaseConfig {
    * Get the property controls the minimum number of idle connections that
    * Driver tries to maintain in the pool, including both idle and in-use connections.
    */
-  protected def getHostSpecMinIdle(dsn: DataSourceName): Option[Int] =
-    readValue(dsn)(_.get[Option[Int]](CF_HOSTSPEC_MIN_IDLE))
+  protected def getHostSpecMinIdle(implicit dsn: DataSourceName): Option[Int] =
+    readValue(_.get[Option[Int]](CF_HOSTSPEC_MIN_IDLE))
 
   /**
    * Get the property controls the maximum size that the pool is allowed to reach,
    * including both idle and in-use connections. Basically this value will determine
    * the maximum number of actual connections to the database backend.
    */
-  protected def getHostSpecMaxPoolSize(dsn: DataSourceName): Option[Int] =
-    readValue(dsn)(_.get[Option[Int]](CF_HOSTSPEC_MAX_POOL_SIZE))
+  protected def getHostSpecMaxPoolSize(implicit dsn: DataSourceName): Option[Int] =
+    readValue(_.get[Option[Int]](CF_HOSTSPEC_MAX_POOL_SIZE))
 
   /**
    * Get the maximum number of milliseconds that a client will wait for
    * a connection from the pool. If this time is exceeded without
    * a connection becoming available, a SQLException will be thrown from
    */
-  protected def getHostSpecConnectionTimeout(dsn: DataSourceName): Option[Long] =
-    readValue(dsn)(_.get[Option[Duration]](CF_HOSTSPEC_CONNECTION_TIMEOUT).map(_.toMillis))
+  protected def getHostSpecConnectionTimeout(implicit dsn: DataSourceName): Option[Long] =
+    readValue(_.get[Option[Duration]](CF_HOSTSPEC_CONNECTION_TIMEOUT).map(_.toMillis))
 
   /**
    * This property controls the maximum amount of time (in milliseconds) that
@@ -56,17 +56,17 @@ trait SlickConfig extends BasicDatabaseConfig {
    * A connection will never be retired as idle before this timeout.
    * A value of 0 means that idle connections are never removed from the pool.
    */
-  protected def getHostSpecIdleTimeout(dsn: DataSourceName): Option[Long] =
-    readValue(dsn)(_.get[Option[Duration]](CF_HOSTSPEC_IDLE_TIMEOUT).map(_.toMillis))
+  protected def getHostSpecIdleTimeout(implicit dsn: DataSourceName): Option[Long] =
+    readValue(_.get[Option[Duration]](CF_HOSTSPEC_IDLE_TIMEOUT).map(_.toMillis))
 
   /**
    * Get the JDBC Url
    */
-  protected def getJdbcUrl(dsn: DataSourceName): Try[String] =
+  protected def getJdbcUrl(implicit dsn: DataSourceName): Try[String] =
     for {
-      hosts    <- getHosts(dsn)
-      database <- getDatabaseName(dsn)
-      driver   <- getDriverClassName(dsn)
+      hosts    <- getHosts
+      database <- getDatabaseName
+      driver   <- getDriverClassName
     } yield {
       driver match {
         case "com.mysql.jdbc.Driver" => hosts.size match {

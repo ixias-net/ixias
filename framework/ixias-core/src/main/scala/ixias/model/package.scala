@@ -9,13 +9,21 @@ package ixias
 
 package object model {
 
+  /** Tagged with `U` as representation type and added a tag. */
+  object tag {
+    def apply[U] = new shapeless.tag.Tagger[U]
+  }
+  type @@[+T, U] = shapeless.tag.@@[T, U]
+
   /**
-   * Tagged with `R` as representation type and added a tag.
-   *
-   * Values of the Id will not add any additional boxing beyond what's required for
-   * values of the representation type to conform to Any. In practice this means that value
-   * types will receive their standard Scala AnyVal boxing and reference types will be unboxed.
+   * Used as a term `the[T]` yields the unique implicit value of type `T` in the current
+   * implicit scope, if any. It is a compile time error if there is no such value. Its
+   * primary advantage over `Predef.implicitly` is that it will preserve any refinement that
+   * the implicit definition has, resulting in more precisely typed, and hence often more
+   * useful, values,
    */
-  type     @@[R, T] = Tagged[R, T]
-  type Tagged[R, T] = { type Self = R; type Tag = T }
+  val the = shapeless.the
+
+  /** The current time */
+  def NOW = java.time.LocalDateTime.now()
 }

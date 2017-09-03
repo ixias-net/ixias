@@ -6,8 +6,8 @@
  */
 
 lazy val commonSettings = Seq(
-  organization := "net.ixias",
-  scalaVersion := "2.12.2",
+  organization  := "net.ixias",
+  scalaVersion  := "2.12.2",
   resolvers ++= Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
@@ -78,16 +78,17 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.typesafe"        % "config"           % "1.3.0",
-    "com.typesafe.slick" %% "slick"            % "3.2.0",
-    "io.monix"           %% "shade"            % "1.9.5",
-    "com.zaxxer"          % "HikariCP"         % "2.5.0",
-    "com.amazonaws"       % "aws-java-sdk-sns" % "1.11.123",
-    "org.slf4j"           % "slf4j-api"        % "1.7.21",
-    "org.keyczar"         % "keyczar"          % "0.71h",
-    "org.joda"            % "joda-convert"     % "1.8.1",
-    "joda-time"           % "joda-time"        % "2.9.4",
-    "commons-codec"       % "commons-codec"    % "1.10"
+    "com.chuusai"        %% "shapeless"     % "2.3.2",
+    "com.typesafe"        % "config"        % "1.3.0",
+    "com.typesafe.slick" %% "slick"         % "3.2.0",
+    "org.typelevel"      %% "cats"          % "0.8.1",
+    "io.monix"           %% "shade"         % "1.9.5",
+    "com.zaxxer"          % "HikariCP"      % "2.5.0",
+    "org.keyczar"         % "keyczar"       % "0.71h",
+    "org.uaparser"       %% "uap-scala"     % "0.1.0",
+    "commons-codec"       % "commons-codec" % "1.10",
+    "joda-time"           % "joda-time"     % "2.9.4",
+    "org.slf4j"           % "slf4j-api"     % "1.7.21"
   ))
 
 lazy val ixiasMail = (project in file("framework/ixias-mail"))
@@ -99,6 +100,25 @@ lazy val ixiasMail = (project in file("framework/ixias-mail"))
     "com.google.inject"   % "guice"           % "4.1.0",
     "com.twilio.sdk"      % "twilio-java-sdk" % "6.3.0",
     "org.apache.commons"  % "commons-email"   % "1.4"
+  ))
+
+lazy val awsSdkVersion = "1.11.156"
+lazy val ixiasAwsSns = (project in file("framework/ixias-aws-sns"))
+  .settings(name := "ixias-aws-sns")
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    "com.amazonaws" % "aws-java-sdk-sns" % awsSdkVersion
+  ))
+
+lazy val ixiasAwsS3 = (project in file("framework/ixias-aws-s3"))
+  .settings(name := "ixias-aws-s3")
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion
   ))
 
 // IxiaS Play Libraries
@@ -137,8 +157,15 @@ lazy val ixias = (project in file("."))
   .settings(name := "ixias")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasCore, ixiasMail, ixiasPlay)
+  .aggregate(ixiasCore, ixiasMail, ixiasAws, ixiasPlay)
   .dependsOn(ixiasCore, ixiasMail)
+
+lazy val ixiasAws = (project in file("target/ixias-aws"))
+  .settings(name := "ixias-aws")
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .aggregate(ixiasCore, ixiasAwsSns, ixiasAwsS3)
+  .dependsOn(ixiasCore, ixiasAwsSns, ixiasAwsS3)
 
 lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")

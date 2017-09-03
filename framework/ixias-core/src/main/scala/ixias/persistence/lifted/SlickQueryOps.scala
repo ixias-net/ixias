@@ -11,7 +11,7 @@ import slick.lifted.Query
 import ixias.persistence.model.Cursor
 import scala.language.implicitConversions
 
-final case class QueryTransformer[R, U](val self: Query[R, U, Seq]) extends AnyVal {
+final case class SlickQueryTransformer[R, U](val self: Query[R, U, Seq]) extends AnyVal {
   def seek(cursor: Cursor): Query[R, U, Seq] =
     cursor.limit match {
       case None        => if (0 < cursor.offset) self.drop(cursor.offset) else self
@@ -19,6 +19,6 @@ final case class QueryTransformer[R, U](val self: Query[R, U, Seq]) extends AnyV
     }
 }
 
-trait QueryOps {
-  implicit def toQueryTransformer[R, U](a: Query[R, U, Seq]) = QueryTransformer(a)
+trait SlickQueryOps {
+  implicit def toQueryTransformer[R, U](a: Query[R, U, Seq]) = SlickQueryTransformer(a)
 }
