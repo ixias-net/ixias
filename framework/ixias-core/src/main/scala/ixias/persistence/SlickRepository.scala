@@ -46,6 +46,7 @@ trait SlickProfile[P <: JdbcProfile]
    */
   trait API extends super.API
       with driver.API
+      with SlickQueryOps
       with SlickRepOps[P]
       with SlickColumnTypeOps[P] {
     lazy val driver = self.driver
@@ -59,7 +60,6 @@ trait SlickProfile[P <: JdbcProfile]
 trait SlickRepository[K <: @@[_, _], M <: EntityModel[K], P <: JdbcProfile]
     extends Repository[K, M] with SlickProfile[P] {
   trait API extends super.API
-      with SlickQueryOps
       with SlickDBIOActionOps[K, M]
   override val api: API = new API {}
 }

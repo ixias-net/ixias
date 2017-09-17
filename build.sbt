@@ -80,7 +80,7 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
   .settings(libraryDependencies ++= Seq(
     "com.chuusai"        %% "shapeless"     % "2.3.2",
     "com.typesafe"        % "config"        % "1.3.0",
-    "com.typesafe.slick" %% "slick"         % "3.2.0",
+    "com.typesafe.slick" %% "slick"         % "3.2.1",
     "org.typelevel"      %% "cats"          % "0.8.1",
     "io.monix"           %% "shade"         % "1.9.5",
     "com.zaxxer"          % "HikariCP"      % "2.5.0",
