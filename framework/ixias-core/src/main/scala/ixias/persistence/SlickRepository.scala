@@ -16,7 +16,6 @@ import ixias.persistence.action.SlickDBActionProvider
 /**
  * The profile for persistence with using the Slick library.
  */
-private[persistence]
 trait SlickProfile[P <: JdbcProfile]
     extends Profile with SlickDBActionProvider[P] { self =>
 
