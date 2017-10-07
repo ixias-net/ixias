@@ -36,8 +36,25 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
   )
 
   // java.sql.Time <-> org.joda.time.Duration
-  implicit val jodaDurationColumnType = MappedColumnType.base[Duration, Time](
-    d => new Time(d.getMillis - TimeZone.getDefault.getRawOffset),
-    t => new Duration(t.getTime + TimeZone.getDefault.getRawOffset)
-  )
+  implicit val jodaDurationColumnType =
+    new driver.MappedJdbcType[Duration, String] with slick.ast.BaseTypedType[Duration] {
+      override def sqlType = java.sql.Types.VARCHAR
+      override def valueToSQLLiteral(d: Duration) = "{ ts '" + map(d) + "' }"
+      override def getValue(r: java.sql.ResultSet, idx: Int) = {
+        val v = r.getTimestamp(idx)
+        (v.asInstanceOf[AnyRef] eq null) || tmd.wasNull(r, idx) match {
+          case true  => null.asInstanceOf[Duration]
+          case false => new Duration(v.getTime + TimeZone.getDefault.getRawOffset)
+        }
+      }
+      def comap(str: String) = {
+        val millis = LocalTime.parse(str).getMillisOfSecond.toLong
+        new Duration(millis + TimeZone.getDefault.getRawOffset)
+      }
+      def map(d: Duration) = "%02d:%02d:%02d".format(
+        d.getStandardHours,
+        d.getStandardMinutes % 60,
+        d.getStandardSeconds % 60
+      )
+    }
 }
