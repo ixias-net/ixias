@@ -19,20 +19,22 @@ import ixias.aws.s3.backend.{ AmazonS3Config, DataSourceName }
 // The file representation for Amazon S3.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 case class File(
-  val id:        Option[File.Id],        // Id
-  val region:    String,                 // AWS region
-  val bucket:    String,                 // The bucket of S3
-  val key:       String,                 // The file key.
-  val typedef:   String,                 // The file-type.
-  val imageSize: Option[File.ImageSize], // If file-type is image. image size is setted.
-  val updatedAt: LocalDateTime = NOW,    // The Datetime when a data was updated.
-  val createdAt: LocalDateTime = NOW     // The Datetime when a data was created.
+  val id:           Option[File.Id],             // Id
+  val region:       String,                      // AWS region
+  val bucket:       String,                      // The bucket of S3
+  val key:          String,                      // The file key.
+  val typedef:      String,                      // The file-type.
+  val imageSize:    Option[File.ImageSize],      // If file-type is image. image size is setted.
+  val presignedUrl: Option[java.net.URL] = None, // The presigned Url to accessing on Image
+  val updatedAt:    LocalDateTime        = NOW,  // The Datetime when a data was updated.
+  val createdAt:    LocalDateTime        = NOW   // The Datetime when a data was created.
 ) extends EntityModel[File.Id] {
 
+  lazy val presignedQuery = presignedUrl.map(v => "&" + v.getQuery)
   lazy val httpsUrl       = s"${Protocol.HTTPS.toString()}://${httpsUrn}"
   lazy val httpsUrlOrigin = s"${Protocol.HTTPS.toString()}://${httpsUrnOrigin}"
-  lazy val httpsUrn       = s"cdn-${bucket}/${key}?d=${(updatedAt.get(MILLI_OF_SECOND)/1000).toHexString}"
-  lazy val httpsUrnOrigin = s"s3-${region}.amazonaws.com/${bucket}/${key}"
+  lazy val httpsUrn       = s"cdn-${bucket}/${key}?d=${(updatedAt.get(MILLI_OF_SECOND)/1000).toHexString}${presignedQuery}"
+  lazy val httpsUrnOrigin = s"s3-${region}.amazonaws.com/${bucket}/${key}&${presignedQuery}"
 
   /** Build a empty S3 object. */
   def emptyS3Object: S3Object = {

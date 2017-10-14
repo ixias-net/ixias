@@ -34,11 +34,23 @@ trait AmazonS3Repository[P <: JdbcProfile]
 
   // --[ Methods ]--------------------------------------------------------------
   /**
-   * Get File object.
+   * Get file object.
    */
   def get(id: Id): Future[Option[EntityEmbeddedId]] =
     RunDBAction(FileTable, "slave") { slick =>
       slick.unique(id).result.headOption
+    }
+
+  /**
+   * Get file object with a pre-signed URL for accessing an Amazon S3 resource.
+   */
+  def getWithPresigned(id: Id): Future[Option[EntityEmbeddedId]] =
+    get(id) flatMap {
+      case None       => Future.successful(None)
+      case Some(file) => for {
+        client <- s3.getClient
+        url    <- client.genPresignedUrlForAccess(file.v)
+      } yield Some(file.map(_.copy(presignedUrl = Some(url))))
     }
 
   /**
@@ -60,6 +72,22 @@ trait AmazonS3Repository[P <: JdbcProfile]
     RunDBAction(FileTable, "slave") { slick =>
       slick.filter(_.id inSet ids).result
     }
+
+  /**
+   * Finds file objects with a pre-signed URL by set of file ids.
+   */
+  def filterWithPresigned(ids: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
+    for {
+      client   <- s3.getClient
+      fileSeq1 <- RunDBAction(FileTable, "slave") { slick =>
+        slick.filter(_.id inSet ids).result
+      }
+      fileSeq2 <- Future.sequence(fileSeq1.map {
+        file => for {
+          url <- client.genPresignedUrlForAccess(file)
+        } yield file.copy(presignedUrl = Some(url))
+      })
+    } yield fileSeq2
 
   // --[ Methods ]--------------------------------------------------------------
   @deprecated("use `add` or `addViaPresignedUrl` method", "2.0")
@@ -87,7 +115,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
   def addViaPresignedUrl(file: EntityWithNoId): Future[(Id, String)] =
     for {
       client    <- s3.getClient
-      url       <- client.genPresignedUrl(file.v)
+      url       <- client.genPresignedUrlForUpload(file.v)
       Some(fid) <- RunDBAction(FileTable) { slick =>
         slick returning slick.map(_.id) += file.v
       }
@@ -122,7 +150,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
   def updateViaPresignedUrl(file: EntityEmbeddedId): Future[(Option[EntityEmbeddedId], String)] =
     for {
       client <- s3.getClient
-      url    <- client.genPresignedUrl(file.v)
+      url    <- client.genPresignedUrlForUpload(file.v)
       old    <- RunDBAction(FileTable) { slick =>
         for {
           old <- slick.unique(file.id).result.headOption
