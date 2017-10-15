@@ -69,7 +69,7 @@ object AmazonS3Backend extends AmazonS3Config {
       Future({
         val req = new GeneratePresignedUrlRequest(file.bucket, file.key)
         req.setMethod(HttpMethod.GET)
-        req.setExpiration(getPresignedUrlTimeout)
+        req.setExpiration(getPresignedUrlTimeoutForGet)
         underlying.generatePresignedUrl(req)
       })
 
@@ -81,7 +81,7 @@ object AmazonS3Backend extends AmazonS3Config {
         val req = new GeneratePresignedUrlRequest(file.bucket, file.key)
         req.setMethod(HttpMethod.PUT)
         req.setContentType(file.typedef)
-        req.setExpiration(getPresignedUrlTimeout)
+        req.setExpiration(getPresignedUrlTimeoutForUpload)
         underlying.generatePresignedUrl(req)
       })
 
