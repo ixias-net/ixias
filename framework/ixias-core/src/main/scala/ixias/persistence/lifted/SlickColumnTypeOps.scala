@@ -44,7 +44,7 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
         val v = r.getTimestamp(idx)
         (v.asInstanceOf[AnyRef] eq null) || tmd.wasNull(r, idx) match {
           case true  => null.asInstanceOf[Duration]
-          case false => new Duration(v.getTime + TimeZone.getDefault.getRawOffset)
+          case false => new Duration(v.toLocalDateTime.toEpochSecond(java.time.ZoneOffset.UTC) * 1000L)
         }
       }
       def comap(str: String) = {
