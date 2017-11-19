@@ -21,9 +21,10 @@ trait AmazonS3Config {
   protected val CF_S3_SECRET_KEY            = "secret_access_key"
   protected val CF_S3_REGION                = "region"
   protected val CF_S3_BUCKET_NAME           = "bucket_name"
-  protected val CF_S3_PRESIGNED_URL_TIMEOUT = "presigned_url_timeout"
   protected val CF_S3_CONNECTION_TIMEOUT    = "connection_timeout"
   protected val CF_S3_META_TABLE_NAME       = "meta_table_name"
+  protected val CF_S3_PRESIGNED_PUT_TIMEOUT = "presigned_put_timeout"
+  protected val CF_S3_PRESIGNED_GET_TIMEOUT = "presigned_get_timeout"
 
   /** The configuration */
   protected val config = Configuration()
@@ -82,12 +83,23 @@ trait AmazonS3Config {
 
   /**
    * Gets the expiration date at which point
-   * the new pre-signed URL will no longer be accepted by Amazon S3.
+   * the new pre-signed URL will no longer be accepted to get a file by Amazon S3.
+   * Default timeout value : 15 mins
+   */
+  def getPresignedUrlTimeoutForGet(implicit dsn: DataSourceName): java.util.Date =
+    new java.util.Date(System.currentTimeMillis() + readValue(
+      _.get[Option[Duration]](CF_S3_PRESIGNED_GET_TIMEOUT).map(_.toMillis))
+       .getOrElse(1500000L)
+    )
+
+  /**
+   * Gets the expiration date at which point
+   * the new pre-signed URL will no longer be accepted to upload a file by Amazon S3.
    * Default timeout value : 5 mins
    */
-  def getPresignedUrlTimeout(implicit dsn: DataSourceName): java.util.Date =
+  def getPresignedUrlTimeoutForUpload(implicit dsn: DataSourceName): java.util.Date =
     new java.util.Date(System.currentTimeMillis() + readValue(
-      _.get[Option[Duration]](CF_S3_PRESIGNED_URL_TIMEOUT).map(_.toMillis))
+      _.get[Option[Duration]](CF_S3_PRESIGNED_PUT_TIMEOUT).map(_.toMillis))
        .getOrElse(500000L)
     )
 

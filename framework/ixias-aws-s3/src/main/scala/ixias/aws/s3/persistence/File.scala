@@ -64,11 +64,11 @@ case class FileTable[P <: JdbcProfile]()(implicit val driver: P, val s3dsn: S3DS
           case (Some(width), Some(height)) => Some(ImageSize(width, height))
           case _                           => None
         }
-        File(Some(Id(t._1.get)), t._2, t._3, t._4, t._5, imageSize, t._8, t._9)
+        File(Some(Id(t._1.get)), t._2, t._3, t._4, t._5, imageSize, None, t._8, t._9)
       },
       /** The bidirectional mappings : Model => Tuple(table) */
       (v: TableElementType)  => File.unapply(v).map { t => (
-        v.id, t._2, t._3, t._4, t._5, t._6.map(_.width), t._6.map(_.height), LocalDateTime.now(), t._8
+        v.id, t._2, t._3, t._4, t._5, t._6.map(_.width), t._6.map(_.height), LocalDateTime.now(), t._9
       ) }
     )
   }

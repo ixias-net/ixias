@@ -65,12 +65,23 @@ object AmazonS3Backend extends AmazonS3Config {
     /**
      * Gets a pre-signed URL for accessing an Amazon S3 resource.
      */
-    def genPresignedUrl(file: File)(implicit dsn: DataSourceName): Future[java.net.URL] =
+    def genPresignedUrlForAccess(file: File)(implicit dsn: DataSourceName): Future[java.net.URL] =
+      Future({
+        val req = new GeneratePresignedUrlRequest(file.bucket, file.key)
+        req.setMethod(HttpMethod.GET)
+        req.setExpiration(getPresignedUrlTimeoutForGet)
+        underlying.generatePresignedUrl(req)
+      })
+
+    /**
+     * Gets a pre-signed URL to upload an Amazon S3 resource.
+     */
+    def genPresignedUrlForUpload(file: File)(implicit dsn: DataSourceName): Future[java.net.URL] =
       Future({
         val req = new GeneratePresignedUrlRequest(file.bucket, file.key)
         req.setMethod(HttpMethod.PUT)
         req.setContentType(file.typedef)
-        req.setExpiration(getPresignedUrlTimeout)
+        req.setExpiration(getPresignedUrlTimeoutForUpload)
         underlying.generatePresignedUrl(req)
       })
 
