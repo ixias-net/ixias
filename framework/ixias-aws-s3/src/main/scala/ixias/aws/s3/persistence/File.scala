@@ -17,7 +17,7 @@ import ixias.persistence.model.Table
 //~~~~~~~~~~~~~~~~~~~~
 case class FileTable[P <: JdbcProfile]()(implicit val driver: P, val s3dsn: S3DSN)
     extends Table[File, P] with AmazonS3Config { self =>
-  import api._
+  import apiUnsafe._
 
   // --[ DNS ] -----------------------------------------------------------------
   lazy val dsn = Map(
