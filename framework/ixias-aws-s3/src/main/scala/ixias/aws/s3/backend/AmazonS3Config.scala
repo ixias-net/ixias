@@ -114,10 +114,12 @@ trait AmazonS3Config {
    * Get a value by specified key.
    */
   final private def readValue[A](f: Configuration => Option[A])(implicit dsn: DataSourceName): Option[A] =
-    Seq(
+    (dsn.name.toSeq.map(
+      name => dsn.path + "." + dsn.resource + "" + name
+    ) ++ Seq(
       dsn.path + "." + dsn.resource,
       dsn.path
-    ).foldLeft[Option[A]](None) {
+    )).foldLeft[Option[A]](None) {
       case (prev, path) => prev.orElse(f(config.get[Configuration](path)))
     }
 }
