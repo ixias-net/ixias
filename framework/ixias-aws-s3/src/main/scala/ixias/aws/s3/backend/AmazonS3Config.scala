@@ -115,7 +115,7 @@ trait AmazonS3Config {
    */
   final private def readValue[A](f: Configuration => Option[A])(implicit dsn: DataSourceName): Option[A] =
     (dsn.name.toSeq.map(
-      name => dsn.path + "." + dsn.resource + "" + name
+      name => dsn.path + "." + dsn.resource + "." + name
     ) ++ Seq(
       dsn.path + "." + dsn.resource,
       dsn.path
