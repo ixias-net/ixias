@@ -72,9 +72,12 @@ trait AmazonSNSConfig {
    * Gets the topic ARN of Amazon SNS.
    */
   def getTopicARN(implicit dsn: DataSourceName): Try[Seq[String]] = {
-    val path    = dsn.path + "." + dsn.resource
-    val section = config.get[Configuration](path).underlying
-    val opt     = section.getAnyRef(CF_SNS_OPT_SNS_TOPIC_ARN) match {
+    val path1    = dsn.path + "." + dsn.resource
+    val path2    = dsn.path + "." + dsn.resource + "." + dsn.name
+    val section1 = config.get[Configuration](path1).underlying
+    val section2 = config.get[Configuration](path2).underlying
+    val section  = if (section2.hasPath(CF_SNS_OPT_SNS_TOPIC_ARN)) section2 else section1
+    val opt      =    section.getAnyRef(CF_SNS_OPT_SNS_TOPIC_ARN) match {
       case v: String            => Seq(v)
       case v: java.util.List[_] => v.asScala.toList.map(_.toString)
       case _ => throw new Exception(s"""Illegal value type of host setting. { path: $dsn }""")
