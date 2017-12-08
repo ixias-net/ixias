@@ -7,25 +7,23 @@
 
 package ixias.persistence.lifted
 
-import ixias.model._
+import slick.lifted.Rep
 import slick.jdbc.JdbcProfile
+import slick.ast.Library.SqlOperator
 import scala.language.implicitConversions
 
-trait SlickRepOps[P <: JdbcProfile]
-{
-  val    driver: P
-  import driver.api._
-  implicit def       toByteSlickRep[T](v:       Byte @@ T): slick.lifted.Rep[Byte]       = the[Identity[Byte       @@ T]].unwrap(v)
-  implicit def      toShortSlickRep[T](v:      Short @@ T): slick.lifted.Rep[Short]      = the[Identity[Short      @@ T]].unwrap(v)
-  implicit def        toIntSlickRep[T](v:        Int @@ T): slick.lifted.Rep[Int]        = the[Identity[Int        @@ T]].unwrap(v)
-  implicit def       toLongSlickRep[T](v:       Long @@ T): slick.lifted.Rep[Long]       = the[Identity[Long       @@ T]].unwrap(v)
-  implicit def toBigDecimalSlickRep[T](v: BigDecimal @@ T): slick.lifted.Rep[BigDecimal] = the[Identity[BigDecimal @@ T]].unwrap(v)
-  implicit def     toStringSlickRep[T](v:     String @@ T): slick.lifted.Rep[String]     = the[Identity[String     @@ T]].unwrap(v)
-
-  implicit def       toByteSlickRep[T](v: Option[      Byte @@ T]): slick.lifted.Rep[Option[Byte]]       = v.map(the[Identity[Byte       @@ T]].unwrap)
-  implicit def      toShortSlickRep[T](v: Option[     Short @@ T]): slick.lifted.Rep[Option[Short]]      = v.map(the[Identity[Short      @@ T]].unwrap)
-  implicit def        toIntSlickRep[T](v: Option[       Int @@ T]): slick.lifted.Rep[Option[Int]]        = v.map(the[Identity[Int        @@ T]].unwrap)
-  implicit def       toLongSlickRep[T](v: Option[      Long @@ T]): slick.lifted.Rep[Option[Long]]       = v.map(the[Identity[Long       @@ T]].unwrap)
-  implicit def toBigDecimalSlickRep[T](v: Option[BigDecimal @@ T]): slick.lifted.Rep[Option[BigDecimal]] = v.map(the[Identity[BigDecimal @@ T]].unwrap)
-  implicit def     toStringSlickRep[T](v: Option[    String @@ T]): slick.lifted.Rep[Option[String]]     = v.map(the[Identity[String     @@ T]].unwrap)
+trait SlickRepOps[P <: JdbcProfile] {
+  val driver: P
+  implicit def bitwiseColumnExtensionMethods[B1](c: Rep[B1]) = new BaseBitwiseColumnExtensionMethods[B1](c)
 }
+
+// Bitwise operators
+//~~~~~~~~~~~~~~~~~~~
+trait BitwiseColumnExtensionMethods[B1, P1] extends Any with slick.lifted.ExtensionMethods[B1, P1] {
+  def & [P2, R](e: Rep[P2])(implicit om: o#arg[B1, P2]#to[B1, R]) =
+    om.column(new SqlOperator("&"), n, e.toNode)
+}
+final class BaseBitwiseColumnExtensionMethods[P1](val c: Rep[P1]) extends AnyVal
+    with BitwiseColumnExtensionMethods[P1, P1]
+    with slick.lifted.BaseExtensionMethods[P1]
+
