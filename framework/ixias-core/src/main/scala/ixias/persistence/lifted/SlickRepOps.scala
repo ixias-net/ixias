@@ -14,7 +14,8 @@ import scala.language.implicitConversions
 
 trait SlickRepOps[P <: JdbcProfile] {
   val driver: P
-  implicit def bitwiseColumnExtensionMethods[B1](c: Rep[B1]) = new BaseBitwiseColumnExtensionMethods[B1](c)
+  implicit def bitwiseColumnExtensionMethods[B1](c: Rep[B1]) =
+    new BaseBitwiseColumnExtensionMethods[B1](c)
 }
 
 // Bitwise operators
