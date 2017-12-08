@@ -46,10 +46,11 @@ trait SlickProfile[P <: JdbcProfile]
   trait API extends super.API
       with driver.API
       with SlickQueryOps
-      with SlickColumnTypeOps[P] {
+      with SlickColumnTypeOps[P]
+      with SlickRepOps[P] {
     lazy val driver = self.driver
   }
-  trait APIUnsafe extends API with SlickRepOps[P]
+  trait APIUnsafe extends API with SlickRepUnsafeOps[P]
   val api:       API       = new API       {}
   val apiUnsafe: APIUnsafe = new APIUnsafe {}
 }

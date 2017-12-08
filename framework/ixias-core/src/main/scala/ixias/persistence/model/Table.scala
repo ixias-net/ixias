@@ -54,10 +54,11 @@ trait Table[R, P <: JdbcProfile] { self =>
       with Aliases
       with ExtensionMethods
       with SlickColumnOptionOps
-      with SlickColumnTypeOps[P] {
+      with SlickColumnTypeOps[P]
+      with SlickRepOps[P] {
     lazy val driver = self.driver
   }
-  trait APIUnsafe extends API with SlickRepOps[P]
+  trait APIUnsafe extends API with SlickRepUnsafeOps[P]
   val api:       API       = new API       {}
   val apiUnsafe: APIUnsafe = new APIUnsafe {}
 }
