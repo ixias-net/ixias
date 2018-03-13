@@ -72,6 +72,8 @@ class EmailClientViaSMTP extends EmailClient with EmailConfig {
     email.setSubject(tpl.subject)
     email.addTo(to.address,     if (to.isSetName)     to.name.getOrElse(null) else null)
     email.setFrom(from.address, if (from.isSetName) from.name.getOrElse(null) else null)
+    tpl.cc.map( to => email.addCc( to.address, if (to.isSetName) to.name.getOrElse(null) else null))
+    tpl.bcc.map(to => email.addBcc(to.address, if (to.isSetName) to.name.getOrElse(null) else null))
 
     // optional params
     tpl.bounceAddress map email.setBounceAddress
