@@ -47,6 +47,12 @@ trait EmailTemplate[P] extends EmailConfig {
   /** The sender data */
   val from:        Option[UserEmail]     = None
 
+  /** Add recipients CC to the email using the specified address */
+  val cc:          Seq[UserEmail]        = Seq.empty
+
+  /** Add recipients BCC to the email using the specified address */
+  val bcc:         Seq[UserEmail]        = Seq.empty
+
   /** The Email's headers */
   val headers:     Seq[(String, String)] = Seq.empty
 

@@ -28,6 +28,13 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
       d  => d.toLocalDate()
     )
 
+  // java.sql.Date <-> java.time.YearMonth
+  implicit val javaYearMonthColumnType =
+    MappedColumnType.base[java.time.YearMonth, java.sql.Date](
+      ld => java.sql.Date.valueOf(ld.atDay(1)),
+      d  => java.time.YearMonth.from(d.toLocalDate())
+    )
+
   // java.sql.Time <-> java.time.LocalTime
   implicit val javaLocalTimeColumnType =
     MappedColumnType.base[java.time.LocalTime, java.sql.Time](
