@@ -23,6 +23,7 @@ trait SlickConfig extends BasicDatabaseConfig {
   /** Jdbc Url formats */
   protected val JDBC_URL_FORMAT_MYSQL    = """jdbc:mysql://%s/%s"""
   protected val JDBC_URL_FORMAT_MYSQL_LB = """jdbc:mysql:loadbalance://%s/%s"""
+  protected val JDBC_URL_FORMAT_PGSQL    = """jdbc:postgresql://%s/%s?currentSchema=%s"""
 
   // --[ Methods ]--------------------------------------------------------------
   /**
@@ -72,6 +73,12 @@ trait SlickConfig extends BasicDatabaseConfig {
         case "com.mysql.jdbc.Driver" => hosts.size match {
           case 1 => JDBC_URL_FORMAT_MYSQL.format(hosts.head, database)
           case _ => JDBC_URL_FORMAT_MYSQL_LB.format(hosts.mkString(","), database)
+        }
+        case "com.amazon.redshift.jdbc.Driver" => {
+          hosts.size match {
+            case 1 => JDBC_URL_FORMAT_PGSQL.format(hosts.head,          database, getSchemaName)
+            case _ => JDBC_URL_FORMAT_PGSQL.format(hosts.mkString(","), database, getSchemaName)
+          }
         }
         case _ => throw new Exception(s"""Could not resolve the JDBC vendor format. '$driver'""")
       }

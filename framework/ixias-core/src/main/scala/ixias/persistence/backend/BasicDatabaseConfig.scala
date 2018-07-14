@@ -23,6 +23,7 @@ trait BasicDatabaseConfig {
   protected val CF_DRIVER_CLASS_NAME = "driver_class_name"
   protected val CF_HOSTSPEC_HOSTS    = "hosts"
   protected val CF_HOSTSPEC_DATABASE = "database"
+  protected val CF_HOSTSPEC_SCHEMA   = "schema"
   protected val CF_HOSTSPEC_READONLY = "readonly"
 
   /** The configuration */
@@ -65,6 +66,10 @@ trait BasicDatabaseConfig {
   /** Get the database name. */
   protected def getDatabaseName(implicit dsn: DataSourceName): Try[String] =
     Try(readValue(_.get[Option[String]](CF_HOSTSPEC_DATABASE)).get)
+
+  /** Get the schema name. */
+  protected def getSchemaName(implicit dsn: DataSourceName): Try[String] =
+    Try(readValue(_.get[Option[String]](CF_HOSTSPEC_SCHEMA)).get)
 
   /** Get host list to connect to database. */
   protected def getHosts(implicit dsn: DataSourceName): Try[Seq[String]] = {
