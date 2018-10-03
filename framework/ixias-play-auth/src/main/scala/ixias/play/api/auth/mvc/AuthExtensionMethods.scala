@@ -10,7 +10,7 @@ package ixias.play.api.auth.mvc
 import play.api.mvc._
 import ixias.play.api.mvc.BaseExtensionMethods
 
-trait AuthExtensionMethods extends BaseExtensionMethods { self: BaseController =>
+trait AuthExtensionMethods extends BaseExtensionMethods { self: BaseControllerHelpers =>
 
   // For authentication
   def Authenticated(auth: AuthProfile[_, _, _]): ActionBuilder[Request, AnyContent] =

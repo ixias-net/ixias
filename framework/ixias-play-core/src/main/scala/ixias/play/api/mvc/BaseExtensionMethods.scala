@@ -13,7 +13,7 @@ import cats.instances.future._
 import scala.concurrent.Future
 import scala.language.implicitConversions
 
-trait BaseExtensionMethods { self: BaseController =>
+trait BaseExtensionMethods { self: BaseControllerHelpers =>
   val Cursor        = ixias.persistence.model.Cursor
   val JsonHelper    = ixias.play.api.mvc.JsonHelper
   val FormHelper    = ixias.play.api.mvc.FormHelper
