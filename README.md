@@ -4,7 +4,7 @@ IxiaS is a development platform using scala languages.
 
 # Getting Started
 
-Just add IxisS, a JDBC driver, and an slf4j implementation to your sbt build settings:
+Just add IxiaS, a JDBC driver, and a slf4j implementation to your sbt build settings:
 
 ``` scala
 resolvers ++= Seq(
