@@ -1,8 +1,9 @@
 /*
- *  This file is part of the nextbeat services.
+ * Copyright ixias.net All Rights Reserved.
  *
- *  For the full copyright and license information,
- *  please view the LICENSE file that was distributed with this source code.
+ * Use of this source code is governed by an MIT-style license
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
  */
 
 package ixias.mail
