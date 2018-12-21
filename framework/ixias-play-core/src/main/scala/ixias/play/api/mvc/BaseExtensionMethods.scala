@@ -1,6 +1,7 @@
 /*
- * This file is part of the ixias services.
+ * Copyright ixias.net All Rights Reserved.
  *
+ * Use of this source code is governed by an MIT-style license
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
  */
@@ -13,7 +14,7 @@ import cats.instances.future._
 import scala.concurrent.Future
 import scala.language.implicitConversions
 
-trait BaseExtensionMethods { self: BaseController =>
+trait BaseExtensionMethods { self: BaseControllerHelpers =>
   val Cursor        = ixias.persistence.model.Cursor
   val JsonHelper    = ixias.play.api.mvc.JsonHelper
   val FormHelper    = ixias.play.api.mvc.FormHelper
