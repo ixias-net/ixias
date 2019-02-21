@@ -8,35 +8,25 @@
 
 package ixias.persistence.backend
 
+import java.util.concurrent.ConcurrentHashMap
+
 import scala.concurrent.Future
-import scala.collection.mutable.Map
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.dbio.Execution.Implicits.trampoline
+
 
 /**
- * The container to manage databse base associated with DSN
- */
+  * The container to manage databse base associated with DSN
+  */
 private[backend] trait BasicDatabaseContainer[T] {
 
   /** Shared store */
-  protected var cache: Map[Int, T] = Map.empty[Int, T]
-
-  /** Optionally returns the value associated with a DSN */
-  def get(implicit dsn: DataSourceName): Option[T] =
-    cache.get(dsn.hashCode)
-
-  /** Add a new data souce. */
-  def update(db: T)(implicit dsn: DataSourceName): Unit =
-    cache.update(dsn.hashCode, db)
+  protected var cache = new ConcurrentHashMap[DataSourceName, Future[T]]()
 
   /**
-   * If given DSN is already in this map, returns associated data souce.
-   * Otherwise, computes value from given expression `op`, stores with key
-   * in map and returns that value.
-   */
+    * If given DSN is already in this map, returns associated data souce.
+    * Otherwise, computes value from given expression `op`, stores with key
+    * in map and returns that value.
+    */
   def getOrElseUpdate(op: => Future[T])(implicit dsn: DataSourceName): Future[T] =
-    get match {
-      case Some(db) => Future.successful(db)
-      case None     => op.map(db => { update(db); db })
-    }
+    cache.computeIfAbsent(dsn, _ => op)
 }
