@@ -14,19 +14,19 @@ import play.api.{ Environment, Mode }
 import play.api.mvc.{ RequestHeader, Result }
 import play.api.libs.typedmap.TypedKey
 
-import ixias.model.{ @@, Entity, EntityModel, IdStatus }
+import ixias.model.{ Entity, EntityModel, IdStatus }
 import ixias.play.api.auth.token.Token
 import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.Errors._
 
-trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A]
+trait AuthProfile[M <: EntityModel, A]
 {
   import Token._
 
   // --[ TypeDefs ]-------------------------------------------------------------
-  type Id         = K                              // The identity to detect authenticated resource.
+  type Id         = M#Id                              // The identity to detect authenticated resource.
   type Auth       = M                              // The authenticated resource.
-  type AuthEntity = Entity[K, M, IdStatus.Exists]  // The entity which is containing authenticated resource.
+  type AuthEntity = Entity[M, IdStatus.Exists]  // The entity which is containing authenticated resource.
   type Authority  = A                              // The type of authoriy
 
   /** Keys to request attributes. */

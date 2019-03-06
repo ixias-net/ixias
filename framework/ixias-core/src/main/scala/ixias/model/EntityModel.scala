@@ -13,10 +13,10 @@ import java.time.LocalDateTime
 /**
  * The definition for projecting domain model of DDD
  */
-trait EntityModel[K <: @@[_, _]] extends Serializable
+trait EntityModel extends Serializable
 {
   /** The type of entity id */
-  type Id = K
+  type Id <: @@[_, _]
 
   /** The entity's identity. */
   val id: Option[Id]

@@ -30,7 +30,7 @@ case class FileResource(
 // The companion object
 //~~~~~~~~~~~~~~~~~~~~~~
 object FileResource {
-  def apply(fid:  File.Id)                          = new FileResource(fid,     None)
-  def apply(file: Entity.EmbeddedId[File.Id, File]) = new FileResource(file.id, Some(file.v))
+  def apply(fid:  File.Id)                 = new FileResource(fid,     None)
+  def apply(file: Entity.EmbeddedId[File]) = new FileResource(file.id, Some(file.v))
 }
 

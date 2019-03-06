@@ -19,7 +19,7 @@ import ixias.persistence.SlickRepository
 // S3 management repository
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 trait AmazonS3Repository[P <: JdbcProfile]
-    extends SlickRepository[File.Id, File, P] with SlickResource[P]
+    extends SlickRepository[File, P] with SlickResource[P]
 {
   import api._
 
@@ -37,7 +37,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
   /**
    * Get file object.
    */
-  def get(id: Id): Future[Option[EntityEmbeddedId]] =
+  def get(id: File.Id): Future[Option[EntityEmbeddedId]] =
     RunDBAction(FileTable, "slave") { slick =>
       slick.unique(id).result.headOption
     }

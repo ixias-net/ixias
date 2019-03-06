@@ -18,7 +18,7 @@ object IdStatus {
 }
 
 /** The Entity */
-final case class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](v: M) {
+final case class Entity[+M <: EntityModel, S <: IdStatus](v: M) {
 
   /** The entity data model */
   type Model    <: M
@@ -27,14 +27,14 @@ final case class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](v: M
   type IdStatus =  S
 
   /** get id value whene id is exists */
-  def id(implicit ev: S =:= IdStatus.Exists): K = v.id.get
+  def id(implicit ev: S =:= IdStatus.Exists): M#Id = v.id.get
 
   /** check whether exists entity id value */
   def hasId(implicit ev: TypeTag[IdStatus]): Boolean =
     ev.tpe =:= typeOf[IdStatus.Exists]
 
   /** Builds a new `Entity` by applying a function to values. */
-  @inline def map[M2 <: EntityModel[K]](f: M => M2): Entity[K, M2, S] = new Entity(f(v))
+  @inline def map[M2 <: EntityModel](f: M => M2): Entity[M2, S] = new Entity(f(v))
 }
 
 // Companion object for Entity
@@ -43,10 +43,10 @@ object Entity {
 
   // Entity with no identity.
   //~~~~~~~~~~~~~~~~~~~~~~~~~~
-  type   WithNoId[K <: @@[_, _], M <: EntityModel[K]] = Entity[K, M, IdStatus.Empty]
+  type   WithNoId[M <: EntityModel] = Entity[M, IdStatus.Empty]
   object WithNoId {
     /** Create a entity object with no id. */
-    def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): WithNoId[K, M] =
+    def apply[M <: EntityModel](data: M): WithNoId[M] =
       data.id match {
         case None    =>       new Entity(data)
         case Some(_) => throw new IllegalArgumentException("The entity's id is already setted.")
@@ -55,9 +55,9 @@ object Entity {
 
   // Entity has embedded Id.
   //~~~~~~~~~~~~~~~~~~~~~~~~~~
-  type   EmbeddedId[K <: @@[_, _], M <: EntityModel[K]] = Entity[K, M, IdStatus.Exists]
+  type   EmbeddedId[M <: EntityModel] = Entity[M, IdStatus.Exists]
   object EmbeddedId {
-    def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): EmbeddedId[K, M] =
+    def apply[M <: EntityModel](data: M): EmbeddedId[M] =
       data.id match {
         case Some(_) =>       new Entity(data)
         case None    => throw new IllegalArgumentException("Coud not found id on entity's data.")

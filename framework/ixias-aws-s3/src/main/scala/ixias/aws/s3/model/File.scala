@@ -29,7 +29,9 @@ case class File(
   val presignedUrl: Option[java.net.URL] = None, // The presigned Url to accessing on Image
   val updatedAt:    LocalDateTime        = NOW,  // The Datetime when a data was updated.
   val createdAt:    LocalDateTime        = NOW   // The Datetime when a data was created.
-) extends EntityModel[File.Id] {
+) extends EntityModel {
+
+  type Id = File.Id
 
   lazy val httpsUrl       = s"${Protocol.HTTPS.toString()}://${httpsUrn}"
   lazy val httpsUrlOrigin = s"${Protocol.HTTPS.toString()}://${httpsUrnOrigin}"
@@ -53,18 +55,18 @@ object File {
   // --[ File ID ]--------------------------------------------------------------
   val  Id         = the[Identity[Id]]
   type Id         = Long @@ File
-  type WithNoId   = Entity.WithNoId   [Id, File]
-  type EmbeddedId = Entity.EmbeddedId [Id, File]
+  type WithNoId   = Entity.WithNoId   [File]
+  type EmbeddedId = Entity.EmbeddedId [File]
 
   object Config extends AmazonS3Config
 
   // --[ Create a new object ]--------------------------------------------------
   def apply(key: String, typedef: String, size: Option[ImageSize])
-    (implicit dns: DataSourceName): Try[Entity.WithNoId[File.Id, File]] =
+    (implicit dns: DataSourceName): Try[Entity.WithNoId[File]] =
     for {
       region <- Config.getAWSRegion
       bucket <- Config.getBucketName
-    } yield Entity.WithNoId[File.Id, File](
+    } yield Entity.WithNoId[File](
       new File(None, region.getName, bucket, key, typedef, size)
     )
 

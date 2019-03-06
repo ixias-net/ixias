@@ -14,14 +14,14 @@ import ixias.play.api.mvc.BaseExtensionMethods
 trait AuthExtensionMethods extends BaseExtensionMethods { self: BaseControllerHelpers =>
 
   // For authentication
-  def Authenticated(auth: AuthProfile[_, _, _]): ActionBuilder[Request, AnyContent] =
+  def Authenticated(auth: AuthProfile[_, _]): ActionBuilder[Request, AnyContent] =
     AuthenticatedActionBuilder(auth, parse.default)
 
   // For authentication or not.
-  def AuthenticatedOrNot(auth: AuthProfile[_, _, _]): ActionBuilder[Request, AnyContent] =
+  def AuthenticatedOrNot(auth: AuthProfile[_, _]): ActionBuilder[Request, AnyContent] =
     AuthenticatedOrNotActionBuilder(auth, parse.default)
 
   // For authorization
-  def Authorized[T](auth: AuthProfile[_, _, T], authority: Option[T]): ActionBuilder[Request, AnyContent] =
+  def Authorized[T](auth: AuthProfile[_, T], authority: Option[T]): ActionBuilder[Request, AnyContent] =
     AuthorizedActionBuilder(auth, authority, parse.default)
 }
