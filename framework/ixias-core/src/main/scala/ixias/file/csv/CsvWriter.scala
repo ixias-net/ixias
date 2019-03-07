@@ -4,6 +4,28 @@
  * Use of this source code is governed by an MIT-style license
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Note:
+ *  Reference of the source code from the following point of view.
+ *  ・A pattern of object generation according to the type of file input / output.
+ *
+ *  https://github.com/tototoshi/scala-csv/blob/master/src/main/scala/com/github/tototoshi/csv/CSVWriter.scala
+ *
+ *  Copyright 2013 Toshiyuki Takahashi
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package ixias.file.csv
