@@ -4,6 +4,26 @@
  * Use of this source code is governed by an MIT-style license
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
+ *
+ * -----------------------------------------------------------------------------
+ *
+ * Note:
+ *  Reference of the source code from the following point of view.
+ *  ・Depending on the function of ConfigLoader.
+ *    Behavior of easily obtaining the value of specified type via type function of get function
+ *
+ *  https://github.com/playframework/playframework/blob/2.5.x/framework/src/play/src/main/scala/play/api/Configuration.scala#L1030
+ *
+ * Copyright (C) 2009-2019 Lightbend Inc. (https://www.lightbend.com).
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this project except in compliance with the License.
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for
+ * the specific language governing permissions and limitations under the License.
  */
 
 package ixias.util
