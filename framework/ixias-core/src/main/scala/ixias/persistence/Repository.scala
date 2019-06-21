@@ -8,7 +8,7 @@
 
 package ixias.persistence
 
-import ixias.model.{ @@, EntityModel }
+import ixias.model.EntityModel
 import ixias.persistence.dbio.{ Execution, EntityIOAction }
 import ixias.persistence.lifted.{ Aliases, ExtensionMethods }
 
@@ -48,5 +48,5 @@ private[persistence] trait Profile {
 /**
  * The basic repository with IOAction
  */
-trait Repository[K <: @@[_, _], M <: EntityModel[K]]
-    extends Profile with EntityIOAction[K, M]
+trait Repository[M <: EntityModel]
+    extends Profile with EntityIOAction[M]

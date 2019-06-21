@@ -14,25 +14,25 @@ import scala.concurrent.ExecutionContext
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
-final case class SlickDBIOActionTransformer[K <: @@[_, _], M <: EntityModel[K], E <: Effect]
+final case class SlickDBIOActionTransformer[M <: EntityModel, E <: Effect]
   (val self: DBIOAction[_, NoStream, E]) extends AnyVal
 {
   // Seq[M] => Seq[Entity.EmbeddedId[K, M]]
   def toEntity(implicit ctag: ClassTag[Seq[M]], ex: ExecutionContext):
-      DBIOAction[Seq[Entity.EmbeddedId[K, M]], NoStream, E] = self collect {
+      DBIOAction[Seq[Entity.EmbeddedId[M]], NoStream, E] = self collect {
     case itr if ctag.runtimeClass.isInstance(itr) =>
-      itr.asInstanceOf[Seq[M]].map(Entity.EmbeddedId[K, M](_))
+      itr.asInstanceOf[Seq[M]].map(Entity.EmbeddedId[M](_))
   }
 
   // Seq[M] => Seq[R2]
-  def mapEntity[R2](fn: Entity.EmbeddedId[K, M] => R2)(implicit ctag: ClassTag[Seq[M]], ex: ExecutionContext):
+  def mapEntity[R2](fn: Entity.EmbeddedId[M] => R2)(implicit ctag: ClassTag[Seq[M]], ex: ExecutionContext):
       DBIOAction[Seq[R2], NoStream, E] = self collect {
     case itr if ctag.runtimeClass.isInstance(itr) =>
-      itr.asInstanceOf[Seq[M]].map(m => fn(Entity.EmbeddedId[K, M](m)))
+      itr.asInstanceOf[Seq[M]].map(m => fn(Entity.EmbeddedId[M](m)))
   }
 }
 
-trait SlickDBIOActionOps[K <: @@[_, _], M <: EntityModel[K]] {
+trait SlickDBIOActionOps[M <: EntityModel] {
   implicit def toDBIOActionTransformer[E <: Effect](a: DBIOAction[Seq[M], NoStream, E]) =
-    SlickDBIOActionTransformer[K, M, E](a)
+    SlickDBIOActionTransformer[M, E](a)
 }

@@ -9,23 +9,23 @@
 package ixias.persistence.dbio
 
 import scala.concurrent.Future
-import ixias.model.{ @@, Entity, EntityModel, IdStatus }
+import ixias.model.{ Entity, EntityModel, IdStatus }
 import ixias.persistence.Repository
 
 /**
  * An Entity Action that can be executed on a persistence database.
  */
-trait EntityIOAction[K <: @@[_, _], M <: EntityModel[K]]
-    extends IOAction { self: Repository[K, M] =>
+trait EntityIOAction[M <: EntityModel]
+    extends IOAction { self: Repository[M] =>
 
   /** The type of entity id */
-  type Id = K
+  type Id = M#Id // FIXME: Why needs?
 
   /** The type of entity when it has not id. */
-  type EntityWithNoId   = Entity[K, M, IdStatus.Empty]
+  type EntityWithNoId   = Entity[M, IdStatus.Empty]
 
   /** The type of entity when it has embedded id */
-  type EntityEmbeddedId = Entity[K, M, IdStatus.Exists]
+  type EntityEmbeddedId = Entity[M, IdStatus.Exists]
 
   // --[ Methods ]--------------------------------------------------------------
   /**

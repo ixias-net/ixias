@@ -16,7 +16,7 @@ import scala.concurrent.{ Future, ExecutionContext }
  */
 trait  AuthenticatedOrNotActionBuilder extends ActionBuilder[Request, AnyContent]
 object AuthenticatedOrNotActionBuilder {
-  def apply(auth: AuthProfile[_, _, _], parser: BodyParser[AnyContent])
+  def apply(auth: AuthProfile[_, _], parser: BodyParser[AnyContent])
     (implicit ec: ExecutionContext): AuthenticatedOrNotActionBuilder =
     new AuthenticatedOrNotActionBuilderImpl(auth, parser)
 }
@@ -24,7 +24,7 @@ object AuthenticatedOrNotActionBuilder {
 // Implementation for authentication
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class AuthenticatedOrNotActionBuilderImpl(
-  val auth:   AuthProfile[_, _, _],
+  val auth:   AuthProfile[_, _],
   val parser: BodyParser[AnyContent]
 )(implicit val executionContext: ExecutionContext) extends AuthenticatedOrNotActionBuilder {
 

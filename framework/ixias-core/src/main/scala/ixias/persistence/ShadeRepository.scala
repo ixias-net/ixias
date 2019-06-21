@@ -13,7 +13,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import shade.memcached.{ Memcached, MemcachedCodecs }
 
-import ixias.model.{ @@, Entity, EntityModel }
+import ixias.model.{ Entity, EntityModel }
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.backend.ShadeBackend
 import ixias.persistence.action.ShadeDBActionProvider
@@ -54,8 +54,8 @@ trait ShadeProfile extends Profile with ShadeDBActionProvider {
 /**
  * The base repository which is implemented basic feature methods of memcached.
  */
-abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag: ClassTag[M])
-    extends Repository[K, M] with ShadeProfile with MemcachedCodecs {
+abstract class ShadeRepository[M <: EntityModel](implicit ttag: ClassTag[M])
+    extends Repository[M] with ShadeProfile with MemcachedCodecs {
   import api._
 
   // --[ Methods ]--------------------------------------------------------------
@@ -66,7 +66,7 @@ abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag
   def get(id: Id): Future[Option[EntityEmbeddedId]] = {
     DBAction(dsn) { db =>
       db.get[M](id.toString)
-        .map(_.map(Entity.EmbeddedId[K, M]))
+        .map(_.map(Entity.EmbeddedId[M]))
     } recoverWith {
       case _: java.io.InvalidClassException => Future.successful(None)
     }
@@ -77,7 +77,7 @@ abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag
   def add(data: EntityWithNoId): Future[Id] = add(data, Duration.Inf)
   def add(data: EntityWithNoId, expiry: Duration): Future[Id] =
     DBAction(dsn) { db =>
-      val id = RandomStringToken.next(32).asInstanceOf[K]
+      val id = RandomStringToken.next(32).asInstanceOf[Id] // FIXME:
       db.add(id.toString, data.v, expiry)
         .map(_ => id)
     }
@@ -89,7 +89,7 @@ abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag
       for {
         old <- db.get[M](data.id.toString)
         _   <- db.set(data.id.toString, data.v, expiry)
-      } yield old.map(Entity.EmbeddedId[K, M])
+      } yield old.map(Entity.EmbeddedId[M])
     }
 
   /** Update existing value expiry in the cache store. */
@@ -110,7 +110,7 @@ abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag
       for {
         old <- db.get[M](id.toString)
         _   <- db.delete(id.toString)
-      } yield old.map(Entity.EmbeddedId[K, M])
+      } yield old.map(Entity.EmbeddedId[M])
     } recoverWith {
       case _: java.io.InvalidClassException => Future.successful(None)
     }

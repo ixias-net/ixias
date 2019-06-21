@@ -16,7 +16,7 @@ import scala.concurrent.{ Future, ExecutionContext }
  */
 trait  AuthorizedActionBuilder extends ActionBuilder[Request, AnyContent]
 object AuthorizedActionBuilder {
-  def apply[T](auth: AuthProfile[_, _, T], authority: Option[T], parser: BodyParser[AnyContent])
+  def apply[T](auth: AuthProfile[_, T], authority: Option[T], parser: BodyParser[AnyContent])
     (implicit ec: ExecutionContext): AuthorizedActionBuilder =
     new AuthorizedActionBuilderImpl(auth, authority, parser)
 }
@@ -24,7 +24,7 @@ object AuthorizedActionBuilder {
 // Implementation for authorization
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class AuthorizedActionBuilderImpl[T](
-  val auth:      AuthProfile[_, _, T],
+  val auth:      AuthProfile[_, T],
   val authority: Option[T],
   val parser:    BodyParser[AnyContent]
 )(implicit val executionContext: ExecutionContext) extends AuthorizedActionBuilder {
