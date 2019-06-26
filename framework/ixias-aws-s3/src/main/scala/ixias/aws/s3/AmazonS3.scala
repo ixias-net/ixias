@@ -175,9 +175,22 @@ trait AmazonS3Repository[P <: JdbcProfile]
 
   // --[ Methods ]--------------------------------------------------------------
   /**
-   * Remove the file information and a file object at S3.
+   * Remove the file information.
    */
   def remove(id: Id): Future[Option[EntityEmbeddedId]] =
+    for {
+      old <- RunDBAction(FileTable) { slick =>
+        for {
+          old <- slick.unique(id).result.headOption
+          _   <- slick.unique(id).delete
+        } yield old
+      }
+    } yield old
+
+  /**
+   * Erase the file information and a physical file object at S3.
+   */
+  def erase(id: Id): Future[Option[EntityEmbeddedId]] =
     for {
       fileOpt <- RunDBAction(FileTable) { slick =>
         for {
