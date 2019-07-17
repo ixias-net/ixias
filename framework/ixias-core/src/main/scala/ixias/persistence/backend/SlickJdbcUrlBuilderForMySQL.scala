@@ -24,7 +24,7 @@ class SlickJdbcUrlBuilderForMySQL extends SlickJdbcUrlBuilder with BasicDatabase
   /**
    * Generate a url for JDBC connection resouce.
    */
-  def getUrl(implicit dsn: DataSourceName): Try[String] =
+  def buildUrl(implicit dsn: DataSourceName): Try[String] =
     for {
       hosts    <- getHosts
       database <- getDatabaseName

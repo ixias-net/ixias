@@ -8,7 +8,7 @@
 
 package ixias.persistence.backend
 
-import scala.util.Try
+import scala.util.{ Try, Success, Failure }
 import ixias.persistence.model.DataSourceName
 
 /**
@@ -19,7 +19,7 @@ trait SlickJdbcUrlBuilder {
   /**
    * Generate a url for JDBC connection resouce.
    */
-  def getUrl(implicit dsn: DataSourceName): Try[String]
+  def buildUrl(implicit dsn: DataSourceName): Try[String]
 }
 
 /**
@@ -36,4 +36,20 @@ object SlickJdbcUrlBuilderProvider {
   )
 
   // --[ Methods ]--------------------------------------------------------------
+  /**
+   * Retrive a UrlBuilder from registered stack.
+   */
+  def resolve(driver: String): Try[SlickJdbcUrlBuilder] =
+    stock.get(driver) match {
+      case Some(v) => Success(v)
+      case None    => Failure(new IllegalArgumentException(
+        "Could not resolve the JDBC vendor format. %s".format(driver)
+      ))
+    }
+
+  /**
+   * Register a UrlBuilder to stack.
+   */
+  def register(driverName: String, builder: SlickJdbcUrlBuilder): Unit =
+    this.stock = this.stock + (driverName -> builder)
 }
