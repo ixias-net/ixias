@@ -17,7 +17,7 @@ import ixias.persistence.model.DataSourceName
 /**
   * The container to manage databse base associated with DSN
   */
-private[backend] trait BasicDatabaseContainer[T] {
+trait BasicDatabaseContainer[T] {
 
   /** Shared store */
   protected var cache = new ConcurrentHashMap[DataSourceName, Future[T]]()
