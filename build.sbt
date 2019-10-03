@@ -121,6 +121,15 @@ lazy val ixiasAwsS3 = (project in file("framework/ixias-aws-s3"))
     "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion
   ))
 
+lazy val ixiasAwsQLDB = (project in file("framework/ixias-aws-qldb"))
+  .settings(name := "ixias-aws-qldb")
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    "software.amazon.qldb" % "amazon-qldb-driver-java" % "1.0.1"
+  ))
+
 // IxiaS Play Libraries
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
@@ -164,8 +173,8 @@ lazy val ixiasAws = (project in file("target/ixias-aws"))
   .settings(name := "ixias-aws")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasCore, ixiasAwsSns, ixiasAwsS3)
-  .dependsOn(ixiasCore, ixiasAwsSns, ixiasAwsS3)
+  .aggregate(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB)
+  .dependsOn(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB)
 
 lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")
