@@ -9,9 +9,11 @@
 package ixias.aws.qldb
 
 import scala.concurrent.Future
+import software.amazon.qldb.Result
+import software.amazon.qldb.TransactionExecutor
+
 import ixias.persistence.action.BasicAction
 import ixias.persistence.model.DataSourceName
-import software.amazon.qldb.TransactionExecutor
 
 trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
 
@@ -25,7 +27,7 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
   /**
    * The base action to execute query.
    */
-  private object Action extends BasicAction[Request, TransactionExecutor] {
+  private object DBAction extends BasicAction[Request, TransactionExecutor] {
     /**
      *  Run block process
      */
@@ -38,5 +40,17 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
         case scala.util.Failure(ex) => logger.error(
           "The database action failed. dsn=%s".format(req.dsn.toString), ex)
       }
+  }
+
+  /**
+   * The Database Acion
+   */
+  val RunDBAction = (action: TransactionExecutor => Future[Result]) => {
+    val req = Request(DataSourceName("__TODO__"))
+    DBAction.invokeBlock(req, tx => for {
+      result <- action(tx)
+    } yield {
+      ???
+    })
   }
 }
