@@ -12,8 +12,7 @@ import scala.concurrent.Future
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.backend.{ BasicBackend, BasicDatabaseContainer }
 
-import software.amazon.qldb.QldbSession
-import software.amazon.qldb.PooledQldbDriver
+import software.amazon.qldb.{ QldbSession, PooledQldbDriver }
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.qldbsession.AmazonQLDBSessionClientBuilder
 
