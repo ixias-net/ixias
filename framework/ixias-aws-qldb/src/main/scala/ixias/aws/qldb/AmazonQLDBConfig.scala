@@ -23,7 +23,6 @@ trait AmazonQLDBConfig extends BasicDatabaseConfig {
   protected val CF_QLDB_SECRET_KEY  = "secret_access_key"
   protected val CF_QLDB_REGION      = "region"
   protected val CF_QLDB_LEDGER_NAME = "ledger_name"
-  protected val CF_QLDB_RETRY_LIMIT = "occ_conflict_retry_limit"
 
   // --[ Methods ]--------------------------------------------------------------
   /**
