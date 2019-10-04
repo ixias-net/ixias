@@ -45,8 +45,8 @@ object AmazonQLDBBackend extends BasicBackend[AmazonQLDB] with AmazonQLDBConfig 
           AmazonQLDB(driver.getSession)
         }
       } andThen {
-        case scala.util.Success(_) => logger.info("Generated a new client. dsn=%s".format(dsn.toString))
-        case scala.util.Failure(_) => logger.info("Failed to build a client. dsn=%s".format(dsn.toString))
+        case scala.util.Success(_)  => logger.info("Generated a new client. dsn=%s".format(dsn.toString))
+        case scala.util.Failure(ex) => logger.error("Failed to build a client. dsn=%s".format(dsn.toString), ex)
       }
     }
   }

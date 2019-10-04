@@ -33,6 +33,11 @@ lazy val commonSettings = Seq(
     "org.specs2"      %% "specs2-matcher-extra" % "3.9.1"  % Test,
     "ch.qos.logback"   % "logback-classic"      % "1.1.3"  % Test,
     "mysql"            % "mysql-connector-java" % "5.1.39" % Test
+  ),
+  fork in Test := true,
+  javaOptions ++= Seq(
+    "-Dconfig.resource=application.conf",
+    "-Dlogger.resource=logback.xml"
   )
 )
 
