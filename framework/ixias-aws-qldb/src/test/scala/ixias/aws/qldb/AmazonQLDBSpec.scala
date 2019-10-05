@@ -19,9 +19,9 @@ import ixias.persistence.model.DataSourceName
 
 /** Table Data Model */
 sealed case class JsValueHogeHoge(
-  a: Int,
-  b: String,
-  time: java.time.LocalDateTime
+  a:    Int,
+  b:    String,
+  time: Option[java.time.LocalDateTime]
 )
 object JsValueHogeHoge {
   implicit val writes: Reads[JsValueHogeHoge] = Json.reads[JsValueHogeHoge]
@@ -51,36 +51,33 @@ class AmazonQLDBSpec extends Specification {
         import com.fasterxml.jackson.module.scala.DefaultScalaModule
         import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
         import com.fasterxml.jackson.databind.SerializationFeature
-
         val mapper = new IonObjectMapper()
         mapper
           .registerModule(new JavaTimeModule)
           .registerModule(DefaultScalaModule)
           .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        val ionStr = mapper.writeValueAsString(JsValueHogeHoge(4000, "FizzBuzz", java.time.LocalDateTime.now))
+        val ionStr = mapper.writeValueAsString(JsValueHogeHoge(4000, "FizzBuzz", Some(java.time.LocalDateTime.now)))
         println("--[ IonValue Test ] ---------------------")
         println(ionStr)
         val data = mapper.readValue(ionStr, classOf[JsValueHogeHoge])
         println(data)
 
         // -------------------------------------------------
-        // session.execute(txn => {
-        //   println("--[ Select Test ] ---------------------")
-        //   import collection.JavaConverters._
-        //   import com.amazon.ion.IonValue
-        //   import com.amazon.ion.system.IonTextWriterBuilder
-        //   val result = txn.execute("SELECT * FROM hogehoge WHERE a IN (1000, 2000)")
-        //   val rows   = new java.util.ArrayList[IonValue]()
-        //   result.iterator().forEachRemaining(row => rows.add(row))
-        //   rows.asScala.map((v: IonValue) => {
-        //     println(v.toString(IonTextWriterBuilder.json))
-        //     println({
-        //       Json.parse(
-        //         v.toString(IonTextWriterBuilder.json)
-        //       ).validate[JsValueHogeHoge]
-        //     })
-        //   })
-        // })
+        session.execute(txn => {
+          println("--[ Select Test ] ---------------------")
+          import collection.JavaConverters._
+          import com.amazon.ion.IonValue
+          import com.amazon.ion.system.IonTextWriterBuilder
+          val result = txn.execute("SELECT * FROM hogehoge WHERE a IN (1000, 2000)")
+          val rows   = new java.util.ArrayList[IonValue]()
+          result.iterator().forEachRemaining(row => rows.add(row))
+          rows.asScala.map((v: IonValue) => {
+            println(v.toString(IonTextWriterBuilder.json))
+            println({
+              mapper.readValue(v, classOf[JsValueHogeHoge])
+            })
+          })
+        })
       }
       Await.ready(f, Duration.Inf)
       true must_== true
