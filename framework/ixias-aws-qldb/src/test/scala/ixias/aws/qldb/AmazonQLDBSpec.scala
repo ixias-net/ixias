@@ -13,8 +13,6 @@ import org.specs2.mutable._
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import play.api.libs.json.{ Json, Reads }
 import ixias.persistence.model.DataSourceName
 
 /** Table Data Model */
@@ -23,9 +21,6 @@ sealed case class JsValueHogeHoge(
   b:    String,
   time: Option[java.time.LocalDateTime]
 )
-object JsValueHogeHoge {
-  implicit val writes: Reads[JsValueHogeHoge] = Json.reads[JsValueHogeHoge]
-}
 
 /** Test Specs */
 class AmazonQLDBSpec extends Specification {
