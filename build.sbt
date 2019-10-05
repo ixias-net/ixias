@@ -134,6 +134,8 @@ lazy val ixiasAwsQLDB = (project in file("framework/ixias-aws-qldb"))
   .settings(libraryDependencies ++= Seq(
     "software.amazon.qldb"             % "amazon-qldb-driver-java" % "1.0.1",
     "com.fasterxml.jackson.dataformat" % "jackson-dataformat-ion"  % "2.10.0",
+    "com.fasterxml.jackson.datatype"   % "jackson-datatype-jsr310" % "2.10.0",
+    "com.fasterxml.jackson.module"    %% "jackson-module-scala"    % "2.10.0",
     "com.typesafe.play"               %% "play-json"               % "2.7.3"
   ))
 
