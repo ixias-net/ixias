@@ -8,6 +8,8 @@
 
 package ixias.aws.qldb
 
+import com.amazon.ion.IonValue
+import software.amazon.qldb.{ QldbSession, TransactionExecutor }
 import ixias.persistence.model.DataSourceName
 
 /**
@@ -15,16 +17,27 @@ import ixias.persistence.model.DataSourceName
  */
 trait Table[T] {
 
-  //-- [ Table Manifest ] ------------------------------------------------------
-  /** The type of table row. */
-  type Record = T
+  //-- [ Properties ] ----------------------------------------------------------
+  /** Data storage location information */
+  val dsn:       DataSourceName
 
-  //-- [ Required properties ] -------------------------------------------------
-  /** Data storage location information. */
-  val dsn: DataSourceName
+  /** Table name */
+  val tableName: String
 
-  /** Version of data model. */
-  val version: Int = 1
+  /** Table name */
+  val tableStmt: Map[String, String] = Map.empty
+
+  case class Session(session: QldbSession) {
+    def execute(stamt: String) = ???
+    def execute(stamt: String, params: Seq[IonValue]) = ???
+    def transaction[A](block: Transaction => A): A =
+      session.execute(tx => block(new Transaction(tx)))
+  }
+
+  case class Transaction(tx: TransactionExecutor) {
+    def execute(stamt: String) = ???
+    def execute(stamt: String, params: Seq[IonValue]) = ???
+  }
 
   //-- [ Utility Methods ] -----------------------------------------------------
   /**
@@ -32,5 +45,5 @@ trait Table[T] {
    * As you add and change features in your app,
    * you need to modify your entity classes to reflect these adjust.
    */
-  def migrate(version: Int, data: T): T = data
+  def migrate[A](data: A): A = data
 }

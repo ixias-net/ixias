@@ -13,7 +13,7 @@ import scala.language.implicitConversions
 import collection.JavaConverters._
 
 import com.amazon.ion.IonValue
-import software.amazon.qldb.{ Result, TransactionExecutor }
+import software.amazon.qldb.{ QldbSession, Result => QLDBResult }
 
 import ixias.persistence.action.BasicAction
 import ixias.persistence.model.DataSourceName
@@ -27,36 +27,50 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
     val dsn: DataSourceName
   )
 
+  // --[ Alias ]----------------------------------------------------------------
+  val RunDBAction = DBAction.apply _
+
+  // --[ Action ]---------------------------------------------------------------
   /**
    * The base action to execute query.
    */
-  private object DBAction extends BasicAction[Request, TransactionExecutor] {
-    def invokeBlock[A](req: Request, block: TransactionExecutor => Future[A]): Future[A] =
+  object DBAction extends BasicAction[Request, QldbSession] {
+
+    /**
+     * Execute self action.
+     */
+    def apply[A, B, T <: Table[_]](table: T)
+      (action: QldbSession => Future[A])(implicit conv: A => B): Future[B] =
+      invokeBlock(Request(table.dsn), tx => action(tx))
+        .map(conv(_))
+        .map(table.migrate(_))
+
+    /**
+     * Invoke the block.
+     */
+    def invokeBlock[A](req: Request, block: QldbSession => Future[A]): Future[A] =
       (for {
-        db      <- backend.getDatabase(req.dsn)
-        session  = db.underlying
-        value   <- session.execute(tx => block(tx))
+        session <- backend.getDatabase(req.dsn)
+        value   <- block(session)
       } yield value) andThen {
         case scala.util.Failure(ex) => logger.error(
           "The database action failed. dsn=%s".format(req.dsn.toString), ex)
       }
   }
 
+  // --[ Implicit Conv: For-Write ]---------------------------------------------
   /**
-   * The Database Acion
+   * Implicit converter: model data -> IonValue row data.
    */
-  object RunDBAction {
-    def apply[A, B, T <: Table[_]](table: T)
-      (action: TransactionExecutor => Future[A])(implicit conv: A => B) = {
-      val req = Request(table.dsn)
-      DBAction.invokeBlock(req, tx => action(tx).map(conv(_)))
-    }
-  }
+  implicit def convModelToIonValue[M](row: M): Seq[IonValue] =
+    AmazonQLDBActionProvider
+      .MAPPER_FOR_ION.writeValueAsIonValue(row)
 
+  // --[ Implicit Conv: For-Read ]----------------------------------------------
   /**
    * Implicit converter: qldb Result -> IonValue rows.
    */
-  implicit def convResultToIonValue(result: Result): Seq[IonValue] = {
+  implicit def convResultToIonValue(result: QLDBResult): Seq[IonValue] = {
     val rows = new java.util.ArrayList[IonValue]()
     result.iterator().forEachRemaining(row => rows.add(row))
     rows.asScala
@@ -65,7 +79,7 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
   /**
    * Implicit converter: qldb Result -> Model rows.
    */
-  implicit def convResultToModel[M](result: Result)(implicit ctag: reflect.ClassTag[M]): Seq[M] =
+  implicit def convResultToModel[M](result: QLDBResult)(implicit ctag: reflect.ClassTag[M]): Seq[M] =
     convResultToIonValue(result).map(
       (row: IonValue) => AmazonQLDBActionProvider
         .MAPPER_FOR_ION.readValue(row, ctag.runtimeClass)

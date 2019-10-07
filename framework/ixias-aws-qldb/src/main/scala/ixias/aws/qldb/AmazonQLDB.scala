@@ -16,7 +16,7 @@ trait AmazonQLDBProfile extends Profile {
 
   // --[ Typedefs ]-------------------------------------------------------------
   /** The type of database objects. */
-  type Database = AmazonQLDB
+  type Database = AmazonQLDBBackend.type#Database
 
   /** The back-end type required by this profile */
   type Backend  = AmazonQLDBBackend.type
