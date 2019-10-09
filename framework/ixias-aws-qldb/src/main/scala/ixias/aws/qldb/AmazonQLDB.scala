@@ -10,10 +10,10 @@ package ixias.aws.qldb
 
 import ixias.model._
 import ixias.persistence.{ Profile, Repository }
-import ixias.persistence.lifted.SlickDBIOActionOps
-import ixias.aws.qldb.backend.AmazonQLDBBackend
+import ixias.aws.qldb.backend.{ AmazonQLDBBackend, AmazonQLDBActionProvider }
 
-trait AmazonQLDBProfile extends Profile {
+trait AmazonQLDBProfile extends Profile
+    with AmazonQLDBActionProvider {
 
   // --[ Typedefs ]-------------------------------------------------------------
   /** The type of database objects. */
@@ -44,6 +44,5 @@ trait AmazonQLDBProfile extends Profile {
 trait AmazonQLDBRepository[K <: @@[_, _], M <: EntityModel[K]]
     extends Repository[K, M] with AmazonQLDBProfile {
   trait API extends super.API
-      with SlickDBIOActionOps[K, M]
   override val api: API = new API {}
 }

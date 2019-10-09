@@ -9,71 +9,47 @@
 package ixias.aws.qldb.backend
 
 import scala.concurrent.Future
-import software.amazon.qldb.QldbSession
-
-import ixias.aws.qldb.AmazonQLDBProfile
-import ixias.aws.qldb.model.Table
 import ixias.persistence.action.BasicAction
-import ixias.persistence.model.DataSourceName
+
+import ixias.aws.qldb.model.Table
+import ixias.aws.qldb.dbio.DBIOAction
+import ixias.aws.qldb.AmazonQLDBProfile
 
 trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
 
   /**
    * The Request of Invocation.
    */
-  sealed case class Request(
-    val dsn: DataSourceName
-  )
+  sealed case class DBActionRequest[T <: Table](table: T)
 
-  // --[ Alias ]----------------------------------------------------------------
-  val RunDBAction = DBAction.apply _
-
-  // --[ Action ]---------------------------------------------------------------
   /**
    * The base action to execute query.
    */
-  object DBAction extends BasicAction[Request, QldbSession] {
+  sealed case class DBAction[T <: Table]()
+      extends BasicAction[DBActionRequest[T], (DBIOAction, T#Query)] {
+    type Request          = DBActionRequest[T]
+    type BlockFunction[A] = ((DBIOAction, T#Query)) => Future[A]
 
-    /**
-     * Execute self action.
-     */
-    def apply[A, B, T <: Table](table: T)
-      (action: QldbSession => Future[A])(implicit conv: A => B): Future[B] =
-      invokeBlock(Request(table.dsn), tx => action(tx))
-        .map(conv(_))
-        .map(table.migrate(_))
-
-    /**
-     * Invoke the block.
-     */
-    def invokeBlock[A](req: Request, block: QldbSession => Future[A]): Future[A] =
+    /** Invoke the block. */
+    def invokeBlock[A](req: Request, block: BlockFunction[A]): Future[A] =
       (for {
-        session <- backend.getDatabase(req.dsn)
-        value   <- block(session)
+        session <- backend.getDatabase(req.table.dsn)
+        value   <- block(DBIOAction(session) -> req.table.query)
       } yield value) andThen {
         case scala.util.Failure(ex) => logger.error(
-          "The database action failed. dsn=%s".format(req.dsn.toString), ex)
+          "The database action failed. dsn=%s".format(req.table.dsn.toString), ex)
       }
   }
-}
-
-// Companion object
-//~~~~~~~~~~~~~~~~~~
-object AmazonQLDBActionProvider {
-  import com.fasterxml.jackson.dataformat.ion.IonObjectMapper
-  import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-  import com.fasterxml.jackson.databind.SerializationFeature
-  import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
   /**
-   * Mapper for Ion object.
+   * Execute database action.
    */
-  lazy val MAPPER_FOR_ION = {
-    val mapper = new IonObjectMapper()
-    mapper.registerModule(new JavaTimeModule)
-      .registerModule(DefaultScalaModule)
-      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-    mapper
+  object RunDBAction {
+    def apply[A, B, T <: Table]
+      (table: T)
+      (block: ((DBIOAction, T#Query)) => Future[A])
+      (implicit conv: A => B): Future[B] =
+      DBAction[T].invokeBlock(DBActionRequest(table), block)
+        .map(conv)
   }
 }
-

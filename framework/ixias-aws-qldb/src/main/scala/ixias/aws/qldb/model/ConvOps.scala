@@ -8,60 +8,69 @@
 
 package ixias.aws.qldb.model
 
-import collection.JavaConverters._
 import scala.language.implicitConversions
-
 import com.amazon.ion.IonValue
-import software.amazon.qldb.{ Result => QLDBResult }
-
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.dataformat.ion.IonObjectMapper
+import software.amazon.qldb.{ Result => QldbResult }
 
 // Conversion processing methods
-// to support mutual conversion between Amazon Ion and ixias model.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// to support mutual conversion between Amazon Ion and model.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 import ConvOps._
 trait  ConvOps {
 
+  //-- [ To Amazon Ion ] -------------------------------------------------------
   /**
-   * AmazonQLDB Result -> Model rows.
+   * Model -> single IonValue value.
    */
-  implicit def convResultToModel[M](result: QLDBResult)(implicit ctag: reflect.ClassTag[M]): Seq[M] =
-    convResultToIonValue(result).map(
-      (row: IonValue) => MAPPER_FOR_ION.readValue(row, ctag.runtimeClass).asInstanceOf[M]
-    )
-
-  /**
-   * AmazonQLDB Result -> IonValue rows.
-   */
-  implicit def convResultToIonValue(result: QLDBResult): Seq[IonValue] = {
-    val rows = new java.util.ArrayList[IonValue]()
-    result.iterator().forEachRemaining(row => rows.add(row))
-    rows.asScala
-  }
-
-  /**
-   * Model data -> IonValue row data.
-   */
-  implicit def convAnyToIonValue[A](v: A): IonValue =
+  implicit def convToIonValue[A](v: A): IonValue =
     MAPPER_FOR_ION.writeValueAsIonValue(v)
 
+  //-- [ From AmazonQldb Result ] ----------------------------------------------
+  implicit def toQldbResultTransformer(v: QldbResult) =
+    QldbResultTransformer(v)
 }
 
 // Companion object
 //~~~~~~~~~~~~~~~~~~
 object ConvOps {
+  import com.fasterxml.jackson.annotation.JsonInclude
+  import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+  import com.fasterxml.jackson.dataformat.ion.IonObjectMapper
+  import com.fasterxml.jackson.databind.{ SerializationFeature, DeserializationFeature }
+  import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
-  /**
-   * Mapper for Ion object.
-   */
+  /** Mapper for AmazonIon object. */
   lazy val MAPPER_FOR_ION = {
     val mapper = new IonObjectMapper()
     mapper.registerModule(new JavaTimeModule)
       .registerModule(DefaultScalaModule)
+      .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+      .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     mapper
+  }
+}
+
+// Transformer for QldbResult
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+case class QldbResultTransformer(self: QldbResult) extends AnyVal {
+  import ConvOps.MAPPER_FOR_ION
+
+  /** To Seq[Model] */
+  def toModelSeq[A](ttag: reflect.ClassTag[A]): Seq[A] = {
+    val cls = ttag.runtimeClass
+    toIonValueSeq.map(
+      MAPPER_FOR_ION.readValue(_, cls).asInstanceOf[A]
+    )
+  }
+
+  /**
+   * AmazonQLDB Result -> IonValue rows.
+   */
+  def toIonValueSeq: Seq[IonValue] = {
+    import collection.JavaConverters._
+    val list = new java.util.ArrayList[IonValue]()
+    self.iterator().forEachRemaining(v => list.add(v))
+    Seq(list.asScala: _*)
   }
 }

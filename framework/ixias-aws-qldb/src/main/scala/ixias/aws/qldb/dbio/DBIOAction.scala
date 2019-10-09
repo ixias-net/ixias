@@ -9,7 +9,8 @@
 package ixias.aws.qldb.dbio
 
 import collection.JavaConverters._
-import software.amazon.qldb.{ QldbSession, TransactionExecutor, Result }
+import scala.concurrent.{ Future, ExecutionContext }
+import software.amazon.qldb.{ QldbSession, TransactionExecutor }
 import ixias.aws.qldb.model.{ SqlStatement, ConvOps }
 
 /**
@@ -18,11 +19,15 @@ import ixias.aws.qldb.model.{ SqlStatement, ConvOps }
 case class DBIOAction(session: QldbSession) extends ConvOps {
 
   /** Execute query */
-  def execute[A](stmt: SqlStatement)(implicit conv: Result => A): A =
-    conv(session.execute(stmt.query, stmt.params.asJava))
+  def execute[A](stmt: SqlStatement)
+    (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Future[Seq[A]] =
+    Future {
+      session.execute(stmt.query, stmt.params.asJava)
+        .toModelSeq(ctag)
+    }
 
   /** Transaction block */
-  def execute[A](block: DBIOActionWithTxt => A): A =
+  def transaction[A](block: DBIOActionWithTxt => Future[A]): Future[A] =
     session.execute(tx => block(DBIOActionWithTxt(tx)))
 }
 
@@ -32,7 +37,11 @@ case class DBIOAction(session: QldbSession) extends ConvOps {
 case class DBIOActionWithTxt(tx: TransactionExecutor) extends ConvOps {
 
   /** Execute query with transaction */
-  def execute[A](stmt: SqlStatement)(implicit conv: Result => A): A =
-    conv(tx.execute(stmt.query, stmt.params.asJava))
+  def execute[A](stmt: SqlStatement)
+    (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Future[Seq[A]] =
+    Future {
+      tx.execute(stmt.query, stmt.params.asJava)
+        .toModelSeq(ctag)
+    }
 }
 

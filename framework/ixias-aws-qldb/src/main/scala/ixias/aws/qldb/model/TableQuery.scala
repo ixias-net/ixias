@@ -14,6 +14,9 @@ package ixias.aws.qldb.model
 abstract class TableQuery(val tableName: String) extends ConvOps {
 
   /** Methods to create statement object */
+  def sql
+    (stmt: String)
+      = SqlStatement(tableName, stmt, Seq.empty)
   def sql[P1]
     (stmt: String, p1: P1)
       = SqlStatement(tableName, stmt, Seq(p1))

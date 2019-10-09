@@ -10,70 +10,57 @@ package ixias.aws.qldb
 
 import org.specs2.mutable._
 
-import scala.concurrent.Await
+import java.time.LocalTime
+import scala.concurrent.{ Future, Await }
 import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
-import ixias.persistence.model.DataSourceName
+
+import ixias.model._
+import ixias.aws.qldb.model.Table
 
 /** Table Data Model */
-sealed case class JsValueHogeHoge(
+case class TestData(
+  id:   Option[TestData.Id],
   a:    Int,
   b:    String,
-  time: Option[java.time.LocalDateTime]
-)
+  time: Option[LocalTime],
+) extends EntityModelWithNoTimeRec[TestData.Id]
+
+object TestData {
+  type Id = String @@ TestData
+}
+
+/** Table */
+object TestTable extends Table {
+  val dsn   = DataSourceName("ixias.aws.qldb://ledger/test")
+  val query = new Query()
+  class Query extends TableQuery("hogehoge") {
+    def find            = sql("SELECT id, r.* FROM __TABLE_NAME__ AS r BY id")
+    def findByA(a: Int) = sql("SELECT id, r.* FROM __TABLE_NAME__ AS r BY id WHERE r.a = ?", a)
+  }
+}
+
+/** Repository */
+object TestRepository extends AmazonQLDBRepository[TestData.Id, TestData]  {
+  import api._
+  def findByA(a: String): Future[Seq[EntityEmbeddedId]] =
+    RunDBAction(TestTable) { case (db, qldb) =>
+      db.execute[TestData](qldb.findByA(1000))
+    }
+  def get(id: Id): Future[Option[EntityEmbeddedId]] = ???
+  def add(data: EntityWithNoId): Future[Id] = ???
+  def update(data: EntityEmbeddedId): Future[Option[EntityEmbeddedId]] = ???
+  def remove(id: Id): Future[Option[EntityEmbeddedId]] = ???
+}
+
 
 /** Test Specs */
 class AmazonQLDBSpec extends Specification {
   "AmazonQLDBSpec" should {
-    "Create Session for AmazonQLDB" in {
-      implicit val dsn = DataSourceName("ixias.aws.qldb://ledger/test")
+    "Get data from AmazonQLDB" in {
       val f = for {
-        backend  <- AmazonQLDBBackend.getDatabase
-        session   = backend.underlying
-      } yield {
-        // session.execute(txn => {
-        //   println("--[ Insert Test ] ---------------------")
-        //   import com.amazon.ion.system.IonSystemBuilder
-        //   val system = IonSystemBuilder.standard().build()
-        //   val reader = system.singleValue("""{ "a": 2000, "b": "fugafuga" }""")
-        //   scala.util.Try {
-        //     txn.execute("INSERT INTO hogehoge ?", Seq(reader).asJava)
-        //   }
-        // })
-
-        // -------------------------------------------------
-        import com.fasterxml.jackson.dataformat.ion.IonObjectMapper
-        import com.fasterxml.jackson.module.scala.DefaultScalaModule
-        import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-        import com.fasterxml.jackson.databind.SerializationFeature
-        val mapper = new IonObjectMapper()
-        mapper
-          .registerModule(new JavaTimeModule)
-          .registerModule(DefaultScalaModule)
-          .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        val ionStr = mapper.writeValueAsString(JsValueHogeHoge(4000, "FizzBuzz", Some(java.time.LocalDateTime.now)))
-        println("--[ IonValue Test ] ---------------------")
-        println(ionStr)
-        val data = mapper.readValue(ionStr, classOf[JsValueHogeHoge])
-        println(data)
-
-        // -------------------------------------------------
-        session.execute(txn => {
-          println("--[ Select Test ] ---------------------")
-          import collection.JavaConverters._
-          import com.amazon.ion.IonValue
-          import com.amazon.ion.system.IonTextWriterBuilder
-          val result = txn.execute("SELECT * FROM hogehoge WHERE a IN (1000, 2000)")
-          val rows   = new java.util.ArrayList[IonValue]()
-          result.iterator().forEachRemaining(row => rows.add(row))
-          rows.asScala.map((v: IonValue) => {
-            println(v.toString(IonTextWriterBuilder.json))
-            println({
-              mapper.readValue(v, classOf[JsValueHogeHoge])
-            })
-          })
-        })
-      }
+        dataSeq <- TestRepository.findByA("1000")
+      } yield println(dataSeq)
       Await.ready(f, Duration.Inf)
       true must_== true
     }
