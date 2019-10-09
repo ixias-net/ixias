@@ -9,12 +9,11 @@
 package ixias.aws.qldb.model
 
 import com.amazon.ion.IonValue
-import scala.language.implicitConversions
 
 /**
  * Definition to execute a query from the target table
  */
-abstract class TableQuery(val tableName: String) {
+abstract class TableQuery(val tableName: String) extends ConvOps {
 
   /**
    * Query statement definition
@@ -31,13 +30,6 @@ abstract class TableQuery(val tableName: String) {
     protected def buildQuery(stmt: SqlStatement): String =
       stmt.query.replaceFirst("__TABLE_NAME__", tableName)
   }
-
-  // --[ Conv: For-Write ]------------------------------------------------------
-  /**
-   * Implicit converter: model data -> IonValue row data.
-   */
-  implicit def convToIonValue[A](v: A): IonValue =
-    Table.MAPPER_FOR_ION.writeValueAsIonValue(v)
 
   //-- [ Methods ] -------------------------------------------------------------
   /** Methods to create statement object */

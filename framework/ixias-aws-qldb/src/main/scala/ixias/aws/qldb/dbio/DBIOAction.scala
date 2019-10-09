@@ -8,32 +8,33 @@
 
 package ixias.aws.qldb.dbio
 
-import software.amazon.qldb.{ QldbSession, TransactionExecutor }
-import ixias.aws.qldb.model.TableQuery
+import collection.JavaConverters._
+import software.amazon.qldb.{ QldbSession, TransactionExecutor, Result }
+import ixias.aws.qldb.model.{ TableQuery, ConvOps }
 
 /**
- * Database
+ * Executor for database IO/Action.
  */
-case class Database(session: QldbSession) {
-  import collection.JavaConverters._
+case class DBIOAction(session: QldbSession) extends ConvOps {
   type SqlStatement = TableQuery#SqlStatement
 
   /** Execute query */
-  def execute(stmt: SqlStatement) =
-    session.execute(stmt.query, stmt.params.asJava)
+  def execute[A](stmt: SqlStatement)(implicit conv: Result => A): A =
+    conv(session.execute(stmt.query, stmt.params.asJava))
 
   /** Transaction block */
-  def execute[A](block: DatabaseTransactionExecutor => A): A =
-    session.execute(tx => block(DatabaseTransactionExecutor(tx)))
+  def execute[A](block: DBIOActionWithTxt => A): A =
+    session.execute(tx => block(DBIOActionWithTxt(tx)))
 }
 
-case class DatabaseTransactionExecutor(tx: TransactionExecutor) {
-  import collection.JavaConverters._
-
+/**
+ * Executor for database IO/Action with transaction.
+ */
+case class DBIOActionWithTxt(tx: TransactionExecutor) extends ConvOps {
   type SqlStatement = TableQuery#SqlStatement
 
   /** Execute query with transaction */
-  def execute(stmt: SqlStatement) =
-    tx.execute(stmt.query, stmt.params.asJava)
+  def execute[A](stmt: SqlStatement)(implicit conv: Result => A): A =
+    conv(tx.execute(stmt.query, stmt.params.asJava))
 }
 

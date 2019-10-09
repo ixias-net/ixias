@@ -9,17 +9,12 @@
 package ixias.aws.qldb.backend
 
 import scala.concurrent.Future
-import scala.language.implicitConversions
-import collection.JavaConverters._
-
-import com.amazon.ion.IonValue
-import software.amazon.qldb.{ QldbSession, Result => QLDBResult }
-
-import ixias.persistence.action.BasicAction
-import ixias.persistence.model.DataSourceName
+import software.amazon.qldb.QldbSession
 
 import ixias.aws.qldb.AmazonQLDBProfile
 import ixias.aws.qldb.model.Table
+import ixias.persistence.action.BasicAction
+import ixias.persistence.model.DataSourceName
 
 trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
 
@@ -60,34 +55,6 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
           "The database action failed. dsn=%s".format(req.dsn.toString), ex)
       }
   }
-
-  // --[ Implicit Conv: For-Write ]---------------------------------------------
-  /**
-   * Implicit converter: model data -> IonValue row data.
-   */
-  implicit def convModelToIonValue[M](row: M): Seq[IonValue] =
-    AmazonQLDBActionProvider
-      .MAPPER_FOR_ION.writeValueAsIonValue(row)
-
-  // --[ Implicit Conv: For-Read ]----------------------------------------------
-  /**
-   * Implicit converter: qldb Result -> IonValue rows.
-   */
-  implicit def convResultToIonValue(result: QLDBResult): Seq[IonValue] = {
-    val rows = new java.util.ArrayList[IonValue]()
-    result.iterator().forEachRemaining(row => rows.add(row))
-    rows.asScala
-  }
-
-  /**
-   * Implicit converter: qldb Result -> Model rows.
-   */
-  implicit def convResultToModel[M](result: QLDBResult)(implicit ctag: reflect.ClassTag[M]): Seq[M] =
-    convResultToIonValue(result).map(
-      (row: IonValue) => AmazonQLDBActionProvider
-        .MAPPER_FOR_ION.readValue(row, ctag.runtimeClass)
-        .asInstanceOf[M]
-    )
 }
 
 // Companion object
