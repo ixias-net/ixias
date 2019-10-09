@@ -11,6 +11,7 @@ package ixias.aws.qldb
 import ixias.model._
 import ixias.persistence.{ Profile, Repository }
 import ixias.persistence.lifted.SlickDBIOActionOps
+import ixias.aws.qldb.backend.AmazonQLDBBackend
 
 trait AmazonQLDBProfile extends Profile {
 

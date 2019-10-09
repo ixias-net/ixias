@@ -6,7 +6,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.aws.qldb
+package ixias.aws.qldb.backend
 
 import scala.concurrent.Future
 import ixias.persistence.model.DataSourceName

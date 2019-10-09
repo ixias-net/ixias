@@ -1,0 +1,71 @@
+/*
+ * Copyright ixias.net All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license
+ * For the full copyright and license information,
+ * please view the LICENSE file that was distributed with this source code.
+ */
+
+package ixias.aws.qldb.model
+
+import com.amazon.ion.IonValue
+import scala.language.implicitConversions
+
+/**
+ * Definition to execute a query from the target table
+ */
+abstract class TableQuery(val tableName: String) {
+
+  /**
+   * Query statement definition
+   */
+  case class SqlStatement(
+    query:  String,
+    params: Seq[IonValue]
+  ) {
+
+    //-- [ Methods ] -------------------------------------------------------------
+    /**
+     * SQL query string validation and table name replacement
+     */
+    protected def buildQuery(stmt: SqlStatement): String =
+      stmt.query.replaceFirst("__TABLE_NAME__", tableName)
+  }
+
+  // --[ Conv: For-Write ]------------------------------------------------------
+  /**
+   * Implicit converter: model data -> IonValue row data.
+   */
+  implicit def convToIonValue[A](v: A): IonValue =
+    Table.MAPPER_FOR_ION.writeValueAsIonValue(v)
+
+  //-- [ Methods ] -------------------------------------------------------------
+  /** Methods to create statement object */
+  def sql[P1]
+    (stmt: String, p1: P1)
+      = SqlStatement(stmt, Seq(p1))
+  def sql[P1, P2]
+    (stmt: String, p1: P1, p2: P2)
+      = SqlStatement(stmt, Seq(p1, p2))
+  def sql[P1, P2, P3]
+    (stmt: String, p1: P1, p2: P2, p3: P3)
+      = SqlStatement(stmt, Seq(p1, p2, p3))
+  def sql[P1, P2, P3, P4]
+    (stmt: String, p1: P1, p2: P2, p3: P3, p4: P4)
+      = SqlStatement(stmt, Seq(p1, p2, p3, p4))
+  def sql[P1, P2, P3, P4, P5]
+    (stmt: String, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5)
+      = SqlStatement(stmt, Seq(p1, p2, p3, p4, p5))
+  def sql[P1, P2, P3, P4, P5, P6]
+    (stmt: String, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6)
+      = SqlStatement(stmt, Seq(p1, p2, p3, p4, p5, p6))
+  def sql[P1, P2, P3, P4, P5, P6, P7]
+    (stmt: String, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6, p7: P7)
+      = SqlStatement(stmt, Seq(p1, p2, p3, p4, p5, p6, p7))
+  def sql[P1, P2, P3, P4, P5, P6, P7, P8]
+    (stmt: String, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6, p7: P7, p8: P8)
+      = SqlStatement(stmt, Seq(p1, p2, p3, p4, p5, p6, p7, p8))
+  def sql[P1, P2, P3, P4, P5, P6, P7, P8, P9]
+    (stmt: String, p1: P1, p2: P2, p3: P3, p4: P4, p5: P5, p6: P6, p7: P7, p8: P8, p9: P9)
+      = SqlStatement(stmt, Seq(p1, p2, p3, p4, p5, p6, p7, p8, p9))
+}

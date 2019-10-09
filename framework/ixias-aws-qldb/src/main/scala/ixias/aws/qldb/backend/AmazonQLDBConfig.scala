@@ -6,7 +6,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.aws.qldb
+package ixias.aws.qldb.backend
 
 import scala.util.Try
 import com.amazonaws.regions.Regions

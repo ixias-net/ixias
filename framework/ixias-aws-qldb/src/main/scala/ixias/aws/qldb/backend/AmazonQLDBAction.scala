@@ -6,7 +6,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.aws.qldb
+package ixias.aws.qldb.backend
 
 import scala.concurrent.Future
 import scala.language.implicitConversions
@@ -17,6 +17,9 @@ import software.amazon.qldb.{ QldbSession, Result => QLDBResult }
 
 import ixias.persistence.action.BasicAction
 import ixias.persistence.model.DataSourceName
+
+import ixias.aws.qldb.AmazonQLDBProfile
+import ixias.aws.qldb.model.Table
 
 trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
 
