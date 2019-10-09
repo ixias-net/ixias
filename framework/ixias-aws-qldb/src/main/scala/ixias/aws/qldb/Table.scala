@@ -27,6 +27,9 @@ trait  Table[T] {
   /** Table queries */
   val query: QldbSession => TableQuery
 
+  /** Table queries */
+  val table: TableQuery
+
   //-- [ Utility Methods ] -----------------------------------------------------
   /**
    * Overwrite function if necessary.
@@ -46,13 +49,16 @@ case class Database(session: QldbSession) {
   def execute(stmt: SqlStatement) =
     session.execute(stmt.query, stmt.params.asJava)
 
-  /** Execute query with transaction */
-  def execute(stmt: SqlStatement)(implicit tx: TransactionExecutor) =
-    tx.execute(stmt.query, stmt.params.asJava)
-
   /** Transaction block */
-  def execute[A](block: TransactionExecutor => A): A =
-    session.execute(block(_))
+  def execute[A](block: DatabaseTransactionExecutor => A): A =
+    session.execute(tx => block(DatabaseTransactionExecutor(tx)))
+}
+case class DatabaseTransactionExecutor(tx: TransactionExecutor) {
+  import collection.JavaConverters._
+
+  /** Execute query with transaction */
+  def execute(stmt: SqlStatement) =
+    tx.execute(stmt.query, stmt.params.asJava)
 }
 
 /**
@@ -140,10 +146,14 @@ object ATable extends Table[Long] {
 
   val dsn   = DataSourceName("")
   val query = (session: QldbSession) => {
-    val table = new TableQuery("hogehoge") {
-      def find(sid: Long)              = sql("SELECT __TABLE_NAME__ WHERE sid = ?", sid)
-      def find(sid: Long, oid: String) = sql("SELECT __TABLE_NAME__ WHERE sid = ? AND oid = ?", sid, oid)
-    }
+    val db = Database(session)
+    db.execute(tx => {
+      tx.execute(table.find1(1l))
+    })
     table
+  }
+  object table extends TableQuery("hogehoge") {
+    def find1(sid: Long)              = sql("SELECT __TABLE_NAME__ WHERE sid = ?", sid)
+    def find2(sid: Long, oid: String) = sql("SELECT __TABLE_NAME__ WHERE sid = ? AND oid = ?", sid, oid)
   }
 }
