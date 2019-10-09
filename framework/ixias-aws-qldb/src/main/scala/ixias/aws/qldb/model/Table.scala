@@ -13,7 +13,7 @@ import ixias.persistence.model.DataSourceName
 /**
  * The model of AmazonQLDB table.
  */
-trait Table[T] {
+trait Table {
 
   //-- [ Properties ] ----------------------------------------------------------
   /** Data storage location information */
@@ -33,7 +33,7 @@ trait Table[T] {
 
 // For Test
 //~~~~~~~~~~
-object TestTable extends Table[Long] {
+object TestTable extends Table {
   import software.amazon.qldb.QldbSession
   import ixias.aws.qldb.dbio.DBIOAction
 

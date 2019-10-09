@@ -10,13 +10,12 @@ package ixias.aws.qldb.dbio
 
 import collection.JavaConverters._
 import software.amazon.qldb.{ QldbSession, TransactionExecutor, Result }
-import ixias.aws.qldb.model.{ TableQuery, ConvOps }
+import ixias.aws.qldb.model.{ SqlStatement, ConvOps }
 
 /**
  * Executor for database IO/Action.
  */
 case class DBIOAction(session: QldbSession) extends ConvOps {
-  type SqlStatement = TableQuery#SqlStatement
 
   /** Execute query */
   def execute[A](stmt: SqlStatement)(implicit conv: Result => A): A =
@@ -31,7 +30,6 @@ case class DBIOAction(session: QldbSession) extends ConvOps {
  * Executor for database IO/Action with transaction.
  */
 case class DBIOActionWithTxt(tx: TransactionExecutor) extends ConvOps {
-  type SqlStatement = TableQuery#SqlStatement
 
   /** Execute query with transaction */
   def execute[A](stmt: SqlStatement)(implicit conv: Result => A): A =

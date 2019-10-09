@@ -37,7 +37,7 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
     /**
      * Execute self action.
      */
-    def apply[A, B, T <: Table[_]](table: T)
+    def apply[A, B, T <: Table](table: T)
       (action: QldbSession => Future[A])(implicit conv: A => B): Future[B] =
       invokeBlock(Request(table.dsn), tx => action(tx))
         .map(conv(_))
