@@ -24,6 +24,7 @@ object SqlStatement {
 
   val T_BIND_PHOLD = """\?""".r
   val T_TABLE_NAME = """__TABLE_NAME__""".r
+  val T_DDL_INSERT = """INSERT""".r
 
   //-- [ Methods ] -------------------------------------------------------------
   /**
@@ -38,7 +39,10 @@ object SqlStatement {
       )
     }
     //- Verification number of parameters.
-    if (T_BIND_PHOLD.findAllIn(query).matchData.size != params.size) {
+    if (
+      T_DDL_INSERT.findFirstIn(query).isEmpty &&
+      T_BIND_PHOLD.findAllIn(query).matchData.size != params.size
+    ) {
       throw new IllegalArgumentException(
         "The number of parameters specified for the query placeholder does not match. "
           + "query = %s, params = %s".format(query, params)
