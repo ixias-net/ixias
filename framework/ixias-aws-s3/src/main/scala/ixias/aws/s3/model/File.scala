@@ -57,8 +57,9 @@ object File {
   type EmbeddedId = Entity.EmbeddedId [Id, File]
 
   // --[ Type Alias ]-----------------------------------------------------------
-  type    Silo[K <: @@[Long, _]]              = FileSilo[K]
-  type Builder[S <: @@[Long, _], M <: AnyRef] = FileBuilder[S, M]
+  type    Silo    [K  <: @@[Long, _]]                                = FileSilo[K]
+  type Builder    [S  <: @@[Long, _], M  <: AnyRef]                  = FileBuilder[S, M]
+  type BuilderExt [S1 <: @@[Long, _], S2 <: @@[Long, _],M <: AnyRef] = FileBuilderExt[S1, S2, M]
 
   object Config extends AmazonS3Config
 
