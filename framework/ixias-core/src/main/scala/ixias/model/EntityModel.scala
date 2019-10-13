@@ -33,3 +33,8 @@ trait EntityModel[K <: @@[_, _]] extends Serializable {
   def toWithNoId:   WithNoId   = Entity.WithNoId(this)
   def toEmbeddedId: EmbeddedId = Entity.EmbeddedId(this)
 }
+
+trait EntityModelWithNoTimeRec[K <: @@[_, _]] extends EntityModel[K] {
+  val updatedAt: LocalDateTime = null
+  val createdAt: LocalDateTime = null
+}

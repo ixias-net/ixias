@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
 /**
  * The basic functionality that has to be implemented by all profiles.
  */
-private[persistence] trait Profile {
+trait Profile {
 
   /** The type of database objects. */
   type Database <: AnyRef
