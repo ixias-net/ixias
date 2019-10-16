@@ -11,6 +11,7 @@ package ixias.aws.qldb.model
 import scala.language.implicitConversions
 import com.amazon.ion.IonValue
 import software.amazon.qldb.{ Result => QldbResult }
+import ixias.aws.qldb.databind.DatabindModule
 
 // Conversion processing methods
 // to support mutual conversion between Amazon Ion and model.
@@ -44,6 +45,7 @@ object ConvOps {
     val mapper = new IonObjectMapper()
     mapper.registerModule(new JavaTimeModule)
       .registerModule(DefaultScalaModule)
+      .registerModule(DatabindModule)
       .setSerializationInclusion(JsonInclude.Include.NON_ABSENT)
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
       .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
