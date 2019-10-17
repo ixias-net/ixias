@@ -14,6 +14,57 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
   val driver: P
   import driver.api._
 
+  // --[ Ixias Enum ]-----------------------------------------------------------
+  // Short <-> ixias.util.EnumStatus
+  implicit def ixiasEnumStatusColumnType[T <: ixias.util.EnumStatus](implicit ctag: reflect.ClassTag[T]) =
+    MappedColumnType.base[T, Short](
+      enum => enum.code,
+      code => {
+        val clazz  = Class.forName(ctag.runtimeClass.getName + "$")
+        val module = clazz.getField("MODULE$").get(null)
+        val method = clazz.getMethod("apply", classOf[Short])
+        val enum   = method.invoke(module, code.asInstanceOf[AnyRef])
+        enum.asInstanceOf[T]
+      }
+    )
+
+  // Long <-> Seq[ixias.util.EnumBitFlags]
+  implicit def ixiasEnumBitsetSeqColumnType[T <: ixias.util.EnumBitFlags](implicit ctag: reflect.ClassTag[T]) = {
+    val clazz  = Class.forName(ctag.runtimeClass.getName + "$")
+    val module = clazz.getField("MODULE$").get(null)
+    MappedColumnType.base[Seq[T], Long](
+      bitset => {
+        val method = clazz.getMethod("toBitset", classOf[Seq[_]])
+        val code   = method.invoke(module, bitset.asInstanceOf[AnyRef])
+        code.asInstanceOf[Long]
+      },
+      code => {
+        val method = clazz.getMethod("apply", classOf[Long])
+        val bitset = method.invoke(module, code.asInstanceOf[AnyRef])
+        bitset.asInstanceOf[Seq[T]]
+      }
+    )
+  }
+
+  // --[ Ixias Id ]-------------------------------------------------------------
+  // Long <-> ixias.model.@@[Long, _]
+  implicit def ixiasIdAsLongColumnType[T <: ixias.model.@@[Long, _]](implicit ctag: reflect.ClassTag[T]) = {
+    val Id = ixias.model.the[ixias.model.Identity[T]]
+    MappedColumnType.base[T, Long](
+      id    => id.asInstanceOf[Long],
+      value => Id(value.asInstanceOf[T])
+    )
+  }
+
+  // String <-> ixias.model.@@[String, _]
+  implicit def ixiasIdAsStringColumnType[T <: ixias.model.@@[String, _]](implicit ctag: reflect.ClassTag[T]) = {
+    val Id = ixias.model.the[ixias.model.Identity[T]]
+    MappedColumnType.base[T, String](
+      id    => id.asInstanceOf[String],
+      value => Id(value.asInstanceOf[T])
+    )
+  }
+
   // --[ Java8 Time ]-----------------------------------------------------------
   // java.sql.Timestamp <-> java.time.LocalDateTime
   implicit val javaLocalDateTimeColumnType =
