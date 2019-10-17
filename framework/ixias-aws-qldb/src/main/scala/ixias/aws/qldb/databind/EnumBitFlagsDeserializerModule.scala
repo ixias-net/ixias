@@ -35,18 +35,20 @@ case class EnumBitFlagsDeserializer(
 // Resolver to serve deserializer
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 object EnumBitFlagsDeserializerResolver extends Deserializers.Base {
-  private  val SYMBOL = classOf[Seq[EnumBitFlags]]
+  private  val SYMBOL  = classOf[Seq[_]]
+  private  val CONTENT = classOf[EnumBitFlags]
   override def findCollectionLikeDeserializer(
     collectionType:          CollectionLikeType,
     config:                  DeserializationConfig,
     beanDesc:                BeanDescription,
     elementTypeDeserializer: TypeDeserializer,
     elementDeserializer:     JsonDeserializer[_]
-  ): JsonDeserializer[_] = {
-    SYMBOL isAssignableFrom collectionType.getRawClass match {
-      case true  => EnumBitFlagsDeserializer(collectionType)
-      case false => null
-    }
+  ): JsonDeserializer[_] = (
+    (SYMBOL  isAssignableFrom collectionType.getRawClass) &&
+    (CONTENT isAssignableFrom collectionType.getContentType.getRawClass)
+  ) match {
+    case true  => EnumBitFlagsDeserializer(collectionType)
+    case false => null
   }
 }
 
