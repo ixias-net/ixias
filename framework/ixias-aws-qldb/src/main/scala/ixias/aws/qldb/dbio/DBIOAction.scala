@@ -14,12 +14,21 @@ import software.amazon.qldb.{ QldbSession, TransactionExecutor }
 import ixias.aws.qldb.model.{ SqlStatement, ConvOps }
 
 /**
+ * Typedef for Not-Nothing
+ */
+sealed trait NotNothing[-T]
+object       NotNothing {
+  implicit object NotNothing                 extends NotNothing[Any]
+  implicit object YoureSupposedToSupplyAType extends NotNothing[Nothing]
+}
+
+/**
  * Executor for database IO/Action.
  */
 case class DBIOAction(session: QldbSession) extends ConvOps {
 
   /** Execute query */
-  def execute[A](stmt: SqlStatement)
+  def execute[A: NotNothing](stmt: SqlStatement)
     (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Future[Seq[A]] =
     Future {
       session.execute(stmt.query, stmt.params.asJava)
@@ -27,7 +36,7 @@ case class DBIOAction(session: QldbSession) extends ConvOps {
     }
 
   /** Transaction block */
-  def transaction[A](block: DBIOActionWithTxt => Future[A]): Future[A] =
+  def transaction[A: NotNothing](block: DBIOActionWithTxt => Future[A]): Future[A] =
     session.execute(tx => block(DBIOActionWithTxt(tx)))
 }
 
@@ -37,7 +46,7 @@ case class DBIOAction(session: QldbSession) extends ConvOps {
 case class DBIOActionWithTxt(tx: TransactionExecutor) extends ConvOps {
 
   /** Execute query with transaction */
-  def execute[A](stmt: SqlStatement)
+  def execute[A: NotNothing](stmt: SqlStatement)
     (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Future[Seq[A]] =
     Future {
       tx.execute(stmt.query, stmt.params.asJava)
