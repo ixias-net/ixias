@@ -8,6 +8,20 @@
 
 package ixias.aws.qldb.model
 
-case class Document(
-  documentId: String
+import ixias.model._
+
+// Affected document infomation
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+case class AffectedDocument(
+  documentId: Document.Id
 )
+
+// typedef for Document
+//~~~~~~~~~~~~~~~~~~~~~~
+trait  Document
+object Document {
+
+  // --[ New Types ]------------------------------------------------------------
+  type Id = String @@ Document
+  val  Id = the[Identity[Id]]
+}
