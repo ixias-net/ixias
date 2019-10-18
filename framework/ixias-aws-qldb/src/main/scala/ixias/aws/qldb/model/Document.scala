@@ -13,12 +13,12 @@ import ixias.model._
 // Affected document infomation
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 case class AffectedDocument(
-  documentId: AffectedDocument.Id
+  documentId: Document.Id
 )
 
 // typedef for Document
 //~~~~~~~~~~~~~~~~~~~~~~
-object AffectedDocument {
+object Document {
 
   // --[ New Types ]------------------------------------------------------------
   type Id = String @@ AffectedDocument
