@@ -13,15 +13,14 @@ import ixias.model._
 // Affected document infomation
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 case class AffectedDocument(
-  documentId: Document.Id
+  documentId: AffectedDocument.Id
 )
 
 // typedef for Document
 //~~~~~~~~~~~~~~~~~~~~~~
-trait  Document
-object Document {
+object AffectedDocument {
 
   // --[ New Types ]------------------------------------------------------------
-  type Id = String @@ Document
+  type Id = String @@ AffectedDocument
   val  Id = the[Identity[Id]]
 }
