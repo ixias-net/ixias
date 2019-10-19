@@ -8,8 +8,10 @@
 
 package ixias.aws.qldb.dbio
 
-import collection.JavaConverters._
+import scala.util.Try
 import scala.concurrent.{ Future, ExecutionContext }
+import collection.JavaConverters._
+
 import software.amazon.qldb.{ QldbSession, TransactionExecutor }
 import ixias.aws.qldb.model.{ SqlStatement, ConvOps }
 
@@ -36,8 +38,10 @@ case class DBIOAction(session: QldbSession) extends ConvOps {
     }
 
   /** Transaction block */
-  def transaction[A: NotNothing](block: DBIOActionWithTxt => Future[A]): Future[A] =
-    session.execute(tx => block(DBIOActionWithTxt(tx)))
+  def transaction[A](block: DBIOActionWithTxt => Try[A]): Future[A] =
+    Future.fromTry {
+      session.execute(tx => block(DBIOActionWithTxt(tx)))
+    }
 }
 
 /**
@@ -47,8 +51,8 @@ case class DBIOActionWithTxt(tx: TransactionExecutor) extends ConvOps {
 
   /** Execute query with transaction */
   def execute[A: NotNothing](stmt: SqlStatement)
-    (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Future[Seq[A]] =
-    Future {
+    (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Try[Seq[A]] =
+    Try {
       tx.execute(stmt.query, stmt.params.asJava)
         .toModelSeq(ctag)
     }
