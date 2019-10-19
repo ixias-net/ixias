@@ -14,7 +14,7 @@ import ixias.aws.s3.backend.DataSourceName
 
 // To build file a object
 //~~~~~~~~~~~~~~~~~~~~~~~~~
-trait FileBuilder[S <: @@[Long, _], M <: AnyRef] { self =>
+trait FileBuilder[S <: @@[_, _], M <: AnyRef] { self =>
 
   type SiloBaseId = S
   type SiloBase   = FileSilo[S]
@@ -70,7 +70,7 @@ trait FileBuilder[S <: @@[Long, _], M <: AnyRef] { self =>
 
 // To build file a object
 //~~~~~~~~~~~~~~~~~~~~~~~~~
-trait FileBuilderExt[S1 <: @@[Long, _], S2 <: @@[Long, _], M <: AnyRef] extends FileBuilder[S2, M] { self =>
+trait FileBuilderExt[S1 <: @@[_, _], S2 <: @@[_, _], M <: AnyRef] extends FileBuilder[S2, M] { self =>
 
   type SiloRootId = S1
   type SiloRoot   = FileSilo[S1]
