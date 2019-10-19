@@ -8,12 +8,20 @@
 
 package ixias.aws.qldb.model
 
+import ixias.model._
+
 /**
  * Definition to execute a query from the target table
  */
-abstract class TableQuery(val tableName: String) extends ConvOps {
+abstract class TableQuery[K <: Document.Id[_], M <: EntityModel[K]](val tableName: String) extends ConvOps {
 
-  /** Methods to create statement object */
+  // -- [ Basic queries ] ---------------------------------
+  def    get(id:   M#Id)         = sql("SELECT id, t.* FROM __TABLE_NAME__ AS t BY id WHERE id = ?",              id)
+  def    add(data: M#WithNoId)   = sql("INSERT INTO __TABLE_NAME__ VALUE ?",                                      data.v)
+  def update(data: M#EmbeddedId) = sql("UPDATE      __TABLE_NAME__ AS t BY id SET t = ? WHERE t != ? AND id = ?", data.v, data.v, data.id)
+  def delete(id:   M#Id)         = sql("DELETE FROM __TABLE_NAME__ BY id WHERE id = ?",                           id)
+
+  // -- [ Methods to create statement object ] ---------------------------------
   def sql
     (stmt: String)
       = SqlStatement(tableName, stmt, Seq.empty)

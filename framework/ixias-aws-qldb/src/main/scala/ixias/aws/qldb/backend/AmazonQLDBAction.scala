@@ -20,12 +20,12 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
   /**
    * The Request of Invocation.
    */
-  sealed case class DBActionRequest[T <: Table](table: T)
+  sealed case class DBActionRequest[T <: Table[_, _]](table: T)
 
   /**
    * The base action to execute query.
    */
-  sealed case class DBAction[T <: Table]()
+  sealed case class DBAction[T <: Table[_, _]]()
       extends BasicAction[DBActionRequest[T], (DBIOAction, T#Query)] {
     type Request          = DBActionRequest[T]
     type BlockFunction[A] = ((DBIOAction, T#Query)) => Future[A]
@@ -45,7 +45,7 @@ trait AmazonQLDBActionProvider { self: AmazonQLDBProfile =>
    * Execute database action.
    */
   object RunDBAction {
-    def apply[A, B, T <: Table]
+    def apply[A, B, T <: Table[_, _]]
       (table: T)
       (block: ((DBIOAction, T#Query)) => Future[A])
       (implicit conv: A => B): Future[B] =

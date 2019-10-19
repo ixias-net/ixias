@@ -8,10 +8,12 @@
 
 package ixias.aws.qldb.model
 
+import ixias.model._
+
 /**
  * The model of AmazonQLDB table.
  */
-trait Table {
+trait Table[K <: Document.Id[_], M <: EntityModel[K]] {
 
   //-- [ Properties ] ----------------------------------------------------------
   /** Data storage location information */
@@ -24,7 +26,7 @@ trait Table {
   type Query      <: TableQuery
   type BasicQuery =  TableQuery
 
-  type TableQuery     = ixias.aws.qldb.model.TableQuery
+  type TableQuery     = ixias.aws.qldb.model.TableQuery[K, M]
   type DataSourceName = ixias.persistence.model.DataSourceName
   val  DataSourceName = ixias.persistence.model.DataSourceName
 
