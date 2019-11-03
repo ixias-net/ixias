@@ -10,7 +10,7 @@ package ixias.aws.qldb.backend
 
 import scala.concurrent.Future
 import ixias.persistence.model.DataSourceName
-import ixias.persistence.backend.{ BasicBackend, BasicDatabaseContainer }
+import ixias.persistence.backend.BasicBackend
 
 import software.amazon.qldb.{ QldbSession, PooledQldbDriver }
 import com.amazonaws.auth.AWSStaticCredentialsProvider
@@ -26,32 +26,25 @@ object AmazonQLDBBackend extends BasicBackend[QldbSession] with AmazonQLDBConfig
    */
   def getDatabase(implicit dsn: DataSourceName): Future[QldbSession] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
-    AmazonQLDBDatabaseContainer.getOrElseUpdate {
-      Future.fromTry {
-        for {
-          credentials <- getAWSCredentials
-          region      <- getAWSRegion
-          ledgerName  <- getLedgerName
-        } yield {
-          val builder = AmazonQLDBSessionClientBuilder.standard
-            .withCredentials(new AWSStaticCredentialsProvider(credentials))
-            .withRegion(region)
-          val driver  = PooledQldbDriver.builder
-            .withLedger(ledgerName)
-            .withRetryLimit(3)
-            .withSessionClientBuilder(builder)
-            .build
-          driver.getSession
-        }
-      } andThen {
-        case scala.util.Success(_)  => logger.info("Generated a new client. dsn=%s".format(dsn.toString))
-        case scala.util.Failure(ex) => logger.error("Failed to build a client. dsn=%s".format(dsn.toString), ex)
+    Future.fromTry {
+      for {
+        credentials <- getAWSCredentials
+        region      <- getAWSRegion
+        ledgerName  <- getLedgerName
+      } yield {
+        val builder = AmazonQLDBSessionClientBuilder.standard
+          .withCredentials(new AWSStaticCredentialsProvider(credentials))
+          .withRegion(region)
+        val driver  = PooledQldbDriver.builder
+          .withLedger(ledgerName)
+          .withRetryLimit(3)
+          .withSessionClientBuilder(builder)
+          .build
+        driver.getSession
       }
+    } andThen {
+      case scala.util.Success(_)  => logger.info("Generated a new client. dsn=%s".format(dsn.toString))
+      case scala.util.Failure(ex) => logger.error("Failed to build a client. dsn=%s".format(dsn.toString), ex)
     }
   }
 }
-
-// Manage data sources associated with DSN.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-object AmazonQLDBDatabaseContainer
-    extends BasicDatabaseContainer[QldbSession]
