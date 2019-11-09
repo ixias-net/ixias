@@ -12,7 +12,7 @@ import scala.concurrent.Future
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.backend.BasicBackend
 
-import software.amazon.qldb.{ QldbSession, PooledQldbDriver }
+import software.amazon.qldb.{ QldbSession, QldbDriver }
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.qldbsession.AmazonQLDBSessionClientBuilder
 
@@ -35,7 +35,7 @@ object AmazonQLDBBackend extends BasicBackend[QldbSession] with AmazonQLDBConfig
         val builder = AmazonQLDBSessionClientBuilder.standard
           .withCredentials(new AWSStaticCredentialsProvider(credentials))
           .withRegion(region)
-        val driver  = PooledQldbDriver.builder
+        val driver  = QldbDriver.builder
           .withLedger(ledgerName)
           .withRetryLimit(3)
           .withSessionClientBuilder(builder)

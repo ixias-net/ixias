@@ -21,10 +21,16 @@ trait  ConvOps {
 
   //-- [ To Amazon Ion ] -------------------------------------------------------
   /**
-   * Model -> single IonValue value.
+   * Model -> Single IonValue value.
    */
   implicit def convToIonValue[A](v: A): IonValue =
     MAPPER_FOR_ION.writeValueAsIonValue(v)
+
+  /**
+   * Single IonValue value -> Model
+   */
+  implicit def convToModel[A](v: IonValue)(implicit ctag: reflect.ClassTag[A]): A =
+    MAPPER_FOR_ION.readValue(v, ctag.runtimeClass).asInstanceOf[A]
 
   //-- [ From AmazonQldb Result ] ----------------------------------------------
   implicit def toQldbResultTransformer(v: QldbResult) =
@@ -59,8 +65,8 @@ case class QldbResultTransformer(self: QldbResult) extends AnyVal {
   import ConvOps.MAPPER_FOR_ION
 
   /** To Seq[Model] */
-  def toModelSeq[A](ttag: reflect.ClassTag[A]): Seq[A] = {
-    val cls = ttag.runtimeClass
+  def toModelSeq[A](implicit ctag: reflect.ClassTag[A]): Seq[A] = {
+    val cls = ctag.runtimeClass
     toIonValueSeq.map(
       MAPPER_FOR_ION.readValue(_, cls).asInstanceOf[A]
     )

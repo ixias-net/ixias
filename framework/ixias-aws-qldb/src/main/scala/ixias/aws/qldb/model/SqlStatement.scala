@@ -8,46 +8,100 @@
 
 package ixias.aws.qldb.model
 
+import scala.util.Try
+import collection.JavaConverters._
 import com.amazon.ion.IonValue
+import software.amazon.qldb.{ QldbSession, TransactionExecutor }
 
 /**
- * Query statement definition
+ * Sql prepare statement
  */
-class SqlStatement(
-  val query:  String,
-  val params: Seq[IonValue]
-)
+trait SqlStatement {
 
-// Companion object
-//~~~~~~~~~~~~~~~~~~~
+  type Result          =  ResultContainer#Result
+  type ResultContainer <: SqlResultContainer
+
+  val query:  String
+  val params: Seq[IonValue]
+
+  /**
+   * Store in container
+   */
+  def toResult(data: software.amazon.qldb.Result): ResultContainer
+
+  /**
+   * Execute query
+   */
+  def execute(session: QldbSession): Try[Result] =
+    Try {
+      toResult(session.execute(query, params.asJava)).value
+    }
+
+  /**
+   * Execute query with transaction
+   */
+  def execute(tx: TransactionExecutor): Try[Result] =
+    Try {
+      toResult(tx.execute(query, params.asJava)).value
+    }
+}
+
+/**
+ * Companion object
+ */
 object SqlStatement {
 
-  val T_BIND_PHOLD = """\?""".r
-  val T_TABLE_NAME = """__TABLE_NAME__""".r
-  val T_DDL_INSERT = """INSERT""".r
-
-  //-- [ Methods ] -------------------------------------------------------------
   /**
-   * Create `SqlStatement` object, and validate parameter's at same time.
+   * Design that returns a single record result with `Option` type
    */
-  def apply(tableName: String, query: String, params: Seq[IonValue]): SqlStatement = {
-    //- Whether it is specified reserved word to replace to table's name
-    if (T_TABLE_NAME.findFirstIn(query).isEmpty) {
-      throw new IllegalArgumentException(
-        "The required reserved word `%s` is not specified in the query"
-          .format(T_TABLE_NAME.regex)
-      )
+  case class ForSingleResult[M](
+    query:  String,
+    params: Seq[IonValue]
+  )(implicit val ctag: reflect.ClassTag[M]) extends SqlStatement {
+
+    /**
+     * Store in container
+     */
+    def toResult(data: software.amazon.qldb.Result): ResultContainer =
+      ResultContainer(data)
+
+    /**
+     * Result container definition
+     */
+    case class ResultContainer(data: software.amazon.qldb.Result) extends SqlResultContainer with ConvOps {
+      type Model  = M
+      type Result = Option[Model]
+      lazy val value = data.toModelSeq.headOption
     }
-    //- Verification number of parameters.
-    if (
-      T_DDL_INSERT.findFirstIn(query).isEmpty &&
-      T_BIND_PHOLD.findAllIn(query).matchData.size != params.size
-    ) {
-      throw new IllegalArgumentException(
-        "The number of parameters specified for the query placeholder does not match. "
-          + "query = %s, params = %s".format(query, params)
-      )
+  }
+
+  /**
+   * Design that returns a single record result with `Seq` type
+   */
+  case class ForMultiResult[M](
+    query:  String,
+    params: Seq[IonValue]
+  )(implicit val ctag: reflect.ClassTag[M]) extends SqlStatement {
+
+    /**
+     * Set flags to get only a head of the result data
+     */
+    def headOption = ForSingleResult(query, params)
+
+    /**
+     * Store in container
+     */
+    def toResult(data: software.amazon.qldb.Result): ResultContainer =
+      ResultContainer(data)
+
+    /**
+     * Result container definition
+     */
+    case class ResultContainer(data: software.amazon.qldb.Result) extends SqlResultContainer with ConvOps {
+      type Model  = M
+      type Result = Seq[Model]
+      lazy val value = data.toModelSeq
     }
-    new SqlStatement(T_TABLE_NAME.replaceAllIn(query, tableName), params)
   }
 }
+
