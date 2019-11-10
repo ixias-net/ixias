@@ -8,40 +8,37 @@
 
 package ixias.aws.qldb.dbio
 
-import scala.util.Try
 import scala.concurrent.{ Future, ExecutionContext }
-import collection.JavaConverters._
-
 import software.amazon.qldb.{ QldbSession, TransactionExecutor }
 import ixias.aws.qldb.model.{ SqlStatement, ConvOps }
-
-/**
- * Typedef for Not-Nothing
- */
-sealed trait NotNothing[-T]
-object       NotNothing {
-  implicit object NotNothing                 extends NotNothing[Any]
-  implicit object YoureSupposedToSupplyAType extends NotNothing[Nothing]
-}
 
 /**
  * Executor for database IO/Action.
  */
 case class DBIOAction(session: QldbSession) extends ConvOps {
 
-  /** Execute query */
-  def execute[A: NotNothing](stmt: SqlStatement)
-    (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Future[Seq[A]] =
-    Future {
-      session.execute(stmt.query, stmt.params.asJava)
-        .toModelSeq(ctag)
-    }
+  /**
+   * Execute query
+   */
+  def execute(stmt: SqlStatement): Future[stmt.Result] =
+    Future.fromTry(stmt.execute(session))
 
-  /** Transaction block */
-  def transaction[A](block: DBIOActionWithTxt => Try[A]): Future[A] =
-    Future.fromTry {
-      session.execute(tx => block(DBIOActionWithTxt(tx)))
-    }
+  /**
+   * Transaction block
+   * Since transaction commit is called when the Executor ends,
+   * it waits for the end of block processing.
+   */
+  def transaction[A](block: DBIOActionWithTxt => Future[A]): Future[A] =
+    session.execute(tx => {
+      import scala.concurrent.Await
+      import scala.concurrent.duration.Duration
+      import java.util.concurrent.ForkJoinPool
+      implicit val ex = ExecutionContext.fromExecutor(new ForkJoinPool())
+      Await.ready(
+        Future.unit.flatMap(_ => block(DBIOActionWithTxt(tx))),
+        Duration.Inf
+      )
+    })
 }
 
 /**
@@ -49,12 +46,10 @@ case class DBIOAction(session: QldbSession) extends ConvOps {
  */
 case class DBIOActionWithTxt(tx: TransactionExecutor) extends ConvOps {
 
-  /** Execute query with transaction */
-  def execute[A: NotNothing](stmt: SqlStatement)
-    (implicit ctag: reflect.ClassTag[A], ex: ExecutionContext): Try[Seq[A]] =
-    Try {
-      tx.execute(stmt.query, stmt.params.asJava)
-        .toModelSeq(ctag)
-    }
+  /**
+   * Execute query with transaction
+   */
+  def execute(stmt: SqlStatement): Future[stmt.Result] =
+    Future.fromTry(stmt.execute(tx))
 }
 
