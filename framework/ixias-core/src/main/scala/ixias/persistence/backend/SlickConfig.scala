@@ -21,11 +21,6 @@ trait SlickConfig extends BasicDatabaseConfig {
   protected val CF_HOSTSPEC_CONNECTION_TIMEOUT = "connection_timeout"
   protected val CF_HOSTSPEC_IDLE_TIMEOUT       = "idle_timeout"
 
-  /** Jdbc Url formats */
-  protected val JDBC_URL_FORMAT_MYSQL    = """jdbc:mysql://%s/%s"""
-  protected val JDBC_URL_FORMAT_MYSQL_LB = """jdbc:mysql:loadbalance://%s/%s"""
-  protected val JDBC_URL_FORMAT_PGSQL    = """jdbc:postgresql://%s/%s?currentSchema=%s"""
-
   // --[ Methods ]--------------------------------------------------------------
   /**
    * Get the property controls the minimum number of idle connections that
@@ -66,22 +61,8 @@ trait SlickConfig extends BasicDatabaseConfig {
    */
   protected def getJdbcUrl(implicit dsn: DataSourceName): Try[String] =
     for {
-      hosts    <- getHosts
-      database <- getDatabaseName
-      driver   <- getDriverClassName
-    } yield {
-      driver match {
-        case "com.mysql.jdbc.Driver" => hosts.size match {
-          case 1 => JDBC_URL_FORMAT_MYSQL.format(hosts.head, database)
-          case _ => JDBC_URL_FORMAT_MYSQL_LB.format(hosts.mkString(","), database)
-        }
-        case "com.amazon.redshift.jdbc.Driver" => {
-          hosts.size match {
-            case 1 => JDBC_URL_FORMAT_PGSQL.format(hosts.head,          database, getSchemaName)
-            case _ => JDBC_URL_FORMAT_PGSQL.format(hosts.mkString(","), database, getSchemaName)
-          }
-        }
-        case _ => throw new Exception(s"""Could not resolve the JDBC vendor format. '$driver'""")
-      }
-    }
+      driver  <- getDriverClassName
+      builder <- SlickJdbcUrlBuilderProvider.resolve(driver)
+      jdbcUrl <- builder.buildUrl
+    } yield jdbcUrl
 }

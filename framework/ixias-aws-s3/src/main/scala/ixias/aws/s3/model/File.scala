@@ -56,6 +56,7 @@ object File {
   type WithNoId   = Entity.WithNoId   [Id, File]
   type EmbeddedId = Entity.EmbeddedId [Id, File]
 
+  // --[ Type Alias ]-----------------------------------------------------------
   object Config extends AmazonS3Config
 
   // --[ Create a new object ]--------------------------------------------------
