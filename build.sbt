@@ -12,7 +12,7 @@ lazy val commonSettings = Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
     "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/",
-    "keyczar"           at "https://raw.githubusercontent.com/google/keyczar/master/java/maven/"
+    "IxiaS Releases"    at "http://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/releases"
   ),
   // Scala compile options
   scalacOptions ++= Seq(
