@@ -18,9 +18,9 @@ import ixias.model.{ @@, Entity, EntityModel, IdStatus }
 import ixias.play.api.auth.token.Token
 import ixias.play.api.auth.container.Container
 import ixias.play.api.mvc.Errors._
+import ixias.util.Logging
 
-trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A]
-{
+trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   import Token._
 
   // --[ TypeDefs ]-------------------------------------------------------------
@@ -163,15 +163,23 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A]
    */
   final def restore(implicit request: RequestHeader): Future[(Option[AuthEntity], Result => Result)] =
     extractAuthToken match {
-      case None        => Future.successful(None -> identity)
-      case Some(token) => (for {
-        Some(id)   <- datastore.read(token)
-        Some(auth) <- resolve(id)
-        _          <- datastore.setTimeout(token, sessionTimeout)
-      } yield {
-        Some(auth) -> tokenAccessor.put(token) _
-      }) recover {
-        case ex: Throwable => None -> identity
+      case Some(token) => {
+        (for {
+          Some(id)   <- datastore.read(token)
+          Some(auth) <- resolve(id)
+          _          <- datastore.setTimeout(token, sessionTimeout)
+        } yield {
+          Some(auth) -> tokenAccessor.put(token) _
+        }) recover {
+          case ex: Throwable => {
+            logger.info("There is no data that matches the auth-token.")
+            None -> identity
+          }
+        }
+      }
+      case None => {
+        logger.info("Not found auth-token.")
+        Future.successful(None -> identity)
       }
     }
 
