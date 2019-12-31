@@ -84,13 +84,13 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Returns authorized user.
    */
-  final def loggedIn(implicit request: RequestHeader): Option[AuthEntity] =
+  def loggedIn(implicit request: RequestHeader): Option[AuthEntity] =
     request.attrs.get(RequestAttrKey.Auth)
 
   /**
    * Returns the result response.
    */
-  final def loggedIn(block: AuthEntity => Result)(implicit request: RequestHeader): Result =
+  def loggedIn(block: AuthEntity => Result)(implicit request: RequestHeader): Result =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => authenticationFailed
@@ -99,7 +99,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Returns the result response.
    */
-  final def loggedIn(block: AuthEntity => Future[Result])(implicit request: RequestHeader): Future[Result] =
+  def loggedIn(block: AuthEntity => Future[Result])(implicit request: RequestHeader): Future[Result] =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => Future.successful(authenticationFailed)
@@ -109,7 +109,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
    * Returns the result response of applying block
    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
    */
-  final def loggedInOrNot(ifEmpty: => Result)(block: AuthEntity => Result)(implicit request: RequestHeader): Result =
+  def loggedInOrNot(ifEmpty: => Result)(block: AuthEntity => Result)(implicit request: RequestHeader): Result =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => ifEmpty
@@ -119,7 +119,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
    * Returns the result response of applying block
    * if the user data is nonempty. Otherwise, evaluates expression `ifEmpty`
    */
-  final def loggedInOrNot(ifEmpty: => Result)(block: AuthEntity => Future[Result])(implicit request: RequestHeader): Future[Result] =
+  def loggedInOrNot(ifEmpty: => Result)(block: AuthEntity => Future[Result])(implicit request: RequestHeader): Future[Result] =
     loggedIn match {
       case Some(auth) => block(auth)
       case None       => Future.successful(ifEmpty)
@@ -129,7 +129,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Invoke this method on login succeeded.
    */
-  final def loginSucceeded(id: Id, block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
+  def loginSucceeded(id: Id, block: AuthenticityToken => Result)(implicit request: RequestHeader): Future[Result] =
     (for {
       token  <- datastore.open(id, sessionTimeout)
       result  = block(token)
@@ -140,7 +140,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Invoke this method on logout succeeded.
    */
-  final def logoutSucceeded(uid: Id, block: => Result)(implicit request: RequestHeader): Future[Result] =
+  def logoutSucceeded(uid: Id, block: => Result)(implicit request: RequestHeader): Future[Result] =
     for {
       _ <- tokenAccessor.extract match {
         case None        => Future.successful(())
@@ -152,7 +152,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Extract a session token in `RequestHeader`.
    */
-  final def extractAuthToken(implicit request: RequestHeader): Option[AuthenticityToken] =
+  def extractAuthToken(implicit request: RequestHeader): Option[AuthenticityToken] =
     (env.mode == Mode.Prod match {
       case true  => None
       case false => request.headers.get("TEST_AUTH_TOKEN").map(AuthenticityToken(_))
@@ -161,7 +161,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Restore a user data by the session token in `RequestHeader`.
    */
-  final def restore(implicit request: RequestHeader): Future[(Option[AuthEntity], Result => Result)] =
+  def restore(implicit request: RequestHeader): Future[(Option[AuthEntity], Result => Result)] =
     extractAuthToken match {
       case Some(token) => {
         (for {
@@ -186,7 +186,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Verifies what user are authenticated to do.
    */
-  final def authenticate(implicit request: RequestHeader): Future[Either[Result, (AuthEntity, Result => Result)]] =
+  def authenticate(implicit request: RequestHeader): Future[Either[Result, (AuthEntity, Result => Result)]] =
     restore map {
       case (Some(auth), updater) => Right(auth -> updater)
       case _                     =>  Left(authenticationFailed)
@@ -195,7 +195,7 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /**
    * Verifies what user are authorized to do.
    */
-  final def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (AuthEntity, Result => Result)]] =
+  def authorize(authority: Option[Authority])(implicit request: RequestHeader): Future[Either[Result, (AuthEntity, Result => Result)]] =
     (for {
       Some((auth, updater)) <- authenticate.map(_.toOption)
       authorized            <- authorize(auth, authority)
