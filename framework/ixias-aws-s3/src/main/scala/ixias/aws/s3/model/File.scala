@@ -31,11 +31,16 @@ case class File(
   val createdAt:    LocalDateTime        = NOW   // The Datetime when a data was created.
 ) extends EntityModel[File.Id] {
 
-  lazy val httpsUrl       = s"${Protocol.HTTPS.toString()}://${httpsUrn}"
+  lazy val httpsUrl = s"${Protocol.HTTPS.toString()}://${httpsUrn}"
+  lazy val httpsUrn = presignedUrl match {
+    case None      => s"cdn-${bucket}/${key}?d=${(updatedAt.get(MILLI_OF_SECOND)/1000).toHexString}"
+    case Some(url) => s"cdn-${bucket}/${key}?d=${(updatedAt.get(MILLI_OF_SECOND)/1000).toHexString}&${url.getQuery}"
+  }
   lazy val httpsUrlOrigin = s"${Protocol.HTTPS.toString()}://${httpsUrnOrigin}"
-  lazy val httpsUrn       = s"cdn-${bucket}/${key}?d=${(updatedAt.get(MILLI_OF_SECOND)/1000).toHexString}&${presignedQuery}"
-  lazy val httpsUrnOrigin = s"s3-${region}.amazonaws.com/${bucket}/${key}?${presignedQuery}"
-  lazy val presignedQuery = presignedUrl.map(v => v.getQuery).getOrElse("")
+  lazy val httpsUrnOrigin = presignedUrl match {
+    case None      => s"s3-${region}.amazonaws.com/${bucket}/${key}"
+    case Some(url) => url.toString.drop(url.getProtocol.length + 3)
+  }
 
   /** Build a empty S3 object. */
   def emptyS3Object: S3Object = {
