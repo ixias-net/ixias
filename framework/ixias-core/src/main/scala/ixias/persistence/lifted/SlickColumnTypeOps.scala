@@ -20,7 +20,7 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
     MappedColumnType.base[T, Short](
       enum => enum.code,
       code => {
-        val clazz  = Class.forName(ctag.runtimeClass.getName + "$")
+        val clazz  = Class.forName(ctag.runtimeClass.getName + "$", true, Thread.currentThread().getContextClassLoader())
         val module = clazz.getField("MODULE$").get(null)
         val method = clazz.getMethod("apply", classOf[Short])
         val enum   = method.invoke(module, code.asInstanceOf[AnyRef])
