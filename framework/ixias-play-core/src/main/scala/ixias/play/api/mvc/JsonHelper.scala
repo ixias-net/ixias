@@ -15,7 +15,8 @@ import ixias.util.Logger
 
 // Helper for JSON
 //~~~~~~~~~~~~~~~~~~
-object JsonHelper {
+trait  JsonHelper
+object JsonHelperDefault extends JsonHelper {
 
   // -- [ Properties ]----------------------------------------------------------
   protected lazy val logger = Logger.apply

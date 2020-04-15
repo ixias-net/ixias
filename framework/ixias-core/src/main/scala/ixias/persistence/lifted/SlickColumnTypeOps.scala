@@ -30,7 +30,7 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
 
   // Long <-> Seq[ixias.util.EnumBitFlags]
   implicit def ixiasEnumBitsetSeqColumnType[T <: ixias.util.EnumBitFlags](implicit ctag: reflect.ClassTag[T]) = {
-    val clazz  = Class.forName(ctag.runtimeClass.getName + "$")
+    val clazz  = Class.forName(ctag.runtimeClass.getName + "$", true, Thread.currentThread().getContextClassLoader())
     val module = clazz.getField("MODULE$").get(null)
     MappedColumnType.base[Seq[T], Long](
       bitset => {
