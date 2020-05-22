@@ -100,7 +100,7 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
       import java.util.TimeZone
       import java.time.Duration
       override def sqlType = java.sql.Types.VARCHAR
-      override def valueToSQLLiteral(d: Duration) = "{ ts '" + map(d) + "' }"
+      override def valueToSQLLiteral(d: Duration) = "{ t '" + map(d) + "' }"
       override def getValue(r: java.sql.ResultSet, idx: Int) = {
         val v = r.getTimestamp(idx)
           (v.asInstanceOf[AnyRef] eq null) || tmd.wasNull(r, idx) match {
