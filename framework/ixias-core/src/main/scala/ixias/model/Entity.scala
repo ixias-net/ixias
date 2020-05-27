@@ -60,7 +60,7 @@ object Entity {
     def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): EmbeddedId[K, M] =
       data.id match {
         case Some(_) =>       new Entity(data)
-        case None    => throw new IllegalArgumentException("Coud not found id on entity's data.")
+        case None    => throw new IllegalArgumentException("Could not found id on entity's data.")
       }
   }
 }
