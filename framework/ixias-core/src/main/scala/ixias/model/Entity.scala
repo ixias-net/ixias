@@ -49,7 +49,7 @@ object Entity {
     def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): WithNoId[K, M] =
       data.id match {
         case None    =>       new Entity(data)
-        case Some(_) => throw new IllegalArgumentException("The entity's id is already setted.")
+        case Some(_) => throw new IllegalArgumentException("The entity's id is already set.")
       }
   }
 
