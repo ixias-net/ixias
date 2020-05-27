@@ -26,7 +26,7 @@ final case class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](v: M
   /** The status of entity's identity */
   type IdStatus =  S
 
-  /** get id value where id is exists */
+  /** get id value when id is exists */
   def id(implicit ev: S =:= IdStatus.Exists): K = v.id.get
 
   /** check whether exists entity id value */
