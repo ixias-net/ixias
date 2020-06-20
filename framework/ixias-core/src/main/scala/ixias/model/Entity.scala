@@ -26,7 +26,7 @@ final case class Entity[K <: @@[_, _], +M <: EntityModel[K], S <: IdStatus](v: M
   /** The status of entity's identity */
   type IdStatus =  S
 
-  /** get id value whene id is exists */
+  /** get id value when id is exists */
   def id(implicit ev: S =:= IdStatus.Exists): K = v.id.get
 
   /** check whether exists entity id value */
@@ -49,7 +49,7 @@ object Entity {
     def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): WithNoId[K, M] =
       data.id match {
         case None    =>       new Entity(data)
-        case Some(_) => throw new IllegalArgumentException("The entity's id is already setted.")
+        case Some(_) => throw new IllegalArgumentException("The entity's id is already set.")
       }
   }
 
@@ -60,7 +60,7 @@ object Entity {
     def apply[K <: @@[_, _], M <: EntityModel[K]](data: M): EmbeddedId[K, M] =
       data.id match {
         case Some(_) =>       new Entity(data)
-        case None    => throw new IllegalArgumentException("Coud not found id on entity's data.")
+        case None    => throw new IllegalArgumentException("Could not found id on entity's data.")
       }
   }
 }
