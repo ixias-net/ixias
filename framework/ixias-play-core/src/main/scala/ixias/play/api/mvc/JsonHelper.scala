@@ -8,31 +8,20 @@
 
 package ixias.play.api.mvc
 
-import play.api.mvc.Results._
-import play.api.mvc.{ Request, AnyContent, Result }
-import play.api.libs.json.{ Reads, Writes, JsSuccess, JsError }
-import ixias.util.Logger
+import play.api.mvc._
+import play.api.mvc.Results.BadRequest
+import play.api.libs.json.{ Reads, JsSuccess, JsError }
 
 // Helper for JSON
 //~~~~~~~~~~~~~~~~~~
-trait  JsonHelper
-object JsonHelperDefault extends JsonHelper {
-
-  // -- [ Properties ]----------------------------------------------------------
-  protected lazy val logger = Logger.apply
-
-  // -- [ Methods ]-------------------------------------------------------------
-  /**
-   * Build a result object as JSON response.
-   */
-  def toJson[T](o: T)(implicit tjs: Writes[T]): Result =
-    Ok(play.api.libs.json.Json.toJson(o))
+object JsonHelper extends ixias.util.Logging {
 
   /**
    * To bind request data to a `T` component.
    */
-  def bindFromRequest[T](implicit request: Request[AnyContent], rds: Reads[T]): Either[Result, T] =
-    request.body.asJson match {
+  def bindFromRequest[T]
+    (implicit req: Request[AnyContent], reads: Reads[T]): Either[Result, T] =
+    req.body.asJson match {
       case None       => Left(BadRequest)
       case Some(json) => json.validate[T] match {
         case JsSuccess(v, _) => Right(v)

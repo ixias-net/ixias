@@ -10,19 +10,20 @@ package ixias.play.api.mvc
 
 import play.api.data.{ Form, Mapping }
 import play.api.mvc.{ Request, Result }
-import play.api.mvc.Results._
+import play.api.mvc.Results.BadRequest
 import play.api.i18n.MessagesProvider
 
 // Helper for HTTP-POST data
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-trait  FormHelper
-object FormHelperDefault extends FormHelper {
+object FormHelper {
 
   /**
    * To bind request data to a `T` component.
    */
-  def bindFromRequest[T](mapping: Mapping[T])
-    (implicit request: Request[_], provider: MessagesProvider): Either[Result, T] =
+  def bindFromRequest[T](mapping: Mapping[T])(implicit
+    req:      Request[_],
+    provider: MessagesProvider
+  ): Either[Result, T] =
     Form(mapping).bindFromRequest().fold(
       f => Left(BadRequest(f.errorsAsJson)),
       v => Right(v)
