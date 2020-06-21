@@ -15,10 +15,10 @@ import scala.concurrent.Future
 import scala.language.implicitConversions
 
 trait BaseExtensionMethods { self: BaseControllerHelpers =>
-  val Cursor                 = ixias.persistence.model.Cursor
-  val AttrHelper             = ixias.play.api.mvc.RequestHeaderAttrHelper
-  val FormHelper: FormHelper = ixias.play.api.mvc.FormHelperDefault
-  val JsonHelper: JsonHelper = ixias.play.api.mvc.JsonHelperDefault
+  val Cursor     = ixias.persistence.model.Cursor
+  val AttrHelper = ixias.play.api.mvc.RequestHeaderAttrHelper
+  val FormHelper = ixias.play.api.mvc.FormHelper
+  val JsonHelper = ixias.play.api.mvc.JsonHelper
 
   /** The ExecutionContext with using on Playframework. */
   implicit lazy val executionContext = defaultExecutionContext
