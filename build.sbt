@@ -124,7 +124,8 @@ lazy val ixiasAwsS3 = (project in file("framework/ixias-aws-s3"))
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.amazonaws" % "aws-java-sdk-s3" % awsSdkVersion
+    "com.amazonaws" % "aws-java-sdk-s3"         % awsSdkVersion,
+    "com.amazonaws" % "aws-java-sdk-cloudfront" % awsSdkVersion
   ))
 
 lazy val ixiasAwsQLDB = (project in file("framework/ixias-aws-qldb"))
