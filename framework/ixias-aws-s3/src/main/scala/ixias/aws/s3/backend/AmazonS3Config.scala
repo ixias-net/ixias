@@ -114,7 +114,7 @@ trait AmazonS3Config {
   /**
    * Get a value by specified key.
    */
-  final private def readValue[A](f: Configuration => Option[A])(implicit dsn: DataSourceName): Option[A] =
+  def readValue[A](f: Configuration => Option[A])(implicit dsn: DataSourceName): Option[A] =
     (dsn.name.toSeq.map(
       name => dsn.path + "." + dsn.resource + "." + name
     ) ++ Seq(

@@ -8,7 +8,6 @@
 
 package ixias.aws.s3.model
 
-
 import scala.util.Try
 import java.time.LocalDateTime
 import java.time.temporal.ChronoField._
