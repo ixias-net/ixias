@@ -18,7 +18,7 @@ import ixias.persistence.model.{ DataSourceName, Table }
 trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
 
   /** The default using key of DSN map. */
-  val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_MASTER
+  val DEFAULT_DSN_KEY = DataSourceName.RESERVED_NAME_PRIMARY
 
   /**
    * The Request of Invocation.
