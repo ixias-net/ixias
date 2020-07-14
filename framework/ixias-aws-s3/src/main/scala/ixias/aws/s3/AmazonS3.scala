@@ -38,7 +38,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
    * Get file object.
    */
   def get(id: Id): Future[Option[EntityEmbeddedId]] =
-    RunDBAction(FileTable, "replica") { slick =>
+    RunDBAction(FileTable, "slave") { slick =>
       slick.unique(id).result.headOption
     }
 
@@ -70,7 +70,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
    * Finds file objects by set of file ids.
    */
   def filter(ids: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
-    RunDBAction(FileTable, "replica") { slick =>
+    RunDBAction(FileTable, "slave") { slick =>
       slick.filter(_.id inSet ids).result
     }
 
@@ -80,7 +80,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
   def filterWithPresigned(ids: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
     for {
       client   <- s3.getClient
-      fileSeq1 <- RunDBAction(FileTable, "replica") { slick =>
+      fileSeq1 <- RunDBAction(FileTable, "slave") { slick =>
         slick.filter(_.id inSet ids).result
       }
       fileSeq2 <- Future.sequence(fileSeq1.map {
