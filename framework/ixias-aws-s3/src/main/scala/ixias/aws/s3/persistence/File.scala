@@ -23,7 +23,7 @@ case class FileTable[P <: JdbcProfile]()(implicit val driver: P, val s3dsn: S3DS
   // --[ DNS ] -----------------------------------------------------------------
   lazy val dsn = Map(
     "primary" -> DataSourceName("ixias.db.mysql://primary/" + s3dsn.resource),
-    "replica" -> DataSourceName("ixias.db.mysql://replica/"  + s3dsn.resource)
+    "replica" -> DataSourceName("ixias.db.mysql://replica/" + s3dsn.resource)
   )
 
   // --[ Query ] ---------------------------------------------------------------
