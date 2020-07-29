@@ -10,6 +10,7 @@ package ixias.mail
 
 import scala.util.{ Try, Success, Failure }
 import scala.concurrent.{ Future, ExecutionContext }
+import javax.mail.internet.MimeUtility
 import org.apache.commons.mail.{ HtmlEmail, MultiPartEmail, EmailAttachment, DefaultAuthenticator }
 
 // Send an email via SMTP protocol
@@ -86,10 +87,11 @@ class EmailClientViaSMTP extends EmailClient with EmailConfig {
         val dataSource  = new javax.mail.util.ByteArrayDataSource(attachmentData.data, attachmentData.mimetype)
         email.attach(dataSource, attachmentData.name, description, disposition)
       case attachmentFile: AttachmentFile =>
-        val description = attachmentFile.description.getOrElse(attachmentFile.name)
+        val fileName    = MimeUtility.encodeText(attachmentFile.name)
+        val description = attachmentFile.description.getOrElse(fileName)
         val disposition = attachmentFile.disposition.getOrElse(EmailAttachment.ATTACHMENT)
         val emailAttachment = new EmailAttachment()
-        emailAttachment.setName(attachmentFile.name)
+        emailAttachment.setName(fileName)
         emailAttachment.setPath(attachmentFile.file.getPath)
         emailAttachment.setDescription(description)
         emailAttachment.setDisposition(disposition)
