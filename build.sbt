@@ -5,9 +5,13 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
+import scala.sys.process._
+val branch  = ("git branch".lineStream_!).find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
+val release = (branch == "master" || branch.startsWith("release"))
+
 lazy val commonSettings = Seq(
   organization  := "net.ixias",
-  scalaVersion  := "2.12.2",
+  scalaVersion  := "2.12.11",
   resolvers ++= Seq(
     "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
@@ -42,10 +46,9 @@ lazy val commonSettings = Seq(
 )
 
 lazy val playSettings = Seq(
-  unmanagedSourceDirectories   in Compile += baseDirectory.value / "src" / "main" / "scala",
-  unmanagedSourceDirectories   in Test    += baseDirectory.value / "src" / "test" / "scala",
-  unmanagedResourceDirectories in Test    += baseDirectory.value / "src" / "test" / "resources",
-  libraryDependencies ++= Seq(ws, ehcache)
+  libraryDependencies ++= Seq(
+    "com.typesafe.play" %% "play" % "2.7.5"
+  )
 )
 
 
@@ -54,8 +57,6 @@ lazy val playSettings = Seq(
 import ReleaseTransformations._
 lazy val publisherSettings = Seq(
   publishTo := {
-    val branch  = "git branch".lines_!.find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
-    val release = (branch == "master" || branch.startsWith("release"))
     val path = if (release) "releases" else "snapshots"
     Some("Nextbeat snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/" + path)
   },
@@ -65,7 +66,7 @@ lazy val publisherSettings = Seq(
     checkSnapshotDependencies,
     inquireVersions,
     runClean,
-    runTest,
+    // runTest,
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
@@ -140,11 +141,19 @@ lazy val ixiasAwsQLDB = (project in file("framework/ixias-aws-qldb"))
     "com.fasterxml.jackson.module"    %% "jackson-module-scala"    % "2.10.0"
   ))
 
+lazy val ixiasAwsDynamoDB = (project in file("framework/ixias-aws-dynamodb"))
+  .settings(name := "ixias-aws-dynamodb")
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    "com.amazonaws" % "aws-java-sdk-dynamodb" % awsSdkVersion
+  ))
+
 // IxiaS Play Libraries
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
   .settings(name := "ixias-play-core")
-  .enablePlugins(PlayScala)
   .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)
@@ -152,7 +161,6 @@ lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
 
 lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
   .settings(name := "ixias-play-scalate")
-  .enablePlugins(PlayScala)
   .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)
@@ -164,7 +172,6 @@ lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
 
 lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
   .settings(name := "ixias-play-auth")
-  .enablePlugins(PlayScala)
   .dependsOn(ixiasCore, ixiasPlayCore)
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)
@@ -183,8 +190,8 @@ lazy val ixiasAws = (project in file("target/ixias-aws"))
   .settings(name := "ixias-aws")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB)
-  .dependsOn(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB)
+  .aggregate(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB, ixiasAwsDynamoDB)
+  .dependsOn(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB, ixiasAwsDynamoDB)
 
 lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")
