@@ -15,6 +15,9 @@ import com.amazonaws.auth.{ BasicAWSCredentials, AWSStaticCredentialsProvider }
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.backend.BasicDatabaseConfig
 
+/**
+ * Configuration of Amazon DynamoDB
+ */
 trait AmazonDynamoDBConfig extends BasicDatabaseConfig {
 
   // --[ Properties ]-----------------------------------------------------------
