@@ -5,14 +5,17 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-lazy val commonSettings = Seq(
+import scala.sys.process._
+
+val branch         = ("git branch".lineStream_!).find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
+val release        = (branch == "master" || branch.startsWith("release"))
+val commonSettings = Seq(
   organization  := "net.ixias",
-  scalaVersion  := "2.12.2",
+  scalaVersion  := "2.12.11",
   resolvers ++= Seq(
-    "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/",
+    "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
     "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/",
-    "IxiaS Releases"    at "http://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/releases"
   ),
   // Scala compile options
   scalacOptions ++= Seq(
@@ -41,11 +44,10 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val playSettings = Seq(
-  unmanagedSourceDirectories   in Compile += baseDirectory.value / "src" / "main" / "scala",
-  unmanagedSourceDirectories   in Test    += baseDirectory.value / "src" / "test" / "scala",
-  unmanagedResourceDirectories in Test    += baseDirectory.value / "src" / "test" / "resources",
-  libraryDependencies ++= Seq(ws, ehcache)
+val playSettings = Seq(
+  libraryDependencies ++= Seq(
+    "com.typesafe.play" %% "play" % "2.7.5"
+  )
 )
 
 
@@ -144,7 +146,6 @@ lazy val ixiasAwsQLDB = (project in file("framework/ixias-aws-qldb"))
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
 lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
   .settings(name := "ixias-play-core")
-  .enablePlugins(PlayScala)
   .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)
@@ -152,7 +153,6 @@ lazy val ixiasPlayCore = (project in file("framework/ixias-play-core"))
 
 lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
   .settings(name := "ixias-play-scalate")
-  .enablePlugins(PlayScala)
   .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)
@@ -164,7 +164,6 @@ lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
 
 lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))
   .settings(name := "ixias-play-auth")
-  .enablePlugins(PlayScala)
   .dependsOn(ixiasCore, ixiasPlayCore)
   .settings(commonSettings:    _*)
   .settings(playSettings:      _*)

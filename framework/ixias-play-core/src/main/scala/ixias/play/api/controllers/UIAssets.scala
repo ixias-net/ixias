@@ -8,18 +8,21 @@
 
 package ixias.play.api.controllers
 
+
 import play.api.{ Mode, Environment, Configuration }
-import play.api.mvc.{ Action, AnyContent, InjectedController }
-import play.api.http.LazyHttpErrorHandler
+import play.api.http.{ FileMimeTypes, HttpErrorHandler }
+import play.api.mvc.{ Action, AnyContent }
 import play.api.Logger
 import controllers.{ AssetsBuilder, DefaultAssetsMetadata }
 
 @javax.inject.Singleton
 class UIAssets @javax.inject.Inject() (
-  env:  Environment,
-  conf: Configuration,
-  meta: DefaultAssetsMetadata
-) extends AssetsBuilder(LazyHttpErrorHandler, meta) with InjectedController {
+  env:           Environment,
+  conf:          Configuration,
+  errorHandler:  HttpErrorHandler,
+  meta:          DefaultAssetsMetadata,
+  fileMimeTypes: FileMimeTypes
+) extends AssetsBuilder(errorHandler, meta) {
 
   import controllers.Assets._
 
