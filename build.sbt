@@ -7,8 +7,8 @@
 
 import scala.sys.process._
 
-val branch         = ("git branch".lineStream_!).find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
-val release        = (branch == "master" || branch.startsWith("release"))
+val branch         = "git branch".lineStream_!.find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
+val release        = branch == "master" || branch.startsWith("release")
 val commonSettings = Seq(
   organization  := "net.ixias",
   scalaVersion  := "2.12.11",
@@ -56,8 +56,6 @@ val playSettings = Seq(
 import ReleaseTransformations._
 lazy val publisherSettings = Seq(
   publishTo := {
-    val branch  = "git branch".lines_!.find{_.head == '*'}.map{_.drop(2)}.getOrElse("")
-    val release = (branch == "master" || branch.startsWith("release"))
     val path = if (release) "releases" else "snapshots"
     Some("Nextbeat snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/" + path)
   },
