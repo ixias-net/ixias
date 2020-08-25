@@ -16,6 +16,7 @@ val commonSettings = Seq(
     "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
     "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/",
+    "IxiaS Releases"     at "https://s3-ap-northeast-1.amazonaws.com/maven.ixias.net/releases",
   ),
   // Scala compile options
   scalacOptions ++= Seq(
@@ -88,12 +89,13 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
     "com.typesafe.slick" %% "slick"         % "3.2.1",
     "org.typelevel"      %% "cats-kernel"   % "2.1.1",
     "org.typelevel"      %% "cats-core"     % "2.1.1",
+    "com.typesafe.play"  %% "play-json"     % "2.7.4",
     "io.monix"           %% "shade"         % "1.9.5",
     "com.zaxxer"          % "HikariCP"      % "2.5.0",
     "org.keyczar"         % "keyczar"       % "0.71h",
     "org.uaparser"       %% "uap-scala"     % "0.1.0",
-    "commons-codec"       % "commons-codec" % "1.10",
     "joda-time"           % "joda-time"     % "2.9.4",
+    "commons-codec"       % "commons-codec" % "1.10",
     "org.slf4j"           % "slf4j-api"     % "1.7.21"
   ))
 

@@ -6,7 +6,7 @@
  * please view the LICENSE file that was distributed with this source code.
  */
 
-package ixias.play.api.json
+package ixias.util.json
 
 import play.api.libs.json._
 import play.api.libs.json.EnvWrites
