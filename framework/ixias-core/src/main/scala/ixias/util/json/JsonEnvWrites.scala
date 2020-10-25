@@ -33,6 +33,17 @@ trait JsonEnvWrites extends EnvWrites {
   }
 
   /**
+   * Serializer for ixias.persistence.model.Cursor
+   */
+  implicit object CursorWrites extends Writes[ixias.persistence.model.Cursor] {
+    def writes(cursor: ixias.persistence.model.Cursor) =
+      JsObject(Seq(
+        Some(            "ofsset" -> JsNumber(cursor.offset)),
+        cursor.limit.map("limit"  -> JsNumber(_))
+      ).flatten)
+  }
+
+  /**
    * Serializer for java.time.YearMonth
    */
   implicit object YearMonthWrites extends Writes[java.time.YearMonth] {
