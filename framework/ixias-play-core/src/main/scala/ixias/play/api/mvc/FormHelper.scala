@@ -15,7 +15,21 @@ import play.api.i18n.MessagesProvider
 
 // Helper for HTTP-POST data
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~
-object FormHelper {
+trait FormHelper {
+
+  /**
+   * To bind request data to a `T` component.
+   */
+  def bindFromRequest[T](mapping: Mapping[T])(implicit
+    req:      Request[_],
+    provider: MessagesProvider
+  ): Either[Result, T]
+}
+
+/**
+ * Default helper
+ */
+object FormHelper extends FormHelper {
 
   /**
    * To bind request data to a `T` component.

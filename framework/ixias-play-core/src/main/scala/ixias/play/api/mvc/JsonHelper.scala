@@ -14,7 +14,19 @@ import play.api.libs.json.{ Reads, JsSuccess, JsError }
 
 // Helper for JSON
 //~~~~~~~~~~~~~~~~~~
-object JsonHelper extends ixias.util.Logging {
+trait JsonHelper {
+
+  /**
+   * To bind request data to a `T` component.
+   */
+  def bindFromRequest[T]
+    (implicit req: Request[AnyContent], reads: Reads[T]): Either[Result, T]
+}
+
+/**
+ * Default helper
+ */
+object JsonHelper extends JsonHelper with ixias.util.Logging {
 
   /**
    * To bind request data to a `T` component.

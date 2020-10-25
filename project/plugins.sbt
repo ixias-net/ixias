@@ -5,8 +5,8 @@
  *  please view the LICENSE file that was distributed with this source code.
  */
 
-addSbtPlugin("com.typesafe.play"  % "sbt-plugin"         % "2.6.2")
-addSbtPlugin("io.get-coursier"    % "sbt-coursier"       % "1.0.0-RC6")
-addSbtPlugin("com.scalapenos"     % "sbt-prompt"         % "0.2.1")
-addSbtPlugin("com.github.gseitz"  % "sbt-release"        % "1.0.0")
-addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.6.0")
+
+addSbtPlugin("com.typesafe.sbt"   % "sbt-twirl"          % "1.3.15")
+addSbtPlugin("com.scalapenos"     % "sbt-prompt"         % "1.0.2")
+addSbtPlugin("com.github.gseitz"  % "sbt-release"        % "1.0.7")
+addSbtPlugin("com.frugalmechanic" % "fm-sbt-s3-resolver" % "0.19.0")

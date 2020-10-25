@@ -63,6 +63,10 @@ object PBKDF2 {
   def extractSaltLength(hash: String): Option[Int] =
     internals.decode(hash).map{ case PBKDF2Data(_, p, _, _) => p.length }
 
+  /** Extracts the hash from a hash/salt-combination */
+  def extractHash(hash: String): Option[Array[Byte]] =
+    internals.decode(hash).map{ case PBKDF2Data(_, _, p, _) => p }
+
   /** Extracts the number of iterations from a hash/salt-combination */
   def extractIterations(hash: String): Option[Int] =
     internals.decode(hash).map{ case PBKDF2Data(_, _, _, p) => p }
