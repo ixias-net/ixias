@@ -78,7 +78,7 @@ lazy val publisherSettings = Seq(
 )
 
 // IxiaS Core Libraries
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~~
 lazy val ixiasCore = (project in file("framework/ixias-core"))
   .settings(name := "ixias-core")
   .settings(commonSettings:    _*)
@@ -110,6 +110,19 @@ lazy val ixiasMail = (project in file("framework/ixias-mail"))
     "org.apache.commons"  % "commons-email"   % "1.4"
   ))
 
+// IxiaS Connect Libraries
+//~~~~~~~~~~~~~~~~~~~~~~~~~
+lazy val ixiasConnectRedis = (project in file("framework/ixias-connect-redis"))
+  .settings(name := "ixias-connect-redis")
+  .dependsOn(ixiasCore)
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .settings(libraryDependencies ++= Seq(
+    "io.lettuce" % "lettuce-core" % "6.0.1.RELEASE"
+  ))
+
+// IxiaS AWS Libraries
+//~~~~~~~~~~~~~~~~~~~~~~
 lazy val awsSdkVersion = "1.11.730"
 lazy val ixiasAwsSns = (project in file("framework/ixias-aws-sns"))
   .settings(name := "ixias-aws-sns")
@@ -175,8 +188,15 @@ lazy val ixias = (project in file("."))
   .settings(name := "ixias")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasCore, ixiasMail, ixiasAws, ixiasPlay)
+  .aggregate(ixiasCore, ixiasMail, ixiasConnect, ixiasAws, ixiasPlay)
   .dependsOn(ixiasCore, ixiasMail)
+
+lazy val ixiasConnect = (project in file("target/ixias-connect"))
+  .settings(name := "ixias-connect")
+  .settings(commonSettings:    _*)
+  .settings(publisherSettings: _*)
+  .aggregate(ixiasCore, ixiasConnectRedis)
+  .dependsOn(ixiasCore, ixiasConnectRedis)
 
 lazy val ixiasAws = (project in file("target/ixias-aws"))
   .settings(name := "ixias-aws")
