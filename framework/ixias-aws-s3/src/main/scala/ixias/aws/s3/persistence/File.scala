@@ -59,7 +59,7 @@ case class FileTable[P <: JdbcProfile]()(implicit val driver: P, val s3dsn: S3DS
 
     // The * projection of the table
     def * = (id, region, bucket, key, typedef, width, height, updatedAt, createdAt) <> (
-      /** The bidirectional mappings : Tuple(table) => Model */
+      /* The bidirectional mappings : Tuple(table) => Model */
       (t: TableElementTuple) => {
         val imageSize = (t._6, t._7) match {
           case (Some(width), Some(height)) => Some(ImageSize(width, height))
@@ -67,7 +67,7 @@ case class FileTable[P <: JdbcProfile]()(implicit val driver: P, val s3dsn: S3DS
         }
         File(Some(Id(t._1.get)), t._2, t._3, t._4, t._5, imageSize, None, t._8, t._9)
       },
-      /** The bidirectional mappings : Model => Tuple(table) */
+      /* The bidirectional mappings : Model => Tuple(table) */
       (v: TableElementType)  => File.unapply(v).map { t => (
         v.id, t._2, t._3, t._4, t._5, t._6.map(_.width), t._6.map(_.height), LocalDateTime.now(), t._9
       ) }
