@@ -14,11 +14,12 @@ import play.api.libs.json._
  * Clound front URL
  */
 case class CloudFrontUrl(
-  meta:       File#EmbeddedId,
-  width:      Option[Int] = None,
-  height:     Option[Int] = None,
-  responsive: Boolean     = false,
-  format:     Option[UrlSigner.Request.Format] = None
+  meta:        File#EmbeddedId,
+  width:       Option[Int] = None,
+  height:      Option[Int] = None,
+  responsive:  Boolean     = false,
+  format:      Option[UrlSigner.Request.Format] = None,
+  customPairs: Seq[(String, String)]            = Nil
 )(implicit val dsn: ixias.aws.s3.backend.DataSourceName) {
   import UrlSigner.Request.Ratio
 
@@ -27,10 +28,10 @@ case class CloudFrontUrl(
    */
   lazy val genUrlSignerRequest: Seq[UrlSigner.Request] =
     responsive match {
-      case false => Seq(UrlSigner.Request(width, height, None, format))
+      case false => Seq(UrlSigner.Request(width, height, None, format, customPairs))
       case true  => Seq(
-        UrlSigner.Request(width, height, Some(Ratio.IS_1x), format),
-        UrlSigner.Request(width, height, Some(Ratio.IS_2x), format)
+        UrlSigner.Request(width, height, Some(Ratio.IS_1x), format, customPairs),
+        UrlSigner.Request(width, height, Some(Ratio.IS_2x), format, customPairs)
       )
     }
 }
