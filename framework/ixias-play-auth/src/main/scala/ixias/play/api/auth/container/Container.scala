@@ -8,8 +8,8 @@
 
 package ixias.play.api.auth.container
 
+import java.time.Duration
 import scala.concurrent.Future
-import scala.concurrent.duration.Duration
 
 import ixias.model._
 import ixias.play.api.auth.token.Token
@@ -31,13 +31,13 @@ trait Container[K <: @@[_, _]] {
    * It is the first callback function executed
    * when the session is started automatically or manually.
    */
-  def open(uid: Id, expiry: Duration)
+  def open(uid: Id, expiry: Option[Duration])
     (implicit request: RequestHeader): Future[AuthenticityToken]
 
   /**
    * Sets the timeout setting.
    */
-  def setTimeout(token: AuthenticityToken, expiry: Duration)
+  def setTimeout(token: AuthenticityToken, expiry: Option[Duration])
     (implicit request: RequestHeader): Future[Unit]
 
   /**

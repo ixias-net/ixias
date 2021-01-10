@@ -8,11 +8,12 @@
 
 package ixias.play.api.auth.mvc
 
-import scala.concurrent.Future
-import scala.concurrent.duration.Duration
 import play.api.{ Environment, Mode }
 import play.api.mvc.{ RequestHeader, Result }
 import play.api.libs.typedmap.TypedKey
+
+import scala.concurrent.Future
+import java.time.Duration
 
 import ixias.model.{ @@, Entity, EntityModel, IdStatus }
 import ixias.play.api.auth.token.Token
@@ -45,13 +46,15 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
   /** The datastore for security token. */
   val datastore: Container[Id]
 
-  /** The timeout value in `seconds` */
-  val sessionTimeout: Duration = Duration.Inf
-
   /** Can execute program logic asynchronously */
   implicit val executionContext: scala.concurrent.ExecutionContext
 
   // --[ Methods ]--------------------------------------------------------------
+  /**
+   * Resolve timeout of session
+   */
+  def sessionTimeout(implicit request: RequestHeader): Option[Duration]
+
   /**
    * Resolve authenticated resource by the identity
    */
