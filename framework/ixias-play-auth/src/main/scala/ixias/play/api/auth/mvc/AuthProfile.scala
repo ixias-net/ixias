@@ -130,12 +130,10 @@ trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {
    * Invoke this method on login succeeded.
    */
   def loginSucceeded(id: Id, block: AuthenticityToken => Result)(implicit rh: RequestHeader): Future[Result] =
-    (for {
+    for {
       token  <- datastore.open(id, sessionTimeout)
       result  = block(token)
-    } yield tokenAccessor.put(token)(result)) recover {
-      case _: Throwable => E_INTERNAL_SERVER
-    }
+    } yield tokenAccessor.put(token)(result)
 
   /**
    * Invoke this method on logout succeeded.
