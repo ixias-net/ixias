@@ -13,10 +13,10 @@ val commonSettings = Seq(
   organization  := "net.ixias",
   scalaVersion  := "2.12.11",
   resolvers ++= Seq(
-    "Typesafe Releases" at "https://repo.typesafe.com/typesafe/releases/",
+    "Typesafe Releases" at "https://repo.typesafe.com/typesafe/ivy-releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
     "Sonatype Snapshot" at "https://oss.sonatype.org/content/repositories/snapshots/",
-    "IxiaS Releases"     at "https://s3-ap-northeast-1.amazonaws.com/maven.ixias.net/releases",
+    "IxiaS Releases"    at "https://s3-ap-northeast-1.amazonaws.com/maven.ixias.net/releases",
   ),
   // Scala compile options
   scalacOptions ++= Seq(
@@ -60,8 +60,8 @@ lazy val publisherSettings = Seq(
     val path = if (release) "releases" else "snapshots"
     Some("Nextbeat snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/" + path)
   },
-  publishArtifact in (Compile, packageDoc) := false, // disable publishing the Doc jar
-  publishArtifact in (Compile, packageSrc) := false, // disable publishing the sources jar
+  publishArtifact in (Compile, packageDoc) := !release, // disable publishing the Doc jar for production
+  publishArtifact in (Compile, packageSrc) := !release, // disable publishing the sources jar for production
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,

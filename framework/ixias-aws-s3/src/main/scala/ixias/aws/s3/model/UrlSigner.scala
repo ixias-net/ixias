@@ -38,18 +38,21 @@ object UrlSigner extends AmazonS3Config {
     width:  Option[Int],
     height: Option[Int],
     ratio:  Option[Request.Ratio],
-    format: Option[Request.Format]
+    format: Option[Request.Format],
+    custom: Seq[(String, String)]
   ) {
 
     /**
      * Generate a URL query string.
      */
-    lazy val queryString = Seq(
+    lazy val queryString = (Seq(
       width  .map(v => "dw=%d"   .format(v)),
       height .map(v => "dh=%d"   .format(v)),
       ratio  .map(v => "ratio=%s".format(v.value)),
-      format .map(v => "fmt=%s"  .format(v.value))
-    ).flatten.mkString("&")
+      format .map(v => "fmt=%s"  .format(v.value)),
+    ).flatten ++
+      custom .map(v => "%s=%s"   .format(v._1, v._2))
+    ).mkString("&")
   }
 
   /**
