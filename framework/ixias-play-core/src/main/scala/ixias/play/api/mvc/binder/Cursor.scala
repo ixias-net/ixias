@@ -30,10 +30,12 @@ trait CursorBindable {
      * Unbind a query string parameter.
      */
     def unbind(key: String, value: Cursor): String =
-      Seq("offset" -> Option(value.offset), "limit" -> value.limit)
-        .collect({ case (key, Some(v)) if v > 0 => key -> v })
-        .map(item => "%s=%d".format(item._1, item._2))
-        .mkString("&")
+      Seq(
+        key + ".offset" -> Option(value.offset),
+        key + ".limit"  -> value.limit
+      ).collect({
+        case (key, Some(v)) if v > 0 => "%s=%d".format(key, v)
+      }).mkString("&")
 
     /**
      * Bind a query string parameter.
@@ -41,8 +43,8 @@ trait CursorBindable {
     def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Cursor]] = {
       implicit val _params = params
       (for {
-        v1 <- implicitly[QueryStringBindable[Long]]._bindOption("offset")
-        v2 <- implicitly[QueryStringBindable[Long]]._bindOption("limit")
+        v1 <- implicitly[QueryStringBindable[Long]]._bindOption(key + ".offset")
+        v2 <- implicitly[QueryStringBindable[Long]]._bindOption(key + ".limit")
       } yield v1 -> v2 match {
         case (Some(v1), Some(v2)) => Some(Cursor(v1, Some(v2)))
         case (None,     Some(v2)) => Some(Cursor(0L, Some(v2)))
