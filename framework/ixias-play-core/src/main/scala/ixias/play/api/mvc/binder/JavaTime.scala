@@ -8,16 +8,18 @@
 
 package ixias.play.api.mvc.binder
 
-import java.time.{ LocalDate, YearMonth }
+import java.time.{ LocalDate, LocalDateTime, YearMonth }
 import play.api.mvc.QueryStringBindable
 
 trait JavaTimeBindable {
 
   // --[ Typedefs ]-------------------------------------------------------------
-  type LocalDate      =  java.time.LocalDate
-  type LocalDateRange = (java.time.LocalDate, java.time.LocalDate)
-  type YearMonth      =  java.time.YearMonth
-  type YearMonthRange = (java.time.YearMonth, java.time.YearMonth)
+  type LocalDate          =  java.time.LocalDate
+  type LocalDateRange     = (java.time.LocalDate, java.time.LocalDate)
+  type LocalDateTime      =  java.time.LocalDateTime
+  type LocalDateTimeRange = (java.time.LocalDateTime, java.time.LocalDateTime)
+  type YearMonth          =  java.time.YearMonth
+  type YearMonthRange     = (java.time.YearMonth, java.time.YearMonth)
 
   // -- [ LocalDate ] ----------------------------------------------------------
   /**
@@ -43,6 +45,34 @@ trait JavaTimeBindable {
     (r: LocalDateRange) => Seq(r._1.toString, r._2.toString).mkString(","),
     (key: String, e: Exception) => {
       "Cannot parse parameter %s as LocalDateRange: %s"
+        .format(key, e.getMessage)
+    }
+  )
+
+  // -- [ LocalDateTime ] ------------------------------------------------------
+  /**
+   * QueryString binder for LocalDateTime
+   */
+  implicit object queryStringBindableLocalDateTime extends QueryStringBindable.Parsing[LocalDateTime](
+    (s: String)            => LocalDateTime.parse(s),
+    (dtime: LocalDateTime) => dtime.toString,
+    (key: String, e: Exception) => {
+      "Cannot parse parameter %s as LocalDateTime: %s"
+        .format(key, e.getMessage)
+    }
+  )
+
+  /**
+   * QueryString binder for LocalDateTime -> LocalDateTime
+   */
+  implicit object queryStringBindableLocalDateTimeRange extends QueryStringBindable.Parsing[LocalDateTimeRange](
+    (s: String) => s.split(",").map(LocalDateTime.parse).toSeq match {
+      case Seq(v1, v2) => (v1, v2)
+      case _           => throw new IllegalArgumentException("The date-time-range value syntax is not valid")
+    },
+    (r: LocalDateTimeRange) => Seq(r._1.toString, r._2.toString).mkString(","),
+    (key: String, e: Exception) => {
+      "Cannot parse parameter %s as LocalDateTimeRange: %s"
         .format(key, e.getMessage)
     }
   )
