@@ -38,7 +38,7 @@ trait JsonEnvWrites extends EnvWrites {
   implicit object CursorWrites extends Writes[ixias.persistence.model.Cursor] {
     def writes(cursor: ixias.persistence.model.Cursor) =
       JsObject(Seq(
-        Some(            "ofsset" -> JsNumber(cursor.offset)),
+        Some(            "offset" -> JsNumber(cursor.offset)),
         cursor.limit.map("limit"  -> JsNumber(_))
       ).flatten)
   }
