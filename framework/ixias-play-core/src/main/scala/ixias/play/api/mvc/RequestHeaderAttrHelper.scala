@@ -8,7 +8,6 @@
 
 package ixias.play.api.mvc
 
-import cats.Applicative
 import cats.data.{ Validated, ValidatedNel, NonEmptyList }
 import scala.reflect.runtime.universe._
 import scala.language.implicitConversions
@@ -21,8 +20,6 @@ import ixias.util.Logging
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 object RequestHeaderAttrHelper extends Logging {
   import Errors._
-
-  type ErrorOr[A] = ValidatedNel[String, A]
 
   /**
    * Retrieves and validate a value of the specified key.
@@ -58,44 +55,32 @@ object RequestHeaderAttrHelper extends Logging {
 
 
   /** case Tuple2 */
+  import cats.implicits._
   def get[T1, T2](a1: TypedKey[T1], a2: TypedKey[T2])
     (implicit rh: RequestHeader, tag1: TypeTag[T1], tag2: TypeTag[T2]):
-      Either[Result, (T1, T2)] =
-    Applicative[ErrorOr].map2(
-      getValue(a1),
-      getValue(a2)
-    )((_, _))
+      Either[Result, (T1, T2)] = {
+    (getValue(a1), getValue(a2))
+      .mapN((_, _))
+  }
 
   /** case Tuple3 */
   def get[T1, T2, T3](a1: TypedKey[T1], a2: TypedKey[T2], a3: TypedKey[T3])
     (implicit rh: RequestHeader, tag1: TypeTag[T1], tag2: TypeTag[T2], tag3: TypeTag[T3]):
       Either[Result, (T1, T2, T3)] =
-    Applicative[ErrorOr].map3(
-      getValue(a1),
-      getValue(a2),
-      getValue(a3)
-    )((_, _, _))
+    (getValue(a1), getValue(a2), getValue(a3))
+      .mapN((_, _, _))
 
   /** case Tuple4 */
   def get[T1, T2, T3, T4](a1: TypedKey[T1], a2: TypedKey[T2], a3: TypedKey[T3], a4: TypedKey[T4])
     (implicit rh: RequestHeader, tag1: TypeTag[T1], tag2: TypeTag[T2], tag3: TypeTag[T3], tag4: TypeTag[T4]):
       Either[Result, (T1, T2, T3, T4)] =
-    Applicative[ErrorOr].map4(
-      getValue(a1),
-      getValue(a2),
-      getValue(a3),
-      getValue(a4)
-    )((_, _, _, _))
+    (getValue(a1), getValue(a2), getValue(a3), getValue(a4))
+      .mapN((_, _, _, _))
 
   /** case Tuple5 */
   def get[T1, T2, T3, T4, T5](a1: TypedKey[T1], a2: TypedKey[T2], a3: TypedKey[T3], a4: TypedKey[T4], a5: TypedKey[T5])
     (implicit rh: RequestHeader, tag1: TypeTag[T1], tag2: TypeTag[T2], tag3: TypeTag[T3], tag4: TypeTag[T4], tag5: TypeTag[T5]):
       Either[Result, (T1, T2, T3, T4, T5)] =
-    Applicative[ErrorOr].map5(
-      getValue(a1),
-      getValue(a2),
-      getValue(a3),
-      getValue(a4),
-      getValue(a5)
-    )((_, _, _, _, _))
+    (getValue(a1), getValue(a2), getValue(a3), getValue(a4), getValue(a5))
+      .mapN((_, _, _, _, _))
 }
