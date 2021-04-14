@@ -58,10 +58,9 @@ object RequestHeaderAttrHelper extends Logging {
   import cats.implicits._
   def get[T1, T2](a1: TypedKey[T1], a2: TypedKey[T2])
     (implicit rh: RequestHeader, tag1: TypeTag[T1], tag2: TypeTag[T2]):
-      Either[Result, (T1, T2)] = {
+      Either[Result, (T1, T2)] =
     (getValue(a1), getValue(a2))
       .mapN((_, _))
-  }
 
   /** case Tuple3 */
   def get[T1, T2, T3](a1: TypedKey[T1], a2: TypedKey[T2], a3: TypedKey[T3])
