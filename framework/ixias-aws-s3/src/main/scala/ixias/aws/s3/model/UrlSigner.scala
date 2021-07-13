@@ -8,7 +8,7 @@
 
 package ixias.aws.s3.model
 
-import java.time.{ LocalDateTime, ZoneOffset }
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
 import scala.language.implicitConversions
@@ -102,9 +102,7 @@ object UrlSigner extends AmazonS3Config {
           keyPairId,
           loadPrivateKey(new java.io.File(pkFilePath)),
           DateUtils.parseISO8601Date(
-            LocalDateTime.now.plus(timeout)
-              .atZone(ZoneOffset.of("+09:00"))
-              .toInstant.toString
+            ZonedDateTime.now.plus(timeout).toInstant.toString
           )
         )
       })

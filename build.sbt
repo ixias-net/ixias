@@ -30,7 +30,8 @@ val commonSettings = Seq(
     "-Ywarn-unused:imports",   // Warn if an import selector is not referenced.
     "-Ywarn-inaccessible",     // Warn about inaccessible types in method signatures.
     "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
-    "-Ywarn-numeric-widen"     // Warn when numerics are widened.
+    "-Ywarn-numeric-widen",    // Warn when numerics are widened.
+    "-Ypartial-unification"    // Add support for partial unification of type constructors
   ),
   libraryDependencies ++= Seq(
     "org.specs2"      %% "specs2-core"          % "3.9.1"  % Test,
