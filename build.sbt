@@ -111,7 +111,7 @@ lazy val ixiasMail = (project in file("framework/ixias-mail"))
     "org.apache.commons"  % "commons-email"   % "1.4"
   ))
 
-lazy val awsSdkVersion = "1.11.730"
+lazy val awsSdkVersion = "1.12.129"
 lazy val ixiasAwsSns = (project in file("framework/ixias-aws-sns"))
   .settings(name := "ixias-aws-sns")
   .dependsOn(ixiasCore)
