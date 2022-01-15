@@ -186,6 +186,20 @@ trait AmazonS3Repository[P <: JdbcProfile]
         } yield old
       }
     } yield old
+  
+  /**
+   * Remove the file information list.
+   */
+  def bulkRemove(idSeq: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
+    for {
+      fileSeq <- RunDBAction(FileTable) { slick =>
+        val rows = slick.filter(_.id inSet idSeq)
+        for {
+          oldSeq <- rows.result
+          _      <- rows.delete
+        } yield oldSeq
+      }
+    } yield fileSeq
 
   /**
    * Erase the file information and a physical file object at S3.
@@ -203,4 +217,20 @@ trait AmazonS3Repository[P <: JdbcProfile]
         case Some(file) => s3.getClient.map(_.remove(file))
       }
     } yield fileOpt
+
+  /**
+   * Erase the file information list and the physical file object list at S3.
+   */
+  def bulkErase(idSeq: Seq[Id]): Future[Seq[EntityEmbeddedId]] =
+    for {
+      fileSeq <- RunDBAction(FileTable) { slick =>
+        val rows = slick.filter(_.id inSet idSeq)
+        for {
+          oldSeq <- rows.result
+          _      <- rows.delete
+        } yield oldSeq
+      }
+      _ <- s3.getClient.map(_.bulkRemove(fileSeq(0).bucket, fileSeq))
+    } yield fileSeq
+
 }
