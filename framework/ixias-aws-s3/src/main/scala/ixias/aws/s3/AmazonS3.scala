@@ -230,7 +230,7 @@ trait AmazonS3Repository[P <: JdbcProfile]
           _      <- rows.delete
         } yield oldSeq
       }
-      _ <- s3.getClient.map(_.bulkRemove(fileSeq(0).bucket, fileSeq))
+      _ <- s3.getClient.map(_.bulkRemove(fileSeq.head.bucket, fileSeq))
     } yield fileSeq
 
 }
