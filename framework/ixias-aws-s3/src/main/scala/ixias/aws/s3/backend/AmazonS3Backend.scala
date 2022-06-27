@@ -112,6 +112,13 @@ object AmazonS3Backend extends AmazonS3Config {
      */
     def remove(file: File): Future[Unit] =
       Future(underlying.deleteObject(new DeleteObjectRequest(file.bucket, file.key)))
+
+    /**
+     * Deletes the file object list in the specified bucket.
+     */
+    def bulkRemove(bucket: String, fileSeq: Seq[File]): Future[Unit] = {
+      Future(underlying.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(fileSeq.map(_.key).toArray:_*)))
+    }
   }
 }
 
