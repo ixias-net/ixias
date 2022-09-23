@@ -17,20 +17,36 @@ import play.api.libs.json.EnvWrites
 trait JsonEnvWrites extends EnvWrites {
 
   /**
+   * Serializer forshapeless.tag.@@[Long, _]
+   */
+  implicit def TagLongWrites[T] =
+    new Writes[shapeless.tag.@@[Long, T]] {
+      def writes(tag: shapeless.tag.@@[Long, T]) = JsNumber(tag)
+    }
+
+  /**
+   * Serializer forshapeless.tag.@@[String, _]
+   */
+  implicit def TagStringWrites[T] =
+    new Writes[shapeless.tag.@@[String, T]] {
+      def writes(tag: shapeless.tag.@@[String, T]) = JsString(tag)
+    }
+
+  /**
    * Serializer for ixias.util.EnumStatus
    */
-  implicit object EnumStatusWrites extends Writes[ixias.util.EnumStatus] {
-    def writes(enum: ixias.util.EnumStatus) =
-      JsNumber(enum.code)
-  }
+  implicit def EnumStatusWrites[T <: ixias.util.EnumStatus] =
+    new Writes[T] {
+      def writes(v: T) = JsNumber(v.code)
+    }
 
   /**
    * Serializer for Seq[ixias.util.EnumBitFlags]
    */
-  implicit object EnumBitFlagsWrites extends Writes[ixias.util.EnumBitFlags] {
-    def writes(enum: ixias.util.EnumBitFlags) =
-      JsNumber(enum.code)
-  }
+  implicit def EnumBitFlagsWrites[T <: ixias.util.EnumBitFlags] =
+    new Writes[T] {
+      def writes(v: T) = JsNumber(v.code)
+    }
 
   /**
    * Serializer for ixias.persistence.model.Cursor
