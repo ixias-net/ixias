@@ -8,7 +8,7 @@
 
 package ixias.play.api.mvc
 
-import play.api.data.{ Form, Mapping }
+import play.api.data.{ Form, Mapping, FormBinding, DefaultFormBinding }
 import play.api.mvc.{ Request, Result }
 import play.api.mvc.Results.BadRequest
 import play.api.i18n.MessagesProvider
@@ -31,12 +31,15 @@ trait FormHelper {
  */
 object FormHelper extends FormHelper {
 
+  implicit val formBinding: FormBinding =
+    new DefaultFormBinding(Form.FromJsonMaxChars)
+
   /**
    * To bind request data to a `T` component.
    */
   def bindFromRequest[T](mapping: Mapping[T])(implicit
     req:      Request[_],
-    provider: MessagesProvider
+    provider: MessagesProvider,
   ): Either[Result, T] =
     Form(mapping).bindFromRequest().fold(
       f => Left(BadRequest(f.errorsAsJson)),

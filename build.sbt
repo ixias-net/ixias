@@ -48,7 +48,9 @@ val commonSettings = Seq(
 
 val playSettings = Seq(
   libraryDependencies ++= Seq(
-    "com.typesafe.play" %% "play" % "2.7.5"
+    "com.typesafe.play" %% "play" % "2.8.13",
+    "com.typesafe.play" %% "play-iteratees"                  % "2.6.1",
+    "com.typesafe.play" %% "play-iteratees-reactive-streams" % "2.6.1",
   )
 )
 
