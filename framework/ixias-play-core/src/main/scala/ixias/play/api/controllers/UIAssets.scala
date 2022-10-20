@@ -8,11 +8,17 @@
 
 package ixias.play.api.controllers
 
+import akka.util.ByteString
+import akka.stream.scaladsl.Source
+import scala.concurrent.ExecutionContext
 
 import play.api.{ Mode, Environment, Configuration }
-import play.api.http.{ FileMimeTypes, HttpErrorHandler }
+import play.api.http.{ HttpEntity, FileMimeTypes, HttpErrorHandler }
 import play.api.mvc.{ Action, AnyContent }
+import play.api.libs.iteratee.Enumerator
+import play.api.libs.iteratee.streams.IterateeStreams
 import play.api.Logger
+
 import controllers.{ AssetsBuilder, DefaultAssetsMetadata }
 
 @javax.inject.Singleton
@@ -22,16 +28,16 @@ class UIAssets @javax.inject.Inject() (
   errorHandler:  HttpErrorHandler,
   meta:          DefaultAssetsMetadata,
   fileMimeTypes: FileMimeTypes
-) extends AssetsBuilder(errorHandler, meta) {
+)(implicit ec: ExecutionContext) extends AssetsBuilder(errorHandler, meta) {
 
   import controllers.Assets._
 
   protected val CF_ASSETS_DEV_DIR = "assets.dev.dirs"
 
-  /** ロガーの取得 */
+  /** The logger */
   private lazy val logger = Logger(getClass)
 
-  /** Assetsハンドラー */
+  /** Assets Handler */
   override def versioned(path: String, file: Asset): Action[AnyContent] = {
     env.mode match {
       case Mode.Prod => super.versioned(path, file)
@@ -66,10 +72,10 @@ class UIAssets @javax.inject.Inject() (
     }
     resource match {
       case Some(file) => {
-        val stream = new java.io.FileInputStream(file)
-        val source = akka.stream.scaladsl.StreamConverters.fromInputStream(() => stream)
+        val data   = Enumerator.fromStream(new java.io.FileInputStream(file))
+        val source = Source.fromPublisher(IterateeStreams.enumeratorToPublisher(data)).map(ByteString.apply)
         logger.info(s"serving $file")
-        Ok.chunked(source)
+        Ok.sendEntity(HttpEntity.Streamed(source, None, None))
           .as(fileMimeTypes.forFileName(file.toString).getOrElse("application/octet-stream"))
           .withHeaders(CACHE_CONTROL -> "no-store")
       }
