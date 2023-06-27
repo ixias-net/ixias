@@ -19,7 +19,7 @@ trait EmailConfig {
   protected val CF_MAIL_BOUNCE_ADDRESS = "mail.bounce_address"
   protected val CF_SMTP_HOST           = "mail.smtp.host"
   protected val CF_SMTP_PORT           = "mail.smtp.port"
-  protected val CF_SMTP_SSL            = "mail.smtp.ssl"
+  protected val CF_SMTP_SSL            = "mail.smtp.ssl.enabled"
   protected val CF_SMTP_TLS            = "mail.smtp.tls"
   protected val CF_SMTP_USER           = "mail.smtp.user"
   protected val CF_SMTP_PASSWORD       = "mail.smtp.password"
