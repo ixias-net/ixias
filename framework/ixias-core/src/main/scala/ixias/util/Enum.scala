@@ -9,6 +9,7 @@
 package ixias.util
 
 import scala.reflect._
+import java.lang.reflect.InvocationTargetException
 
 /**
  * The Enums based on sealed classes
@@ -147,3 +148,11 @@ object Enum {
         throw new NoSuchElementException(s"$name is not a member of Enum $this"))
   }
 }
+
+/**
+ * Custom exception for EnumStatus parsing
+ */
+class EnumStatusParseException(
+  error:   Throwable,
+  message: String
+) extends InvocationTargetException(error, message)
