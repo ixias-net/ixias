@@ -9,6 +9,7 @@
 package ixias.persistence.lifted
 
 import slick.jdbc.JdbcProfile
+import ixias.util.EnumStatusParseException
 
 trait SlickColumnTypeOps[P <: JdbcProfile] {
   val driver: P
@@ -23,8 +24,15 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
         val clazz  = Class.forName(ctag.runtimeClass.getName + "$", true, Thread.currentThread().getContextClassLoader())
         val module = clazz.getField("MODULE$").get(null)
         val method = clazz.getMethod("apply", classOf[Short])
-        val enum   = method.invoke(module, code.asInstanceOf[AnyRef])
-        enum.asInstanceOf[T]
+        try {
+          val enum   = method.invoke(module, code.asInstanceOf[AnyRef])
+          enum.asInstanceOf[T]
+        } catch {
+          case e: Exception => {
+            val message = s"Cannot parse code [$code] to enum [$clazz]"
+            throw new EnumStatusParseException(e, message)
+          }
+        }
       }
     )
 
@@ -40,8 +48,15 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
       },
       code => {
         val method = clazz.getMethod("apply", classOf[Long])
-        val bitset = method.invoke(module, code.asInstanceOf[AnyRef])
-        bitset.asInstanceOf[Seq[T]]
+        try {
+          val bitset = method.invoke(module, code.asInstanceOf[AnyRef])
+          bitset.asInstanceOf[Seq[T]]
+        } catch {
+          case e: Exception => {
+            val message = s"Cannot parse code [$code] to enum [$clazz]"
+            throw new EnumStatusParseException(e, message)
+          }
+        }
       }
     )
   }
