@@ -110,7 +110,7 @@ lazy val ixiasMail = (project in file("framework/ixias-mail"))
   .settings(libraryDependencies ++= Seq(
     "com.google.inject"   % "guice"           % "4.1.0",
     "com.twilio.sdk"      % "twilio-java-sdk" % "6.3.0",
-    "org.apache.commons"  % "commons-email"   % "1.4"
+    "org.apache.commons"  % "commons-email"   % "1.5"
   ))
 
 lazy val awsSdkVersion = "1.12.129"
