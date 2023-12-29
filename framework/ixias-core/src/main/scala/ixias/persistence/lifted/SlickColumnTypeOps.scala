@@ -117,10 +117,22 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
       override def sqlType = java.sql.Types.VARCHAR
       override def valueToSQLLiteral(d: Duration) = "{ t '" + map(d) + "' }"
       override def getValue(r: java.sql.ResultSet, idx: Int) = {
-        val v = r.getTimestamp(idx)
+        val v = r.getString(idx)
           (v.asInstanceOf[AnyRef] eq null) || tmd.wasNull(r, idx) match {
             case true  => null.asInstanceOf[Duration]
-            case false => Duration.ofMillis(v.getTime + TimeZone.getDefault.getRawOffset)
+            case false => {
+              try {
+                val timeArr = v.split(":")
+                val hour    = timeArr(0).toLong
+                val minute  = timeArr(1).toLong
+                val second  = timeArr(2).toLong
+                Duration.ofSeconds(hour * 60 * 60 + minute * 60 + second)
+              } catch {
+                case e: Exception => {
+                  throw new IllegalArgumentException(s"Cannot parse time value ${v} to Duration type.")
+                }
+              }
+            }
           }
       }
       def comap(str: String) = {
