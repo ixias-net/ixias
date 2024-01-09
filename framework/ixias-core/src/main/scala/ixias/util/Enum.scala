@@ -10,6 +10,7 @@ package ixias.util
 
 import scala.reflect._
 import java.lang.reflect.InvocationTargetException
+import play.api.libs.json._
 
 /**
  * The Enums based on sealed classes
@@ -36,8 +37,37 @@ trait EnumBitFlags    extends Enum { val code: Long   }
 object EnumStatus {
   abstract class Of[T <: EnumStatus]
     (implicit ttag: ClassTag[T]) extends Enum.Of[T] {
+
+    /**
+     * Returns the enum value associated with the given code.
+     *
+     * @param code The code of the enum value.
+     * @return The enum value associated with the given code.
+     */
     def apply(code: Short): T = this.find(_.code == code).get
-  }
+
+    /**
+     * Implicit JSON Writes for the Enum type.
+     * Serializes the Enum value to a JSON string using its code.
+     */
+    implicit val jsonWrites: Writes[T] =
+      Writes(v => JsNumber(v.code))
+
+    /**
+     * Implicit JSON reads for an Enum type.
+     *
+     * This implicit value provides a JSON reads implementation for an Enum type.
+     * It reads a number value from JSON and tries to find a matching enum value
+     * based on the code. If a matching value is found, it returns it as a JsSuccess.
+     * If no matching value is found, it returns a JsError with an appropriate error message.
+     */
+    implicit val jsonReads: Reads[T] =
+      (__).read[Short].reads(_).flatMap(code =>
+        this.find(_.code == code) match {
+          case Some(v) => JsSuccess(v)
+          case None    => JsError("Undefined enum value. code=%s".format(code))
+        }
+      )}
 }
 
 /**
@@ -46,7 +76,38 @@ object EnumStatus {
 object EnumStatusAsStr {
   abstract class Of[T <: EnumStatusAsStr]
     (implicit ttag: ClassTag[T]) extends Enum.Of[T] {
+
+    /**
+     * Retrieves an instance of the enumeration based on the given code.
+     *
+     * @param code The code of the enumeration instance to retrieve.
+     * @return An instance of the enumeration with the matching code.
+     * @throws NoSuchElementException if no enumeration instance with the given code is found.
+     */
     def apply(code: String): T = this.find(_.code == code).get
+
+    /**
+     * Implicit JSON Writes for the Enum type.
+     * Serializes the Enum value to a JSON string using its code.
+     */
+    implicit val jsonWrites: Writes[T] =
+      Writes(v => JsString(v.code))
+
+    /**
+     * Implicit JSON reads for an Enum type.
+     *
+     * This implicit value provides a JSON reads implementation for an Enum type.
+     * It reads a string value from JSON and tries to find a matching enum value
+     * based on the code. If a matching value is found, it returns it as a JsSuccess.
+     * If no matching value is found, it returns a JsError with an appropriate error message.
+     */
+    implicit val jsonReads: Reads[T] =
+      (__).read[String].reads(_).flatMap(code =>
+        this.find(_.code == code) match {
+          case Some(v) => JsSuccess(v)
+          case None    => JsError("Undefined enum value. code=%s".format(code))
+        }
+      )
   }
 }
 
