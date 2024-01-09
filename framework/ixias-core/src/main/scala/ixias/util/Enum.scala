@@ -40,9 +40,6 @@ object EnumStatus {
 
     /**
      * Returns the enum value associated with the given code.
-     *
-     * @param code The code of the enum value.
-     * @return The enum value associated with the given code.
      */
     def apply(code: Short): T = this.find(_.code == code).get
 
@@ -79,10 +76,6 @@ object EnumStatusAsStr {
 
     /**
      * Retrieves an instance of the enumeration based on the given code.
-     *
-     * @param code The code of the enumeration instance to retrieve.
-     * @return An instance of the enumeration with the matching code.
-     * @throws NoSuchElementException if no enumeration instance with the given code is found.
      */
     def apply(code: String): T = this.find(_.code == code).get
 
