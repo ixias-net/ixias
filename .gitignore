@@ -8,3 +8,4 @@
 /target/
 /framework/*/target
 backup
+.metals

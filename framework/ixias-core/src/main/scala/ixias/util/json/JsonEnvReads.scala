@@ -59,6 +59,17 @@ trait JsonEnvReads extends EnvReads {
     }
 
   /**
+   * Deserializer for ixias.util.EnumStatusAsStr
+   */
+  def enumReads[E <: ixias.util.EnumStatusAsStr](enum: ixias.util.EnumStatusAsStr.Of[E]): Reads[E] =
+    new Reads[E] {
+      def reads(json: JsValue) = json match {
+        case JsString(n) => JsSuccess(enum(n))
+        case _           => JsError("error.expected.enum.jsnumber")
+      }
+    }
+
+  /**
    * Deserializer for ixias.util.EnumBitFlags
    */
   def enumReads[E <: ixias.util.EnumBitFlags](enum: ixias.util.EnumBitFlags.Of[E]): Reads[Seq[E]] =

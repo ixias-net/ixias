@@ -41,6 +41,14 @@ trait JsonEnvWrites extends EnvWrites {
     }
 
   /**
+   * Serializer for ixias.util.EnumStatusAsstr
+   */
+  implicit def EnumStatusAsStrWrites[T <: ixias.util.EnumStatusAsStr] =
+    new Writes[T] {
+      def writes(v: T) = JsString(v.code)
+    }
+
+  /**
    * Serializer for Seq[ixias.util.EnumBitFlags]
    */
   implicit def EnumBitFlagsWrites[T <: ixias.util.EnumBitFlags] =

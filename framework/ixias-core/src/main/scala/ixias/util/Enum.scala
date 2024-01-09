@@ -25,9 +25,10 @@ import java.lang.reflect.InvocationTargetException
  * }
  *
  */
-trait Enum          extends Serializable
-trait EnumStatus    extends Enum { val code: Short }
-trait EnumBitFlags  extends Enum { val code: Long  }
+trait Enum            extends Serializable
+trait EnumStatus      extends Enum { val code: Short  }
+trait EnumStatusAsStr extends Enum { val code: String }
+trait EnumBitFlags    extends Enum { val code: Long   }
 
 /**
  * The operation of EnumStatus
@@ -36,6 +37,16 @@ object EnumStatus {
   abstract class Of[T <: EnumStatus]
     (implicit ttag: ClassTag[T]) extends Enum.Of[T] {
     def apply(code: Short): T = this.find(_.code == code).get
+  }
+}
+
+/**
+ * The operation of EnumStatusAsstr
+ */
+object EnumStatusAsStr {
+  abstract class Of[T <: EnumStatusAsStr]
+    (implicit ttag: ClassTag[T]) extends Enum.Of[T] {
+    def apply(code: String): T = this.find(_.code == code).get
   }
 }
 
