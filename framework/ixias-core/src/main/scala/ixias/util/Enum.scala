@@ -105,16 +105,6 @@ object EnumStatusAsStr {
 }
 
 /**
- * The operation of EnumStatusAsstr
- */
-object EnumStatusAsStr {
-  abstract class Of[T <: EnumStatusAsStr]
-    (implicit ttag: ClassTag[T]) extends Enum.Of[T] {
-    def apply(code: String): T = this.find(_.code == code).get
-  }
-}
-
-/**
  * The operation of EnumBitFlags
  */
 object EnumBitFlags {
