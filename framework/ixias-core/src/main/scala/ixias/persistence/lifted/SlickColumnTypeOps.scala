@@ -36,6 +36,26 @@ trait SlickColumnTypeOps[P <: JdbcProfile] {
       }
     )
 
+  // String <-> ixias.util.EnumStatusAsStr
+  implicit def ixiasEnumStatusAsStrColumnType[T <: ixias.util.EnumStatusAsStr](implicit ctag: reflect.ClassTag[T]) =
+    MappedColumnType.base[T, String](
+      enum => enum.code,
+      code => {
+        val clazz  = Class.forName(ctag.runtimeClass.getName + "$", true, Thread.currentThread().getContextClassLoader())
+        val module = clazz.getField("MODULE$").get(null)
+        val method = clazz.getMethod("apply", classOf[String])
+        try {
+          val enum   = method.invoke(module, code.asInstanceOf[AnyRef])
+          enum.asInstanceOf[T]
+        } catch {
+          case e: Exception => {
+            val message = s"Cannot parse code [$code] to enum [$clazz]"
+            throw new EnumStatusParseException(e, message)
+          }
+        }
+      }
+    )
+
   // Long <-> Seq[ixias.util.EnumBitFlags]
   implicit def ixiasEnumBitsetSeqColumnType[T <: ixias.util.EnumBitFlags](implicit ctag: reflect.ClassTag[T]) = {
     val clazz  = Class.forName(ctag.runtimeClass.getName + "$", true, Thread.currentThread().getContextClassLoader())
