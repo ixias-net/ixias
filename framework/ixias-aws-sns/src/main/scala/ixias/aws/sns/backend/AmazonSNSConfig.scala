@@ -10,8 +10,8 @@ package ixias.aws.sns.backend
 
 import scala.util.Try
 import scala.collection.JavaConverters._
-import com.amazonaws.regions.Regions
-import com.amazonaws.auth.{ AWSCredentials, BasicAWSCredentials }
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.auth.credentials.{ AwsCredentials, AwsBasicCredentials }
 import ixias.util.Configuration
 
 trait AmazonSNSConfig {
@@ -37,11 +37,11 @@ trait AmazonSNSConfig {
    * the AWS default credential provider chain resolve credentials instead --
    * i.e. run under the server's ExecutionRole (the recommended setup).
    */
-  protected def getAWSCredentials(implicit dsn: DataSourceName): Option[AWSCredentials] =
+  protected def getAWSCredentials(implicit dsn: DataSourceName): Option[AwsCredentials] =
     for {
       akey <- getAWSAccessKeyId
       skey <- getAWSSecretKey
-    } yield new BasicAWSCredentials(akey, skey)
+    } yield AwsBasicCredentials.create(akey, skey)
 
   /**
    * Gets the AWS access key ID, if configured.
@@ -56,13 +56,13 @@ trait AmazonSNSConfig {
     readValue(_.get[Option[String]](CF_SNS_SECRET_KEY))
 
   /**
-   * Gets a region enum corresponding to the given region name.
+   * Gets a region corresponding to the given region name.
    *
    * Resolution order: the backend-scoped `region`, then the common top-level
    * `aws.region`. Fails only when neither is set.
    */
-  protected def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
-    Try(Regions.fromName(
+  protected def getAWSRegion(implicit dsn: DataSourceName): Try[Region] =
+    Try(Region.of(
       readValue(_.get[Option[String]](CF_SNS_REGION))
         .orElse(config.get[Option[String]](CF_AWS_REGION_COMMON))
         .get

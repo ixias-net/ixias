@@ -13,9 +13,9 @@ import scala.util.{ Success, Failure }
 import ixias.util.Logger
 import ixias.util.ChainSyntax
 import ixias.persistence.dbio.Execution
-import com.amazonaws.ClientConfiguration
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import software.amazon.awssdk.auth.credentials.{ AwsCredentialsProvider, StaticCredentialsProvider }
+import software.amazon.awssdk.services.s3.{ S3Client, S3Configuration }
+import software.amazon.awssdk.services.s3.presigner.S3Presigner
 
 /**
  * The backend to get a client for AmazonS3.
@@ -28,21 +28,36 @@ object AmazonS3Backend extends AmazonS3Config with ChainSyntax {
   /** The Execution Context */
   protected implicit val ctx = Execution.Implicits.trampoline
 
+  /**
+   * The service configuration shared by the client and the presigner.
+   * Path style access keeps a bucket name in the URL path instead of
+   * the host name, so both must be built with the same setting to make
+   * a pre-signed URL match the URL the client itself would address.
+   */
+  protected val serviceConfiguration =
+    S3Configuration.builder.pathStyleAccessEnabled(true).build
+
   /** Get a client to manage Amazon S3. */
   def getClient(implicit dsn: DataSourceName): Future[AmazonS3] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
     Future.fromTry(
       getAWSRegion.map { region =>
-        AmazonS3ClientBuilder.standard
-          .withClientConfiguration(new ClientConfiguration().tap(_.setConnectionTimeout(getConnectionTimeout.toInt)))
-          .withRegion(region)
-          .withPathStyleAccessEnabled(true)
-          // Attach static credentials only when configured; otherwise fall
-          // through to the default provider chain (the server ExecutionRole /
-          // ECS task role), which is the recommended setup.
-          .pipe(b => getAWSCredentials.fold(b)(c => b.withCredentials(new AWSStaticCredentialsProvider(c))))
+        // Attach static credentials only when configured; otherwise fall
+        // through to the default provider chain (the server ExecutionRole /
+        // ECS task role), which is the recommended setup.
+        val credentials: Option[AwsCredentialsProvider] =
+          getAWSCredentials.map(StaticCredentialsProvider.create)
+        val client = S3Client.builder
+          .region(region)
+          .serviceConfiguration(serviceConfiguration)
+          .pipe(b => credentials.fold(b)(c => b.credentialsProvider(c)))
           .build
-          .pipe(AmazonS3(_))
+        val presigner = S3Presigner.builder
+          .region(region)
+          .serviceConfiguration(serviceConfiguration)
+          .pipe(b => credentials.fold(b)(c => b.credentialsProvider(c)))
+          .build
+        AmazonS3(client, presigner)
       }
     ) andThen {
       case Success(_) => logger.info("Generated a new client. dsn=%s".format(dsn.toString))
@@ -52,74 +67,113 @@ object AmazonS3Backend extends AmazonS3Config with ChainSyntax {
 
   // The wrapper for AmazonS3 client
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  protected case class AmazonS3(underlying: com.amazonaws.services.s3.AmazonS3) {
+  protected case class AmazonS3(underlying: S3Client, presigner: S3Presigner) {
+    import java.io.InputStream
+    import scala.collection.JavaConverters._
     import ixias.aws.s3.model._
-    import com.amazonaws.HttpMethod
-    import com.amazonaws.services.s3.model._
+    import software.amazon.awssdk.core.sync.RequestBody
+    import software.amazon.awssdk.services.s3.model._
+    import software.amazon.awssdk.services.s3.presigner.model.{ GetObjectPresignRequest, PutObjectPresignRequest }
 
-    /** Gets the object stored in Amazon S3 under the specified bucket and key. */
-    def load(file: File): Future[S3Object] =
-      Future(underlying.getObject(new GetObjectRequest(
-        file.bucket,
-        file.key
-      )))
+    /**
+     * Gets the object stored in Amazon S3 under the specified bucket and key.
+     * The caller is responsible for closing the returned stream.
+     */
+    def load(file: File): Future[InputStream] =
+      Future(underlying.getObject(GetObjectRequest.builder
+        .bucket(file.bucket)
+        .key(file.key)
+        .build
+      ))
 
     /**
      * Gets a pre-signed URL for accessing an Amazon S3 resource.
      */
     def genPresignedUrlForAccess(file: File)(implicit dsn: DataSourceName): Future[java.net.URL] =
-      Future({
-        val req = new GeneratePresignedUrlRequest(file.bucket, file.key)
-        req.setMethod(HttpMethod.GET)
-        req.setExpiration(getPresignedUrlTimeoutForGet)
-        underlying.generatePresignedUrl(req)
-      })
+      Future(presigner.presignGetObject(GetObjectPresignRequest.builder
+        .signatureDuration(getPresignedUrlTimeoutForGet)
+        .getObjectRequest(GetObjectRequest.builder
+          .bucket(file.bucket)
+          .key(file.key)
+          .build)
+        .build
+      ).url)
 
     /**
      * Gets a pre-signed URL to upload an Amazon S3 resource.
+     * The client uploading through it must send a matching `Content-Type` header.
      */
     def genPresignedUrlForUpload(file: File)(implicit dsn: DataSourceName): Future[java.net.URL] =
-      Future({
-        val req = new GeneratePresignedUrlRequest(file.bucket, file.key)
-        req.setMethod(HttpMethod.PUT)
-        req.setContentType(file.typedef)
-        req.setExpiration(getPresignedUrlTimeoutForUpload)
-        underlying.generatePresignedUrl(req)
-      })
+      Future(presigner.presignPutObject(PutObjectPresignRequest.builder
+        .signatureDuration(getPresignedUrlTimeoutForUpload)
+        .putObjectRequest(PutObjectRequest.builder
+          .bucket(file.bucket)
+          .key(file.key)
+          .contentType(file.typedef)
+          .build)
+        .build
+      ).url)
 
     /**
      * Uploads a new object to the specified Amazon S3 bucket.
+     * `contentLength` is required since the SDK has to know the payload size
+     * before it starts streaming the content.
      */
-    def upload(s3object: S3Object): Future[Unit] =
-      Future(underlying.putObject(new PutObjectRequest(
-        s3object.getBucketName,
-        s3object.getKey,
-        s3object.getObjectContent,
-        s3object.getObjectMetadata
-      )))
+    def upload(file: File, content: java.io.InputStream, contentLength: Long): Future[Unit] =
+      Future(underlying.putObject(
+        PutObjectRequest.builder
+          .bucket(file.bucket)
+          .key(file.key)
+          .contentLength(contentLength)
+          .build,
+        RequestBody.fromInputStream(content, contentLength)
+      ))
 
     /**
      * Uploads the specified file to Amazon S3 under the specified bucket and key name.
      */
     def upload(file: File, content: java.io.File): Future[Unit] =
-      Future(underlying.putObject(new PutObjectRequest(
-        file.bucket,
-        file.key,
-        content
-      )))
+      Future(underlying.putObject(
+        PutObjectRequest.builder
+          .bucket(file.bucket)
+          .key(file.key)
+          .build,
+        RequestBody.fromFile(content)
+      ))
 
     /**
      * Deletes the specified object in the specified bucket.
      */
     def remove(file: File): Future[Unit] =
-      Future(underlying.deleteObject(new DeleteObjectRequest(file.bucket, file.key)))
+      Future(underlying.deleteObject(DeleteObjectRequest.builder
+        .bucket(file.bucket)
+        .key(file.key)
+        .build
+      ))
 
     /**
      * Deletes the file object list in the specified bucket.
+     *
+     * A batch delete can fail for only some of its keys. Where v1 raised
+     * `MultiObjectDeleteException` for that case, v2 completes normally and
+     * reports the failures in the response body, so they have to be turned
+     * back into a failure here.
      */
-    def bulkRemove(bucket: String, fileSeq: Seq[File]): Future[Unit] = {
-      Future(underlying.deleteObjects(new DeleteObjectsRequest(bucket).withKeys(fileSeq.map(_.key).toArray:_*)))
-    }
+    def bulkRemove(bucket: String, fileSeq: Seq[File]): Future[Unit] =
+      Future(underlying.deleteObjects(DeleteObjectsRequest.builder
+        .bucket(bucket)
+        .delete(Delete.builder.objects(
+          fileSeq.map(f => ObjectIdentifier.builder.key(f.key).build).asJava
+        ).build)
+        .build
+      )) map { response =>
+        val errors = response.errors.asScala
+        if (errors.nonEmpty) throw new IllegalStateException(
+          "Failed to delete %d of %d objects in the bucket %s. %s".format(
+            errors.size, fileSeq.size, bucket,
+            errors.map(e => "%s (%s: %s)".format(e.key, e.code, e.message)).mkString(", ")
+          )
+        )
+      }
   }
 }
-

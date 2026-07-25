@@ -13,8 +13,8 @@ import scala.util.{ Success, Failure }
 import ixias.util.Logger
 import ixias.util.ChainSyntax
 import ixias.persistence.dbio.Execution
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.services.sns.{ AmazonSNS, AmazonSNSClientBuilder }
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.services.sns.SnsClient
 
 /**
  * The backend to get a client for AmazonSNS.
@@ -28,15 +28,15 @@ object AmazonSNSBackend extends AmazonSNSConfig with ChainSyntax {
   protected implicit val ctx = Execution.Implicits.trampoline
 
   /** Get a Client to manage Amazon SNS. */
-  def getClient(implicit dsn: DataSourceName): Future[AmazonSNS] = {
+  def getClient(implicit dsn: DataSourceName): Future[SnsClient] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
     Future.fromTry(
       getAWSRegion.map { region =>
-        AmazonSNSClientBuilder.standard
-          .withRegion(region)
+        SnsClient.builder
+          .region(region)
           // Attach static credentials only when configured; otherwise fall
           // through to the default provider chain (the server ExecutionRole).
-          .pipe(b => getAWSCredentials.fold(b)(c => b.withCredentials(new AWSStaticCredentialsProvider(c))))
+          .pipe(b => getAWSCredentials.fold(b)(c => b.credentialsProvider(StaticCredentialsProvider.create(c))))
           .build
       }
     ) andThen {

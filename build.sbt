@@ -113,14 +113,14 @@ lazy val ixiasMail = (project in file("framework/ixias-mail"))
     "org.apache.commons"  % "commons-email"   % "1.5"
   ))
 
-lazy val awsSdkVersion = "1.12.129"
+lazy val awsSdkVersion = "2.46.7"
 lazy val ixiasAwsSns = (project in file("framework/ixias-aws-sns"))
   .settings(name := "ixias-aws-sns")
   .dependsOn(ixiasCore)
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.amazonaws" % "aws-java-sdk-sns" % awsSdkVersion
+    "software.amazon.awssdk" % "sns" % awsSdkVersion
   ))
 
 lazy val ixiasAwsS3 = (project in file("framework/ixias-aws-s3"))
@@ -129,20 +129,8 @@ lazy val ixiasAwsS3 = (project in file("framework/ixias-aws-s3"))
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.amazonaws" % "aws-java-sdk-s3"         % awsSdkVersion,
-    "com.amazonaws" % "aws-java-sdk-cloudfront" % awsSdkVersion
-  ))
-
-lazy val ixiasAwsQLDB = (project in file("framework/ixias-aws-qldb"))
-  .settings(name := "ixias-aws-qldb")
-  .dependsOn(ixiasCore)
-  .settings(commonSettings:    _*)
-  .settings(publisherSettings: _*)
-  .settings(libraryDependencies ++= Seq(
-    "software.amazon.qldb"             % "amazon-qldb-driver-java" % "1.0.1",
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-ion"  % "2.10.0",
-    "com.fasterxml.jackson.datatype"   % "jackson-datatype-jsr310" % "2.10.0",
-    "com.fasterxml.jackson.module"    %% "jackson-module-scala"    % "2.10.0"
+    "software.amazon.awssdk" % "s3"         % awsSdkVersion,
+    "software.amazon.awssdk" % "cloudfront" % awsSdkVersion
   ))
 
 // IxiaS Play Libraries
@@ -185,8 +173,8 @@ lazy val ixiasAws = (project in file("target/ixias-aws"))
   .settings(name := "ixias-aws")
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
-  .aggregate(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB)
-  .dependsOn(ixiasCore, ixiasAwsSns, ixiasAwsS3, ixiasAwsQLDB)
+  .aggregate(ixiasCore, ixiasAwsSns, ixiasAwsS3)
+  .dependsOn(ixiasCore, ixiasAwsSns, ixiasAwsS3)
 
 lazy val ixiasPlay = (project in file("target/ixias-play"))
   .settings(name := "ixias-play")
