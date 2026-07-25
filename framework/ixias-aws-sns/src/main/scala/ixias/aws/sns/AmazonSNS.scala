@@ -10,7 +10,7 @@ package ixias.aws.sns
 
 import scala.util.{ Try, Success, Failure }
 import scala.concurrent.{ Future, ExecutionContext }
-import com.amazonaws.services.sns.model.PublishResult
+import software.amazon.awssdk.services.sns.model.{ PublishRequest, PublishResponse }
 
 import ixias.persistence.lifted.Aliases
 import ixias.persistence.dbio.Execution
@@ -37,7 +37,7 @@ trait AmazonSNS extends Aliases with Logging {
   /**
    * Sends a message to a topic's subscribed endpoints.
    */
-  def publish(message: String): Future[Seq[PublishResult]] =
+  def publish(message: String): Future[Seq[PublishResponse]] =
     backend.isSkip(dsn) match {
       case true  => {
         backend.getTopicARN(dsn) map { topic =>
@@ -51,7 +51,9 @@ trait AmazonSNS extends Aliases with Logging {
         resultSeq <- Future.sequence {
           topicSeq map { topic =>
             Future.fromTry {
-              Try(client.publish(topic, message))
+              Try(client.publish(
+                PublishRequest.builder.topicArn(topic).message(message).build
+              ))
             } andThen {
               case Success(result) => logger.info(
                 "AWS-SNS :: publish a message. topic = %s, message = %s, result = %s"

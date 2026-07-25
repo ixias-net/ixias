@@ -9,7 +9,7 @@
 package ixias.aws.s3
 
 import slick.jdbc.JdbcProfile
-import com.amazonaws.services.s3.model.S3ObjectInputStream
+import java.io.InputStream
 import scala.concurrent.Future
 
 import ixias.aws.s3.model.File
@@ -56,14 +56,15 @@ trait AmazonS3Repository[P <: JdbcProfile]
 
   /**
    * Get file object as `Entity` with a input stream for it.
+   * The caller is responsible for closing the returned stream.
    */
-  def getWithContent(id: Id): Future[Option[(EntityEmbeddedId, S3ObjectInputStream)]] =
+  def getWithContent(id: Id): Future[Option[(EntityEmbeddedId, InputStream)]] =
     get(id) flatMap {
       case None       => Future.successful(None)
       case Some(file) => for {
         client   <- s3.getClient
         s3object <- client.load(file.v)
-      } yield Some((file, s3object.getObjectContent()))
+      } yield Some((file, s3object))
     }
 
   /**

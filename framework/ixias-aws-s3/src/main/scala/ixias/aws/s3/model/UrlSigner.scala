@@ -8,6 +8,7 @@
 
 package ixias.aws.s3.model
 
+import java.nio.file.Paths
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
@@ -16,9 +17,8 @@ import scala.language.implicitConversions
 import ixias.util.Enum
 import ixias.aws.s3.backend.{ AmazonS3Config, DataSourceName }
 
-import com.amazonaws.util.DateUtils
-import com.amazonaws.services.cloudfront.CloudFrontUrlSigner
-import com.amazonaws.services.cloudfront.util.SignerUtils._
+import software.amazon.awssdk.services.cloudfront.CloudFrontUtilities
+import software.amazon.awssdk.services.cloudfront.model.CannedSignerRequest
 
 /**
  * The file resource definition
@@ -30,6 +30,9 @@ object UrlSigner extends AmazonS3Config {
   protected val CF_CLOUD_FRONT_PRIVATE_KEY_FILE    = "cloudfront_private_key_file"
   protected val CF_CLOUD_FRONT_DISTRIBUTION_DOMAIN = "cloudfront_distribution_domain"
   protected val CF_CLOUD_FRONT_SIGNED_URL_TIMEOUT  = "cloudfront_signed_url_timeout"
+
+  /** The signer for CloudFront. It holds no state, so a single instance is shared. */
+  protected lazy val signer = CloudFrontUtilities.create()
 
   /**
    * The request to resize image.
@@ -95,16 +98,16 @@ object UrlSigner extends AmazonS3Config {
       val timeout    = readValue(_.get[Option[FiniteDuration]](CF_CLOUD_FRONT_SIGNED_URL_TIMEOUT))
                                    .getOrElse(FiniteDuration(30, TimeUnit.MINUTES))
       //- Generate Signed-URL
-      val resourcePath = generateResourcePath(Protocol.https, domain, file.v.key)
-      new java.net.URL({
-        CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
-          resourcePath + "?" + resize.queryString,
-          keyPairId,
-          loadPrivateKey(new java.io.File(pkFilePath)),
-          DateUtils.parseISO8601Date(
-            ZonedDateTime.now.plus(timeout).toInstant.toString
-          )
-        )
-      })
+      val resourceUrl = "https://%s/%s?%s".format(domain, file.v.key, resize.queryString)
+      new java.net.URL(
+        signer.getSignedUrlWithCannedPolicy(
+          CannedSignerRequest.builder
+            .resourceUrl(resourceUrl)
+            .keyPairId(keyPairId)
+            .privateKey(Paths.get(pkFilePath))
+            .expirationDate(ZonedDateTime.now.plus(timeout).toInstant)
+            .build
+        ).url
+      )
   }
 }
