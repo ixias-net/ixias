@@ -23,39 +23,46 @@ trait AmazonQLDBConfig extends BasicDatabaseConfig {
   protected val CF_QLDB_SECRET_KEY  = "secret_access_key"
   protected val CF_QLDB_REGION      = "region"
   protected val CF_QLDB_LEDGER_NAME = "ledger_name"
+  // Common (non-backend-scoped) fallback for the region.
+  protected val CF_AWS_REGION_COMMON = "aws.region"
 
   // --[ Methods ]--------------------------------------------------------------
   /**
-   * Gets the AWS credentials object.
+   * Gets the static AWS credentials configured for this backend, if any.
+   *
+   * Returns None when either key is absent, in which case the caller must let
+   * the AWS default credential provider chain resolve credentials instead --
+   * i.e. run under the server's ExecutionRole (the recommended setup).
    */
-  def getAWSCredentials(implicit dsn: DataSourceName): Try[AWSCredentials] =
+  def getAWSCredentials(implicit dsn: DataSourceName): Option[AWSCredentials] =
     for {
       akey <- getAWSAccessKeyId
       skey <- getAWSSecretKey
     } yield new BasicAWSCredentials(akey, skey)
 
   /**
-   * Gets the AWS access key ID for this credentials object.
+   * Gets the AWS access key ID, if configured.
    */
-  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_QLDB_ACCESS_KEY)).get
-    )
+  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_QLDB_ACCESS_KEY))
 
   /**
-   * Gets the AWS secret access key for this credentials object.
+   * Gets the AWS secret access key, if configured.
    */
-  protected def getAWSSecretKey(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_QLDB_SECRET_KEY)).get
-    )
+  protected def getAWSSecretKey(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_QLDB_SECRET_KEY))
 
   /**
    * Gets a region enum corresponding to the given region name.
+   *
+   * Resolution order: the backend-scoped `region`, then the common top-level
+   * `aws.region`. Fails only when neither is set.
    */
   def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
-    Try(Regions.fromName(readValue(
-      _.get[Option[String]](CF_QLDB_REGION)).get
+    Try(Regions.fromName(
+      readValue(_.get[Option[String]](CF_QLDB_REGION))
+        .orElse(config.get[Option[String]](CF_AWS_REGION_COMMON))
+        .get
     ))
 
   /**

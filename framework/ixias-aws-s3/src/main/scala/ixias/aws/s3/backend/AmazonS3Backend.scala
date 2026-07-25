@@ -11,6 +11,7 @@ package ixias.aws.s3.backend
 import scala.concurrent.Future
 import scala.util.{ Success, Failure }
 import ixias.util.Logger
+import ixias.util.ChainSyntax
 import ixias.persistence.dbio.Execution
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSStaticCredentialsProvider
@@ -19,7 +20,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder
 /**
  * The backend to get a client for AmazonS3.
  */
-object AmazonS3Backend extends AmazonS3Config {
+object AmazonS3Backend extends AmazonS3Config with ChainSyntax {
 
   /** The logger for profile */
   protected lazy val logger  = Logger.apply
@@ -31,17 +32,17 @@ object AmazonS3Backend extends AmazonS3Config {
   def getClient(implicit dsn: DataSourceName): Future[AmazonS3] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
     Future.fromTry(
-      for {
-        credentials <- getAWSCredentials
-        region      <- getAWSRegion
-      } yield {
-        val conf = new ClientConfiguration
-        conf.setConnectionTimeout(getConnectionTimeout.toInt)
-        AmazonS3(AmazonS3ClientBuilder.standard
-          .withCredentials(new AWSStaticCredentialsProvider(credentials))
+      getAWSRegion.map { region =>
+        AmazonS3ClientBuilder.standard
+          .withClientConfiguration(new ClientConfiguration().tap(_.setConnectionTimeout(getConnectionTimeout.toInt)))
           .withRegion(region)
           .withPathStyleAccessEnabled(true)
-          .build)
+          // Attach static credentials only when configured; otherwise fall
+          // through to the default provider chain (the server ExecutionRole /
+          // ECS task role), which is the recommended setup.
+          .pipe(b => getAWSCredentials.fold(b)(c => b.withCredentials(new AWSStaticCredentialsProvider(c))))
+          .build
+          .pipe(AmazonS3(_))
       }
     ) andThen {
       case Success(_) => logger.info("Generated a new client. dsn=%s".format(dsn.toString))

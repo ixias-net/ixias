@@ -23,42 +23,49 @@ trait AmazonSNSConfig {
   protected val CF_SNS_REGION            = "region"
   protected val CF_SNS_OPT_SNS_SKIP      = "skip"
   protected val CF_SNS_OPT_SNS_TOPIC_ARN = "topic"
+  // Common (non-backend-scoped) fallback for the region.
+  protected val CF_AWS_REGION_COMMON     = "aws.region"
 
   /** The configuration */
   protected val config = Configuration()
 
   // --[ Methods ]--------------------------------------------------------------
   /**
-   * Gets the AWS credentials object.
+   * Gets the static AWS credentials configured for this backend, if any.
+   *
+   * Returns None when either key is absent, in which case the caller must let
+   * the AWS default credential provider chain resolve credentials instead --
+   * i.e. run under the server's ExecutionRole (the recommended setup).
    */
-  protected def getAWSCredentials(implicit dsn: DataSourceName): Try[AWSCredentials] =
+  protected def getAWSCredentials(implicit dsn: DataSourceName): Option[AWSCredentials] =
     for {
       akey <- getAWSAccessKeyId
       skey <- getAWSSecretKey
     } yield new BasicAWSCredentials(akey, skey)
 
   /**
-   * Gets the AWS access key ID for this credentials object.
+   * Gets the AWS access key ID, if configured.
    */
-  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_SNS_ACCESS_KEY)).get
-    )
+  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_SNS_ACCESS_KEY))
 
   /**
-   * Gets the AWS secret access key for this credentials object.
+   * Gets the AWS secret access key, if configured.
    */
-  protected def getAWSSecretKey(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_SNS_SECRET_KEY)).get
-    )
+  protected def getAWSSecretKey(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_SNS_SECRET_KEY))
 
   /**
    * Gets a region enum corresponding to the given region name.
+   *
+   * Resolution order: the backend-scoped `region`, then the common top-level
+   * `aws.region`. Fails only when neither is set.
    */
   protected def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
-    Try(Regions.fromName(readValue(
-      _.get[Option[String]](CF_SNS_REGION)).get
+    Try(Regions.fromName(
+      readValue(_.get[Option[String]](CF_SNS_REGION))
+        .orElse(config.get[Option[String]](CF_AWS_REGION_COMMON))
+        .get
     ))
 
   /**

@@ -11,6 +11,7 @@ package ixias.aws.sns.backend
 import scala.concurrent.Future
 import scala.util.{ Success, Failure }
 import ixias.util.Logger
+import ixias.util.ChainSyntax
 import ixias.persistence.dbio.Execution
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.sns.{ AmazonSNS, AmazonSNSClientBuilder }
@@ -18,7 +19,7 @@ import com.amazonaws.services.sns.{ AmazonSNS, AmazonSNSClientBuilder }
 /**
  * The backend to get a client for AmazonSNS.
  */
-object AmazonSNSBackend extends AmazonSNSConfig {
+object AmazonSNSBackend extends AmazonSNSConfig with ChainSyntax {
 
   /** The logger for profile */
   protected lazy val logger  = Logger.apply
@@ -30,13 +31,14 @@ object AmazonSNSBackend extends AmazonSNSConfig {
   def getClient(implicit dsn: DataSourceName): Future[AmazonSNS] = {
     logger.debug("Get a database dsn=%s hash=%s".format(dsn.toString, dsn.hashCode))
     Future.fromTry(
-      for {
-        credentials <- getAWSCredentials
-        region      <- getAWSRegion
-      } yield AmazonSNSClientBuilder.standard
-        .withCredentials(new AWSStaticCredentialsProvider(credentials))
-        .withRegion(region)
-        .build
+      getAWSRegion.map { region =>
+        AmazonSNSClientBuilder.standard
+          .withRegion(region)
+          // Attach static credentials only when configured; otherwise fall
+          // through to the default provider chain (the server ExecutionRole).
+          .pipe(b => getAWSCredentials.fold(b)(c => b.withCredentials(new AWSStaticCredentialsProvider(c))))
+          .build
+      }
     ) andThen {
       case Success(_) => logger.info("Generated a new client. dsn=%s".format(dsn.toString))
       case Failure(_) => logger.info("Failed to build a client. dsn=%s".format(dsn.toString))

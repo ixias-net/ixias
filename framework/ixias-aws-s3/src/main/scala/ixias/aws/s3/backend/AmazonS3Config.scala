@@ -26,42 +26,53 @@ trait AmazonS3Config {
   protected val CF_S3_META_TABLE_NAME       = "meta_table_name"
   protected val CF_S3_PRESIGNED_PUT_TIMEOUT = "presigned_put_timeout"
   protected val CF_S3_PRESIGNED_GET_TIMEOUT = "presigned_get_timeout"
+  // Common (non-backend-scoped) fallback for the region, so a project can pin
+  // it once at the top level instead of repeating it in every backend block.
+  protected val CF_AWS_REGION_COMMON        = "aws.region"
 
   /** The configuration */
   protected val config = Configuration()
 
   // --[ Methods ]--------------------------------------------------------------
   /**
-   * Gets the AWS credentials object.
+   * Gets the static AWS credentials configured for this backend, if any.
+   *
+   * Returns None when either the access key or the secret key is absent. In
+   * that case the caller must NOT set static credentials on the client and
+   * should let the AWS default credential provider chain resolve them instead
+   * -- i.e. run under the server's ExecutionRole (the ECS task role / EC2
+   * instance role), which is the recommended setup. Static keys are only for
+   * local or non-role environments.
    */
-  protected def getAWSCredentials(implicit dsn: DataSourceName): Try[AWSCredentials] =
+  protected def getAWSCredentials(implicit dsn: DataSourceName): Option[AWSCredentials] =
     for {
       akey <- getAWSAccessKeyId
       skey <- getAWSSecretKey
     } yield new BasicAWSCredentials(akey, skey)
 
   /**
-   * Gets the AWS access key ID for this credentials object.
+   * Gets the AWS access key ID, if configured.
    */
-  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_S3_ACCESS_KEY)).get
-    )
+  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_S3_ACCESS_KEY))
 
   /**
-   * Gets the AWS secret access key for this credentials object.
+   * Gets the AWS secret access key, if configured.
    */
-  protected def getAWSSecretKey(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_S3_SECRET_KEY)).get
-    )
+  protected def getAWSSecretKey(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_S3_SECRET_KEY))
 
   /**
    * Gets a region enum corresponding to the given region name.
+   *
+   * Resolution order: the backend-scoped `region` (via `readValue`), then the
+   * common top-level `aws.region`. Fails only when neither is set.
    */
   def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
-    Try(Regions.fromName(readValue(
-      _.get[Option[String]](CF_S3_REGION)).get
+    Try(Regions.fromName(
+      readValue(_.get[Option[String]](CF_S3_REGION))
+        .orElse(config.get[Option[String]](CF_AWS_REGION_COMMON))
+        .get
     ))
 
   /**

@@ -11,6 +11,7 @@ package ixias.aws.qldb.backend
 import scala.concurrent.Future
 import scala.collection.mutable.HashMap
 import scala.util.{ Try, Success, Failure }
+import ixias.util.ChainSyntax
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.backend.BasicBackend
 
@@ -21,7 +22,7 @@ import com.amazonaws.services.qldbsession.AmazonQLDBSessionClientBuilder
 /**
  * The backend to get a client for AmazonQLDB
  */
-object AmazonQLDBBackend extends BasicBackend[QldbSession] with AmazonQLDBConfig {
+object AmazonQLDBBackend extends BasicBackend[QldbSession] with AmazonQLDBConfig with ChainSyntax {
 
   val CACHE_DRIVER_MAP  = new HashMap[DataSourceName, PooledQldbDriver]()
   val CACHE_SESSION_MAP = new HashMap[(Long, DataSourceName), QldbSession]()
@@ -73,13 +74,14 @@ object AmazonQLDBBackend extends BasicBackend[QldbSession] with AmazonQLDBConfig
       CACHE_DRIVER_MAP.get(dsn) match {
         case Some(driver) => Success(driver)
         case None         => for {
-          credentials <- getAWSCredentials
-          region      <- getAWSRegion
-          ledgerName  <- getLedgerName
+          region     <- getAWSRegion
+          ledgerName <- getLedgerName
         } yield {
           val builder = AmazonQLDBSessionClientBuilder.standard
-            .withCredentials(new AWSStaticCredentialsProvider(credentials))
             .withRegion(region)
+            // Attach static credentials only when configured; otherwise fall
+            // through to the default provider chain (the server ExecutionRole).
+            .pipe(b => getAWSCredentials.fold(b)(c => b.withCredentials(new AWSStaticCredentialsProvider(c))))
           val driver  = PooledQldbDriver.builder
             .withLedger(ledgerName)
             .withRetryLimit(3)
