@@ -10,8 +10,8 @@ package ixias.aws.s3.backend
 
 import scala.util.Try
 import scala.concurrent.duration.Duration
-import com.amazonaws.regions.Regions
-import com.amazonaws.auth.{ AWSCredentials, BasicAWSCredentials }
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.auth.credentials.{ AwsCredentials, AwsBasicCredentials }
 import ixias.util.Configuration
 
 trait AmazonS3Config {
@@ -22,46 +22,56 @@ trait AmazonS3Config {
   protected val CF_S3_SECRET_KEY            = "secret_access_key"
   protected val CF_S3_REGION                = "region"
   protected val CF_S3_BUCKET_NAME           = "bucket_name"
-  protected val CF_S3_CONNECTION_TIMEOUT    = "connection_timeout"
   protected val CF_S3_META_TABLE_NAME       = "meta_table_name"
   protected val CF_S3_PRESIGNED_PUT_TIMEOUT = "presigned_put_timeout"
   protected val CF_S3_PRESIGNED_GET_TIMEOUT = "presigned_get_timeout"
+  // Common (non-backend-scoped) fallback for the region, so a project can pin
+  // it once at the top level instead of repeating it in every backend block.
+  protected val CF_AWS_REGION_COMMON        = "aws.region"
 
   /** The configuration */
   protected val config = Configuration()
 
   // --[ Methods ]--------------------------------------------------------------
   /**
-   * Gets the AWS credentials object.
+   * Gets the static AWS credentials configured for this backend, if any.
+   *
+   * Returns None when either the access key or the secret key is absent. In
+   * that case the caller must NOT set static credentials on the client and
+   * should let the AWS default credential provider chain resolve them instead
+   * -- i.e. run under the server's ExecutionRole (the ECS task role / EC2
+   * instance role), which is the recommended setup. Static keys are only for
+   * local or non-role environments.
    */
-  protected def getAWSCredentials(implicit dsn: DataSourceName): Try[AWSCredentials] =
+  protected def getAWSCredentials(implicit dsn: DataSourceName): Option[AwsCredentials] =
     for {
       akey <- getAWSAccessKeyId
       skey <- getAWSSecretKey
-    } yield new BasicAWSCredentials(akey, skey)
+    } yield AwsBasicCredentials.create(akey, skey)
 
   /**
-   * Gets the AWS access key ID for this credentials object.
+   * Gets the AWS access key ID, if configured.
    */
-  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_S3_ACCESS_KEY)).get
-    )
+  protected def getAWSAccessKeyId(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_S3_ACCESS_KEY))
 
   /**
-   * Gets the AWS secret access key for this credentials object.
+   * Gets the AWS secret access key, if configured.
    */
-  protected def getAWSSecretKey(implicit dsn: DataSourceName): Try[String] =
-    Try(readValue(
-      _.get[Option[String]](CF_S3_SECRET_KEY)).get
-    )
+  protected def getAWSSecretKey(implicit dsn: DataSourceName): Option[String] =
+    readValue(_.get[Option[String]](CF_S3_SECRET_KEY))
 
   /**
-   * Gets a region enum corresponding to the given region name.
+   * Gets a region corresponding to the given region name.
+   *
+   * Resolution order: the backend-scoped `region` (via `readValue`), then the
+   * common top-level `aws.region`. Fails only when neither is set.
    */
-  def getAWSRegion(implicit dsn: DataSourceName): Try[Regions] =
-    Try(Regions.fromName(readValue(
-      _.get[Option[String]](CF_S3_REGION)).get
+  def getAWSRegion(implicit dsn: DataSourceName): Try[Region] =
+    Try(Region.of(
+      readValue(_.get[Option[String]](CF_S3_REGION))
+        .orElse(config.get[Option[String]](CF_AWS_REGION_COMMON))
+        .get
     ))
 
   /**
@@ -74,32 +84,23 @@ trait AmazonS3Config {
     )
 
   /**
-   * Gets the amount of time to wait (in milliseconds)
-   * when initially establishing a connection before giving up and timing out.
+   * Gets the duration for which the new pre-signed URL
+   * will be accepted to get a file by Amazon S3.
+   * Default timeout value : 25 mins
    */
-  def getConnectionTimeout(implicit dsn: DataSourceName): Long =
-    readValue(
-      _.get[Option[Duration]](CF_S3_CONNECTION_TIMEOUT).map(_.toMillis)
-    ).getOrElse(30000L)
-
-  /**
-   * Gets the expiration date at which point
-   * the new pre-signed URL will no longer be accepted to get a file by Amazon S3.
-   * Default timeout value : 15 mins
-   */
-  def getPresignedUrlTimeoutForGet(implicit dsn: DataSourceName): java.util.Date =
-    new java.util.Date(System.currentTimeMillis() + readValue(
+  def getPresignedUrlTimeoutForGet(implicit dsn: DataSourceName): java.time.Duration =
+    java.time.Duration.ofMillis(readValue(
       _.get[Option[Duration]](CF_S3_PRESIGNED_GET_TIMEOUT).map(_.toMillis))
        .getOrElse(1500000L)
     )
 
   /**
-   * Gets the expiration date at which point
-   * the new pre-signed URL will no longer be accepted to upload a file by Amazon S3.
-   * Default timeout value : 5 mins
+   * Gets the duration for which the new pre-signed URL
+   * will be accepted to upload a file by Amazon S3.
+   * Default timeout value : approx. 8 mins
    */
-  def getPresignedUrlTimeoutForUpload(implicit dsn: DataSourceName): java.util.Date =
-    new java.util.Date(System.currentTimeMillis() + readValue(
+  def getPresignedUrlTimeoutForUpload(implicit dsn: DataSourceName): java.time.Duration =
+    java.time.Duration.ofMillis(readValue(
       _.get[Option[Duration]](CF_S3_PRESIGNED_PUT_TIMEOUT).map(_.toMillis))
        .getOrElse(500000L)
     )
