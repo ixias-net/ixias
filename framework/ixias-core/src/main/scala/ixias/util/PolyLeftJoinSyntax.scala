@@ -34,13 +34,13 @@ object PolyLeftJoinSyntax {
     /**
      * Implicit convert: T => Seq[T]
      */
-    implicit def caseAnyRef[T](implicit st: Case[R, Seq[T]]) =
+    implicit def caseAnyRef[T](implicit st: Case[R, Seq[T]]): Case.Aux[R,T,st.Result] =
       at[R, T]((root, haystack) => this(root, Seq(haystack)))
 
     /**
      * Implicit convert: Option[T] => Seq[T]
      */
-    implicit def caseOpt[T](implicit st: Case[R, Seq[T]]) =
+    implicit def caseOpt[T](implicit st: Case[R, Seq[T]]): Case.Aux[R,Option[T],st.Result] =
       at[R, Option[T]]((root, haystack) => this(root, haystack.toSeq))
   }
 }

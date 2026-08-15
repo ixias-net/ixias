@@ -9,7 +9,7 @@
 package ixias.aws.sns.backend
 
 import scala.util.Try
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.auth.credentials.{ AwsCredentials, AwsBasicCredentials }
 import ixias.util.Configuration

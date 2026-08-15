@@ -11,7 +11,7 @@ val branch         = "git branch".lineStream_!.find{_.head == '*'}.map{_.drop(2)
 val release        = branch == "master" || branch.startsWith("release")
 val commonSettings = Seq(
   organization  := "net.ixias",
-  scalaVersion  := "2.12.11",
+  scalaVersion  := "2.13.18",
   resolvers ++= Seq(
     "Typesafe Releases" at "https://repo.typesafe.com/typesafe/ivy-releases/",
     "Sonatype Release"  at "https://oss.sonatype.org/content/repositories/releases/",
@@ -24,22 +24,21 @@ val commonSettings = Seq(
     "-feature",                // Emit warning and location for usages of features that should be imported explicitly.
     "-unchecked",              // Enable additional warnings where generated code depends on assumptions.
     "-Xfatal-warnings",        // Fail the compilation if there are any warnings.
-    "-Xlint:-unused,_",        // Enable recommended additional warnings.
-    "-Ywarn-adapted-args",     // Warn if an argument list is modified to match the receiver.
-    "-Ywarn-dead-code",        // Warn when dead code is identified.
-    "-Ywarn-unused:imports",   // Warn if an import selector is not referenced.
-    "-Ywarn-inaccessible",     // Warn about inaccessible types in method signatures.
-    "-Ywarn-nullary-override", // Warn when non-nullary overrides nullary, e.g. def foo() over def foo.
-    "-Ywarn-numeric-widen",    // Warn when numerics are widened.
-    "-Ypartial-unification"    // Add support for partial unification of type constructors
+    "-Xlint:-unused,_",        // Enable recommended additional warnings. (covers adapted-args / inaccessible / nullary-override)
+    "-Wdead-code",             // Warn when dead code is identified.
+    "-Wnumeric-widen",         // Warn when numerics are widened.
+    "-Wunused:imports",        // Warn if an import selector is not referenced.
+    // `trait API extends super.API` is the profile idiom of this framework (as in Slick itself).
+    // Renaming it would break the published API, so the 2.13 shadowing deprecation is silenced.
+    "-Wconf:msg=shadowing a nested class of a parent is deprecated:s"
   ),
   libraryDependencies ++= Seq(
-    "org.specs2"      %% "specs2-core"          % "3.9.1"  % Test,
-    "org.specs2"      %% "specs2-matcher-extra" % "3.9.1"  % Test,
+    "org.specs2"      %% "specs2-core"          % "4.20.9" % Test,
+    "org.specs2"      %% "specs2-matcher-extra" % "4.20.9" % Test,
     "ch.qos.logback"   % "logback-classic"      % "1.1.3"  % Test,
     "mysql"            % "mysql-connector-java" % "5.1.39" % Test
   ),
-  fork in Test := true,
+  Test / fork := true,
   javaOptions ++= Seq(
     "-Dconfig.resource=application.conf",
     "-Dlogger.resource=logback.xml"
@@ -48,9 +47,7 @@ val commonSettings = Seq(
 
 val playSettings = Seq(
   libraryDependencies ++= Seq(
-    "com.typesafe.play" %% "play" % "2.8.13",
-    "com.typesafe.play" %% "play-iteratees"                  % "2.6.1",
-    "com.typesafe.play" %% "play-iteratees-reactive-streams" % "2.6.1",
+    "com.typesafe.play" %% "play" % "2.8.22",
   )
 )
 
@@ -63,8 +60,8 @@ lazy val publisherSettings = Seq(
     val path = if (release) "releases" else "snapshots"
     Some("Nextbeat snapshots" at "s3://maven.ixias.net.s3-ap-northeast-1.amazonaws.com/" + path)
   },
-  publishArtifact in (Compile, packageDoc) := !release, // disable publishing the Doc jar for production
-  publishArtifact in (Compile, packageSrc) := !release, // disable publishing the sources jar for production
+  Compile / packageDoc / publishArtifact := !release, // disable publishing the Doc jar for production
+  Compile / packageSrc / publishArtifact := !release, // disable publishing the sources jar for production
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
@@ -87,16 +84,16 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
   .settings(commonSettings:    _*)
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
-    "com.chuusai"        %% "shapeless"     % "2.3.3",
-    "com.typesafe"        % "config"        % "1.3.0",
-    "com.typesafe.slick" %% "slick"         % "3.2.1",
+    "com.chuusai"        %% "shapeless"     % "2.3.13",
+    "com.typesafe"        % "config"        % "1.4.3",
+    "com.typesafe.slick" %% "slick"         % "3.3.3",
     "org.typelevel"      %% "cats-kernel"   % "2.1.1",
     "org.typelevel"      %% "cats-core"     % "2.1.1",
-    "com.typesafe.play"  %% "play-json"     % "2.7.4",
-    "io.monix"           %% "shade"         % "1.9.5",
-    "com.zaxxer"          % "HikariCP"      % "2.5.0",
+    "com.typesafe.play"  %% "play-json"     % "2.8.2",
+    "net.spy"             % "spymemcached"  % "2.12.3",
+    "com.zaxxer"          % "HikariCP"      % "5.1.0",
     "org.keyczar"         % "keyczar"       % "0.71h",
-    "org.uaparser"       %% "uap-scala"     % "0.1.0",
+    "org.uaparser"       %% "uap-scala"     % "0.21.0",
     "joda-time"           % "joda-time"     % "2.9.4",
     "commons-codec"       % "commons-codec" % "1.10",
     "org.slf4j"           % "slf4j-api"     % "1.7.21"
@@ -150,7 +147,7 @@ lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "org.scala-lang"        % "scala-compiler" % scalaVersion.value,
-    "org.scalatra.scalate" %% "scalate-core"   % "1.8.0"
+    "org.scalatra.scalate" %% "scalate-core"   % "1.9.6"
   ))
 
 lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))

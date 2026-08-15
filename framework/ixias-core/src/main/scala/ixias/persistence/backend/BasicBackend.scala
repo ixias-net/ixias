@@ -8,7 +8,7 @@
 
 package ixias.persistence.backend
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future, ExecutionContextExecutor }
 import ixias.persistence.model.DataSourceName
 import ixias.persistence.dbio.Execution
 import ixias.util.Logger
@@ -23,7 +23,7 @@ trait BasicBackend[T] extends BasicDatabaseConfig {
   type Database = T
 
   /** The Execution Context */
-  protected implicit val ctx = Execution.Implicits.trampoline
+  protected implicit val ctx: ExecutionContextExecutor = Execution.Implicits.trampoline
 
   /** The logger for profile */
   protected lazy val logger  =

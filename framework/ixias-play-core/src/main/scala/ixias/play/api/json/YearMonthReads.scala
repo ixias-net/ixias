@@ -51,6 +51,6 @@ object YearMonthReads extends EnvReads {
   /**
    * The default typeclass to reads `java.time.YearMonth` from JSON.
    */
-  implicit val DefaultYearMonthReads =
+  implicit val DefaultYearMonthReads: Reads[YearMonth] =
     yearMonthReads(DateTimeFormatter.ofPattern("yyyy-MM"))
 }

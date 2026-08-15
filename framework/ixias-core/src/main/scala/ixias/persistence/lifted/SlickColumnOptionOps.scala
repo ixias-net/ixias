@@ -56,6 +56,6 @@ final case class SlickColumnOptionsExtension[T <: STC#ColumnOptions](self: T) {
 }
 
 trait SlickColumnOptionOps {
-  implicit def slickColumnOptionsExtension(co: STC#ColumnOptions) =
+  implicit def slickColumnOptionsExtension(co: STC#ColumnOptions): SlickColumnOptionsExtension[STC#ColumnOptions] =
     new SlickColumnOptionsExtension(co)
 }

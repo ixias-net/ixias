@@ -152,7 +152,7 @@ object PBKDF2 {
     def bytes(i: Int) = ByteBuffer.allocate(4).putInt(i).array
 
     /** Performs a logical XOR of this bit set with the bit set argument. */
-    def xor(buff: Array[Int], a2: Array[Byte]) {
+    def xor(buff: Array[Int], a2: Array[Byte]): Unit = {
       var pos = 0
       val b2  = ByteBuffer.wrap(a2).asIntBuffer
       val len = buff.array.size

@@ -41,7 +41,7 @@ trait SlickToolProvider[P <: JdbcProfile] extends SlickProfile[P] {
         tables <- MTable.getTables
         _      <- tables.exists(_.name.name == slick.baseTableRow.tableName) match {
           case false => slick.asInstanceOf[T#BasicQuery].schema.create
-          case true  => DBIO.successful(Unit)
+          case true  => DBIO.successful(())
         }
       } yield ()
     }
@@ -56,7 +56,7 @@ trait SlickToolProvider[P <: JdbcProfile] extends SlickProfile[P] {
           tables <- MTable.getTables
           _      <- tables.exists(_.name.name == slick.baseTableRow.tableName) match {
             case true  => slick.asInstanceOf[T#BasicQuery].schema.drop
-            case false => DBIO.successful(Unit)
+            case false => DBIO.successful(())
         }
       } yield ()
     }

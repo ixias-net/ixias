@@ -8,7 +8,7 @@
 
 package ixias.aws.s3.backend
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future, ExecutionContextExecutor }
 import scala.util.{ Success, Failure }
 import ixias.util.Logger
 import ixias.util.ChainSyntax
@@ -26,7 +26,7 @@ object AmazonS3Backend extends AmazonS3Config with ChainSyntax {
   protected lazy val logger  = Logger.apply
 
   /** The Execution Context */
-  protected implicit val ctx = Execution.Implicits.trampoline
+  protected implicit val ctx: ExecutionContextExecutor = Execution.Implicits.trampoline
 
   /**
    * The service configuration shared by the client and the presigner.
@@ -69,7 +69,7 @@ object AmazonS3Backend extends AmazonS3Config with ChainSyntax {
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   protected case class AmazonS3(underlying: S3Client, presigner: S3Presigner) {
     import java.io.InputStream
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     import ixias.aws.s3.model._
     import software.amazon.awssdk.core.sync.RequestBody
     import software.amazon.awssdk.services.s3.model._

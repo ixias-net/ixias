@@ -8,15 +8,12 @@
 
 package ixias.play.api.controllers
 
-import akka.util.ByteString
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.FileIO
 import scala.concurrent.ExecutionContext
 
 import play.api.{ Mode, Environment, Configuration }
 import play.api.http.{ HttpEntity, FileMimeTypes, HttpErrorHandler }
 import play.api.mvc.{ Action, AnyContent }
-import play.api.libs.iteratee.Enumerator
-import play.api.libs.iteratee.streams.IterateeStreams
 import play.api.Logger
 
 import controllers.{ AssetsBuilder, DefaultAssetsMetadata }
@@ -64,7 +61,7 @@ class UIAssets @javax.inject.Inject() (
       case (prev, path) => prev match {
         case Some(_) => prev
         case None    => {
-          val fullPath = path + "/" + file
+          val fullPath = path.getPath + "/" + file
           val resource = new java.io.File(fullPath)
           if (resource.isFile) Some(resource) else None
         }
@@ -72,8 +69,7 @@ class UIAssets @javax.inject.Inject() (
     }
     resource match {
       case Some(file) => {
-        val data   = Enumerator.fromStream(new java.io.FileInputStream(file))
-        val source = Source.fromPublisher(IterateeStreams.enumeratorToPublisher(data)).map(ByteString.apply)
+        val source = FileIO.fromPath(file.toPath)
         logger.info(s"serving $file")
         Ok.sendEntity(HttpEntity.Streamed(source, None, None))
           .as(fileMimeTypes.forFileName(file.toString).getOrElse("application/octet-stream"))
