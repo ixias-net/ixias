@@ -33,6 +33,6 @@ final case class SlickDBIOActionTransformer[K <: @@[_, _], M <: EntityModel[K], 
 }
 
 trait SlickDBIOActionOps[K <: @@[_, _], M <: EntityModel[K]] {
-  implicit def toDBIOActionTransformer[E <: Effect](a: DBIOAction[Seq[M], NoStream, E]) =
+  implicit def toDBIOActionTransformer[E <: Effect](a: DBIOAction[Seq[M], NoStream, E]): SlickDBIOActionTransformer[K, M, E] =
     SlickDBIOActionTransformer[K, M, E](a)
 }

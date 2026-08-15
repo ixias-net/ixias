@@ -18,7 +18,7 @@ import java.time.Duration
 import ixias.model.{ @@, Entity, EntityModel, IdStatus }
 import ixias.play.api.auth.token.Token
 import ixias.play.api.auth.container.Container
-import ixias.play.api.mvc.Errors._
+import _root_.ixias.play.api.mvc.Errors._
 import ixias.util.Logging
 
 trait AuthProfile[K <: @@[_, _], M <: EntityModel[K], A] extends Logging {

@@ -34,7 +34,7 @@ trait CursorBindable {
         key + ".offset" -> Option(value.offset),
         key + ".limit"  -> value.limit
       ).collect({
-        case (key, Some(v)) if v > 0 => "%s=%d".format(key, v)
+        case (k, Some(v)) if v > 0 => "%s=%d".format(k, v)
       }).mkString("&")
 
     /**

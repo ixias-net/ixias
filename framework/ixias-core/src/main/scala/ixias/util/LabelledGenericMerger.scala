@@ -18,8 +18,8 @@ import shapeless.ops.record._
 trait LabelledGenericMerger[T, U] {
 
   object mf extends Poly2 {
-    implicit def opt1[A] = at[A, A]                 ((v1, v2) => v2)
-    implicit def opt2[A] = at[Option[A], Option[A]] ((v1, v2) => v2 orElse v1)
+    implicit def opt1[A]: Case.Aux[A, A, A]                                 = at[A, A]                 ((v1, v2) => v2)
+    implicit def opt2[A]: Case.Aux[Option[A], Option[A], Option[A]]         = at[Option[A], Option[A]] ((v1, v2) => v2 orElse v1)
   }
 
   /**

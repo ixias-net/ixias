@@ -10,7 +10,7 @@ package ixias.persistence.backend
 
 import scala.util.{ Success, Failure }
 import scala.concurrent.Future
-import shade.memcached.{ Memcached, Configuration }
+import ixias.persistence.backend.memcached.{ Memcached, Configuration }
 import ixias.persistence.model.DataSourceName
 
 /**
@@ -39,7 +39,7 @@ case class ShadeBackend()
       for {
         addresses <- getAddresses
       } yield {
-        shade.memcached.Configuration(
+        Configuration(
           addresses        = addresses,
           keysPrefix       = Some(getKeysPrefix),
           operationTimeout = getHostSpecIdleTimeout

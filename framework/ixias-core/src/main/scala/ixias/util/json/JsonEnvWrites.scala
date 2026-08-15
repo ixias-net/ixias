@@ -10,6 +10,7 @@ package ixias.util.json
 
 import play.api.libs.json._
 import play.api.libs.json.EnvWrites
+import shapeless.tag.@@
 
 /**
  * Writes Conbinator for type conversion in service
@@ -19,23 +20,23 @@ trait JsonEnvWrites extends EnvWrites {
   /**
    * Serializer forshapeless.tag.@@[Long, _]
    */
-  implicit def TagLongWrites[T] =
-    new Writes[shapeless.tag.@@[Long, T]] {
-      def writes(tag: shapeless.tag.@@[Long, T]) = JsNumber(tag)
+  implicit def TagLongWrites[T]: Writes[Long @@ T] =
+    new Writes[Long @@ T] {
+      def writes(tag: Long @@ T) = JsNumber(tag)
     }
 
   /**
    * Serializer forshapeless.tag.@@[String, _]
    */
-  implicit def TagStringWrites[T] =
-    new Writes[shapeless.tag.@@[String, T]] {
-      def writes(tag: shapeless.tag.@@[String, T]) = JsString(tag)
+  implicit def TagStringWrites[T]: Writes[String @@ T] =
+    new Writes[String @@ T] {
+      def writes(tag: String @@ T) = JsString(tag)
     }
 
   /**
    * Serializer for ixias.util.EnumStatus
    */
-  implicit def EnumStatusWrites[T <: ixias.util.EnumStatus] =
+  implicit def EnumStatusWrites[T <: ixias.util.EnumStatus]: Writes[T] =
     new Writes[T] {
       def writes(v: T) = JsNumber(v.code)
     }
@@ -43,7 +44,7 @@ trait JsonEnvWrites extends EnvWrites {
   /**
    * Serializer for ixias.util.EnumStatusAsstr
    */
-  implicit def EnumStatusAsStrWrites[T <: ixias.util.EnumStatusAsStr] =
+  implicit def EnumStatusAsStrWrites[T <: ixias.util.EnumStatusAsStr]: Writes[T] =
     new Writes[T] {
       def writes(v: T) = JsString(v.code)
     }
@@ -51,7 +52,7 @@ trait JsonEnvWrites extends EnvWrites {
   /**
    * Serializer for Seq[ixias.util.EnumBitFlags]
    */
-  implicit def EnumBitFlagsWrites[T <: ixias.util.EnumBitFlags] =
+  implicit def EnumBitFlagsWrites[T <: ixias.util.EnumBitFlags]: Writes[T] =
     new Writes[T] {
       def writes(v: T) = JsNumber(v.code)
     }

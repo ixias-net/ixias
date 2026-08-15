@@ -99,7 +99,7 @@ object UrlSigner extends AmazonS3Config {
                                    .getOrElse(FiniteDuration(30, TimeUnit.MINUTES))
       //- Generate Signed-URL
       val resourceUrl = "https://%s/%s?%s".format(domain, file.v.key, resize.queryString)
-      new java.net.URL(
+      java.net.URI.create(
         signer.getSignedUrlWithCannedPolicy(
           CannedSignerRequest.builder
             .resourceUrl(resourceUrl)
@@ -108,6 +108,6 @@ object UrlSigner extends AmazonS3Config {
             .expirationDate(ZonedDateTime.now.plus(timeout).toInstant)
             .build
         ).url
-      )
+      ).toURL
   }
 }

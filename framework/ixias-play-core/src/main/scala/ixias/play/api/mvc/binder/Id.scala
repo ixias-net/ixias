@@ -89,7 +89,7 @@ trait IdBindable extends Box {
               "Unsupported type of id-value: %s".format(ctag.runtimeClass)
             )
           }
-        )
+        ).toIndexedSeq
         () => ids
       },
       (v: BoxCsv[T]) => v.map(

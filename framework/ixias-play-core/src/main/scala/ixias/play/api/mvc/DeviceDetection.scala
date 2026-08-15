@@ -26,6 +26,10 @@ object DeviceDetectionAttrKey {
  */
 trait  DeviceDetectionBuilder extends ActionBuilder[Request, AnyContent]
 object DeviceDetectionBuilder {
+
+  /** `Parser.default` rebuilds the whole regex database on each call, so it is built once and shared. */
+  private[mvc] lazy val uaParser: Parser = Parser.default
+
   def apply(parser: BodyParser[AnyContent])(implicit ec: ExecutionContext): DeviceDetectionBuilder =
     new DeviceDetectionBuilderImpl(parser)
 }
@@ -43,7 +47,7 @@ class DeviceDetectionBuilderImpl(
     request.headers.get("User-Agent") match {
       case None     => block(request)
       case Some(ua) => block {
-        val client = Parser.get.parse(ua)
+        val client = DeviceDetectionBuilder.uaParser.parse(ua)
         request
           .addAttr(DeviceDetectionAttrKey.OS,        client.os)
           .addAttr(DeviceDetectionAttrKey.Device,    client.device)
