@@ -47,8 +47,14 @@ val commonSettings = Seq(
 
 val playSettings = Seq(
   libraryDependencies ++= Seq(
-    "com.typesafe.play" %% "play" % "2.8.22",
-  )
+    "org.playframework" %% "play" % "3.0.10",
+  ),
+  // Play 3.0 still pins scala-parser-combinators 1.1.2 while Scalate has moved to 2.4.0,
+  // so one of them has to be evicted forward. 2.4.0 only breaks `Parsers#Success.map`
+  // (its return type widened to ParseResult), and Play calls none of it: every one of the
+  // 66 members Play references is present in 2.4.0. Let the newer one win.
+  libraryDependencySchemes +=
+    "org.scala-lang.modules" %% "scala-parser-combinators" % VersionScheme.Always
 )
 
 
@@ -89,7 +95,7 @@ lazy val ixiasCore = (project in file("framework/ixias-core"))
     "com.typesafe.slick" %% "slick"         % "3.3.3",
     "org.typelevel"      %% "cats-kernel"   % "2.1.1",
     "org.typelevel"      %% "cats-core"     % "2.1.1",
-    "com.typesafe.play"  %% "play-json"     % "2.8.2",
+    "org.playframework"  %% "play-json"     % "3.0.6",
     "net.spy"             % "spymemcached"  % "2.12.3",
     "com.zaxxer"          % "HikariCP"      % "5.1.0",
     "org.keyczar"         % "keyczar"       % "0.71h",
@@ -147,7 +153,7 @@ lazy val ixiasPlayScalate = (project in file("framework/ixias-play-scalate"))
   .settings(publisherSettings: _*)
   .settings(libraryDependencies ++= Seq(
     "org.scala-lang"        % "scala-compiler" % scalaVersion.value,
-    "org.scalatra.scalate" %% "scalate-core"   % "1.9.6"
+    "org.scalatra.scalate" %% "scalate-core"   % "1.10.1"
   ))
 
 lazy val ixiasPlayAuth = (project in file("framework/ixias-play-auth"))

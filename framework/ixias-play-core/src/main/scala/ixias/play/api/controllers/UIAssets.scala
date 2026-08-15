@@ -8,7 +8,7 @@
 
 package ixias.play.api.controllers
 
-import akka.stream.scaladsl.FileIO
+import org.apache.pekko.stream.scaladsl.FileIO
 import scala.concurrent.ExecutionContext
 
 import play.api.{ Mode, Environment, Configuration }
@@ -25,7 +25,7 @@ class UIAssets @javax.inject.Inject() (
   errorHandler:  HttpErrorHandler,
   meta:          DefaultAssetsMetadata,
   fileMimeTypes: FileMimeTypes
-)(implicit ec: ExecutionContext) extends AssetsBuilder(errorHandler, meta) {
+)(implicit ec: ExecutionContext) extends AssetsBuilder(errorHandler, meta, env) {
 
   import controllers.Assets._
 
