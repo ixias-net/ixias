@@ -8,7 +8,7 @@
 
 package ixias.aws.sns.backend
 
-import scala.concurrent.Future
+import scala.concurrent.{ Future, ExecutionContextExecutor }
 import scala.util.{ Success, Failure }
 import ixias.util.Logger
 import ixias.util.ChainSyntax
@@ -25,7 +25,7 @@ object AmazonSNSBackend extends AmazonSNSConfig with ChainSyntax {
   protected lazy val logger  = Logger.apply
 
   /** The Execution Context */
-  protected implicit val ctx = Execution.Implicits.trampoline
+  protected implicit val ctx: ExecutionContextExecutor = Execution.Implicits.trampoline
 
   /** Get a Client to manage Amazon SNS. */
   def getClient(implicit dsn: DataSourceName): Future[SnsClient] = {

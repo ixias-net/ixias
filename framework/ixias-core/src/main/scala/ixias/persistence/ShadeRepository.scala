@@ -11,7 +11,7 @@ package ixias.persistence
 import scala.reflect.ClassTag
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
-import shade.memcached.{ Memcached, MemcachedCodecs }
+import ixias.persistence.backend.memcached.{ Memcached, MemcachedCodecs }
 
 import ixias.model.{ @@, Entity, EntityModel }
 import ixias.persistence.model.DataSourceName
@@ -56,7 +56,6 @@ trait ShadeProfile extends Profile with ShadeDBActionProvider {
  */
 abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag: ClassTag[M])
     extends Repository[K, M] with ShadeProfile with MemcachedCodecs {
-  import api._
 
   // --[ Methods ]--------------------------------------------------------------
   val dsn: DataSourceName
@@ -101,7 +100,7 @@ abstract class ShadeRepository[K <: @@[_, _], M <: EntityModel[K]](implicit ttag
       } yield ()
     } recoverWith {
       case _: NoSuchElementException
-         | _: java.io.InvalidClassException => Future.successful(Unit)
+         | _: java.io.InvalidClassException => Future.unit
     }
 
   /** Deletes a key from the cache store. */

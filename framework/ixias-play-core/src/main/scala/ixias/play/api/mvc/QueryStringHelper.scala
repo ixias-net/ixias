@@ -17,10 +17,10 @@ import scala.language.implicitConversions
  */
 trait QueryStringHelper extends binder.Box {
 
-  implicit def toQueryStringHelperOps[A](bindable: QueryStringBindable[A]) =
+  implicit def toQueryStringHelperOps[A](bindable: QueryStringBindable[A]): QueryStringHelper.QueryStringHelperOps[A] =
     QueryStringHelper.QueryStringHelperOps(bindable)
 
-  implicit def toQueryStringHelperBoxCsvOps[A](bindable: QueryStringBindable[BoxCsv[A]]) =
+  implicit def toQueryStringHelperBoxCsvOps[A](bindable: QueryStringBindable[BoxCsv[A]]): QueryStringHelper.QueryStringHelperBoxCsvOps[A] =
     QueryStringHelper.QueryStringHelperBoxCsvOps(bindable)
 }
 

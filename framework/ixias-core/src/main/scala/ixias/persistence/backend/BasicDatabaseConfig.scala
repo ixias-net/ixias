@@ -9,7 +9,7 @@
 package ixias.persistence.backend
 
 import scala.util.Try
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import ixias.util.Configuration
 import ixias.persistence.model.DataSourceName
 

@@ -8,6 +8,7 @@
 
 package ixias.persistence
 
+import scala.concurrent.ExecutionContextExecutor
 import ixias.model.{ @@, EntityModel }
 import ixias.persistence.dbio.{ Execution, EntityIOAction }
 import ixias.persistence.lifted.{ Aliases, ExtensionMethods }
@@ -34,7 +35,7 @@ trait Profile {
     new Logger(LoggerFactory.getLogger(this.getClass.getName))
 
   /** The Execution Context */
-  protected implicit val ctx = Execution.Implicits.trampoline
+  protected implicit val ctx: ExecutionContextExecutor = Execution.Implicits.trampoline
 
   /**
    * The API for using the utility methods with a single import statement.

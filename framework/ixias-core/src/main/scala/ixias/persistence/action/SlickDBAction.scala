@@ -56,7 +56,7 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
       (implicit conv: A => B): Future[B] =
       for {
         dsn   <- Future(table.dsn.get(hostspec).get)
-        value <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), block)
+        value <- SlickDBAction[T]().invokeBlock(SlickDBActionRequest(dsn, table), block)
       } yield conv(value)
     }
 
@@ -72,7 +72,7 @@ trait SlickDBActionProvider[P <: JdbcProfile] { self: SlickProfile[P] =>
       (implicit conv: A => B): Future[B] =
       for {
         dsn    <- Future(table.dsn.get(hostspec).get)
-        value  <- SlickDBAction[T].invokeBlock(SlickDBActionRequest(dsn, table), {
+        value  <- SlickDBAction[T]().invokeBlock(SlickDBActionRequest(dsn, table), {
           case (db, slick) => db.run(action(slick))
         })
       } yield conv(value)

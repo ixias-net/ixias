@@ -49,7 +49,7 @@ trait JsonEnvReads extends EnvReads {
   /**
    * Deserializer for ixias.util.EnumStatus
    */
-  def enumReads[E <: ixias.util.EnumStatus](enum: ixias.util.EnumStatus.Of[E]): Reads[E] =
+  def enumReads[E <: ixias.util.EnumStatus](`enum`: ixias.util.EnumStatus.Of[E]): Reads[E] =
     new Reads[E] {
       def reads(json: JsValue) = json match {
         case JsNumber(n) if n.isValidShort => JsSuccess(enum(n.toShort))
@@ -61,7 +61,7 @@ trait JsonEnvReads extends EnvReads {
   /**
    * Deserializer for ixias.util.EnumStatusAsStr
    */
-  def enumReads[E <: ixias.util.EnumStatusAsStr](enum: ixias.util.EnumStatusAsStr.Of[E]): Reads[E] =
+  def enumReads[E <: ixias.util.EnumStatusAsStr](`enum`: ixias.util.EnumStatusAsStr.Of[E]): Reads[E] =
     new Reads[E] {
       def reads(json: JsValue) = json match {
         case JsString(n) => JsSuccess(enum(n))
@@ -72,7 +72,7 @@ trait JsonEnvReads extends EnvReads {
   /**
    * Deserializer for ixias.util.EnumBitFlags
    */
-  def enumReads[E <: ixias.util.EnumBitFlags](enum: ixias.util.EnumBitFlags.Of[E]): Reads[Seq[E]] =
+  def enumReads[E <: ixias.util.EnumBitFlags](`enum`: ixias.util.EnumBitFlags.Of[E]): Reads[Seq[E]] =
     new Reads[Seq[E]] {
       def reads(json: JsValue) = json match {
         case JsNumber(n) if n.isValidLong => JsSuccess(enum(n.toLong))
