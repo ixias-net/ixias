@@ -16,10 +16,11 @@ trait SlickConfig extends BasicDatabaseConfig {
 
   // --[ Properties ]-----------------------------------------------------------
   /** The keys of configuration */
-  protected val CF_HOSTSPEC_MIN_IDLE           = "min_idle"
-  protected val CF_HOSTSPEC_MAX_POOL_SIZE      = "max_pool_size"
-  protected val CF_HOSTSPEC_CONNECTION_TIMEOUT = "connection_timeout"
-  protected val CF_HOSTSPEC_IDLE_TIMEOUT       = "idle_timeout"
+  protected val CF_HOSTSPEC_MIN_IDLE                    = "min_idle"
+  protected val CF_HOSTSPEC_MAX_POOL_SIZE               = "max_pool_size"
+  protected val CF_HOSTSPEC_CONNECTION_TIMEOUT          = "connection_timeout"
+  protected val CF_HOSTSPEC_IDLE_TIMEOUT                = "idle_timeout"
+  protected val CF_HOSTSPEC_INITIALIZATION_FAIL_TIMEOUT = "initialization_fail_timeout"
 
   // --[ Methods ]--------------------------------------------------------------
   /**
@@ -55,6 +56,21 @@ trait SlickConfig extends BasicDatabaseConfig {
    */
   protected def getHostSpecIdleTimeout(implicit dsn: DataSourceName): Option[Long] =
     readValue(_.get[Option[Duration]](CF_HOSTSPEC_IDLE_TIMEOUT).map(_.toMillis))
+
+  /**
+   * Get the maximum number of milliseconds that the pool waits for its very
+   * first connection when it is created. Until this time is up the pool keeps
+   * retrying once a second, which gives a database that is still waking up
+   * -- an Aurora Serverless instance scaled down to zero, for instance --
+   * the chance to answer instead of failing the request that created the pool.
+   *
+   * A value of zero means the pool tries once and starts anyway, and
+   * a negative value (`-1ms`) skips the check altogether, so that only the
+   * individual connection requests fail while the database is unreachable.
+   * The default of the connection pool is to fail fast.
+   */
+  protected def getHostSpecInitializationFailTimeout(implicit dsn: DataSourceName): Option[Long] =
+    readValue(_.get[Option[Duration]](CF_HOSTSPEC_INITIALIZATION_FAIL_TIMEOUT).map(_.toMillis))
 
   /**
    * Get the JDBC Url
